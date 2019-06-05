@@ -39,7 +39,7 @@ Examples:
   > ${chalk.cyan('forge init')}
 
   Curious about how to use a subcommand?
-  > ${chalk.cyan('forge help block')}
+  > ${chalk.cyan('forge help init')}
   `);
 });
 

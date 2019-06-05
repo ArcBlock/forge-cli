@@ -35,7 +35,16 @@ function isStarted(silent = false) {
   return false;
 }
 
-async function main() {
+async function main({ opts: { multiple } }) {
+  if (multiple && !process.env.FORGE_CONFIG) {
+    shell.echo(`${symbols.error} start multiple chain requires provided custom config`);
+    return;
+  }
+
+  if (!multiple && isStarted()) {
+    return;
+  }
+
   const { starterBinPath, forgeBinPath, forgeConfigPath } = config.get('cli');
   if (!starterBinPath) {
     shell.echo(`${symbols.error} starterBinPath not found, abort!`);
@@ -88,16 +97,5 @@ function waitUntilStarted() {
   });
 }
 
-exports.execute = () => {
-  if (isStarted()) {
-    return;
-  }
-  main();
-};
-
-exports.run = () => {
-  if (isStarted()) {
-    return;
-  }
-  main();
-};
+exports.execute = main;
+exports.run = main;

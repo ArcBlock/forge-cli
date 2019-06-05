@@ -82,8 +82,8 @@ const questions = [
   },
 ];
 
-function createDirectoryContents(fromPath, toPath, blackList) {
-  const filesToCreate = fs.readdirSync(fromPath).filter(x => !blackList.includes(x));
+function createDirectoryContents(fromPath, toPath, blacklist) {
+  const filesToCreate = fs.readdirSync(fromPath).filter(x => blacklist.every(s => !x.includes(s)));
 
   filesToCreate.forEach(file => {
     const origFilePath = `${fromPath}/${file}`;
@@ -107,7 +107,7 @@ function createDirectoryContents(fromPath, toPath, blackList) {
         if (!fs.existsSync(targetPath)) {
           fs.mkdirSync(targetPath);
         }
-        createDirectoryContents(`${fromPath}/${file}`, `${toPath}/${file}`, blackList);
+        createDirectoryContents(`${fromPath}/${file}`, `${toPath}/${file}`, blacklist);
         shell.echo(`${symbols.success} created dir ${targetPath}`);
       } catch (err) {
         shell.echo(`${symbols.error} error sync file ${targetPath}`);
@@ -168,16 +168,18 @@ async function main({ args: [_target], opts: { yes } }) {
     if (!fs.existsSync(targetDir)) {
       shell.mkdir(targetDir);
     }
-    const blackList = [
+    const blacklist = [
       '.git',
       '.cache',
       '.vscode',
       '.netlify',
       '.next',
+      '.env',
       'node_modules',
       'dist',
-    ].concat(starter.backList || []);
-    createDirectoryContents(starterDir, targetDir, blackList);
+    ].concat(starter.blacklist || []);
+    shell.echo(`${symbols.info} file blacklist`, blacklist);
+    createDirectoryContents(starterDir, targetDir, blacklist);
     shell.echo(hr);
 
     // Create configuration files, etc

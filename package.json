@@ -6,13 +6,8 @@
   "main": "src/index.js",
   "files": [
     "bin",
-    "templates",
     "src"
   ],
-  "engines": {
-    "node": ">=0.10.0",
-    "forge": ">=0.25.1"
-  },
   "bin": {
     "forge": "bin/forge"
   },
@@ -119,8 +114,8 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged && lerna run precommit",
-      "pre-push": "lint-staged && lerna run prepush"
+      "pre-commit": "lint-staged && yarn precommit",
+      "pre-push": "lint-staged && yarn prepush"
     }
   }
 }

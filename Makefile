@@ -15,11 +15,11 @@ travis-init: install
 
 install:
 	@echo "Install software required for this repo..."
-	@npm install -g mustache
+	@npm install -g mustache node-pre-gyp yarn
 
 dep:
 	@echo "Install dependencies required for this repo..."
-	@npm install
+	@yarn
 
 pre-build: install dep
 	@echo "Running scripts before the build..."

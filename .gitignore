@@ -4,9 +4,7 @@ node_modules
 .DS_Store
 .nyc_output
 coverage
-libd
 dist
-logs
 tmp
 .compiled
 yarn-debug.log

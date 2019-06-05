@@ -8,6 +8,9 @@
     "bin",
     "src"
   ],
+  "engines": {
+    "forge": ">=0.26.0"
+  },
   "bin": {
     "forge": "bin/forge"
   },

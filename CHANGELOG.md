@@ -1,3 +1,6 @@
+## 0.28.10 (June 05, 2019)
+
+
 ## 0.28.9 (June 05, 2019)
 
 - fix: npm publish issue on travis

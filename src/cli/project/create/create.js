@@ -9,21 +9,49 @@ const { isDirectory, isFile, debug, webUrl } = require('core/env');
 const { symbols, hr } = require('core/ui');
 inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
 
+const findTemplates = baseDir => {
+  const templates = fs
+    .readdirSync(baseDir)
+    .filter(
+      x =>
+        /forge-[-a-zA-Z0-9_]+-starter/.test(x) &&
+        isDirectory(path.join(baseDir, x)) &&
+        isFile(path.join(baseDir, x, 'starter.config.js'))
+    )
+    .reduce((obj, x) => {
+      obj[x] = path.join(baseDir, x);
+      return obj;
+    }, {});
+
+  return templates;
+};
+
+const findBaseDirs = () => {
+  const baseDirs = [];
+
+  // npm packages
+  const { stdout: npmGlobal } = shell.exec('npm prefix -g', { silent: true });
+  baseDirs.push(path.join(npmGlobal.trim(), 'lib/node_modules'));
+
+  // yarn packages and links
+  const { stdout: yarn } = shell.which('yarn', { silent: true });
+  if (yarn.trim()) {
+    const { stdout: yarnBase } = shell.exec('yarn global dir', { silent: true });
+    baseDirs.push(path.join(yarnBase.trim(), 'node_modules'));
+    baseDirs.push(path.join(path.dirname(yarnBase.trim()), 'link'));
+  }
+
+  return baseDirs.filter(x => isDirectory(x));
+};
+
 // get starter templates
-const { stdout } = shell.exec('npm prefix -g', { silent: true });
-const templatesDir = path.join(stdout.trim(), 'lib/node_modules');
-const templates = fs
-  .readdirSync(templatesDir)
-  .filter(
-    x =>
-      /forge-[-a-zA-Z0-9_]+-starter/.test(x) &&
-      isDirectory(path.join(templatesDir, x)) &&
-      isFile(path.join(templatesDir, x, 'starter.config.js'))
-  );
+const templates = findBaseDirs()
+  .map(x => findTemplates(x))
+  .reduce((obj, x) => Object.assign(obj, x), {});
 debug('project templates', templates);
 
 const defaults = {
-  template: templates[0],
+  template: Object.keys(templates)[0],
   chainHost: `${webUrl()}/api`,
 };
 debug('application defaults', defaults);
@@ -37,7 +65,7 @@ const questions = [
     source: (_, inp) => {
       const input = inp || '';
       return new Promise(resolve => {
-        const result = fuzzy.filter(input, templates);
+        const result = fuzzy.filter(input, Object.keys(templates));
         resolve(result.map(item => item.original));
       });
     },
@@ -54,8 +82,8 @@ const questions = [
   },
 ];
 
-function createDirectoryContents(fromPath, toPath, blackList) {
-  const filesToCreate = fs.readdirSync(fromPath).filter(x => !blackList.includes(x));
+function createDirectoryContents(fromPath, toPath, blacklist) {
+  const filesToCreate = fs.readdirSync(fromPath).filter(x => blacklist.every(s => !x.includes(s)));
 
   filesToCreate.forEach(file => {
     const origFilePath = `${fromPath}/${file}`;
@@ -79,7 +107,7 @@ function createDirectoryContents(fromPath, toPath, blackList) {
         if (!fs.existsSync(targetPath)) {
           fs.mkdirSync(targetPath);
         }
-        createDirectoryContents(`${fromPath}/${file}`, `${toPath}/${file}`, blackList);
+        createDirectoryContents(`${fromPath}/${file}`, `${toPath}/${file}`, blacklist);
         shell.echo(`${symbols.success} created dir ${targetPath}`);
       } catch (err) {
         shell.echo(`${symbols.error} error sync file ${targetPath}`);
@@ -92,7 +120,7 @@ function createDirectoryContents(fromPath, toPath, blackList) {
 
 async function main({ args: [_target], opts: { yes } }) {
   try {
-    if (templates.length === 0) {
+    if (Object.keys(templates).length === 0) {
       shell.echo(`${symbols.error} No starter project templates found`);
       shell.echo(
         `${symbols.info} Run ${chalk.cyan(
@@ -121,7 +149,7 @@ async function main({ args: [_target], opts: { yes } }) {
     const client = new GraphQLClient({ endpoint: chainHost });
     const { info } = await client.getChainInfo();
     const chainId = info.network;
-    const starterDir = path.join(templatesDir, template);
+    const starterDir = templates[template];
     // eslint-disable-next-line
     const starter = require(path.join(starterDir, './starter.config.js'));
     const config = { starterDir, targetDir, template, chainHost, chainId };
@@ -140,16 +168,18 @@ async function main({ args: [_target], opts: { yes } }) {
     if (!fs.existsSync(targetDir)) {
       shell.mkdir(targetDir);
     }
-    const blackList = [
+    const blacklist = [
       '.git',
       '.cache',
       '.vscode',
       '.netlify',
       '.next',
+      '.env',
       'node_modules',
       'dist',
-    ].concat(starter.backList || []);
-    createDirectoryContents(starterDir, targetDir, blackList);
+    ].concat(starter.blacklist || []);
+    shell.echo(`${symbols.info} file blacklist`, blacklist);
+    createDirectoryContents(starterDir, targetDir, blacklist);
     shell.echo(hr);
 
     // Create configuration files, etc

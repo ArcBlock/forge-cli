@@ -48,7 +48,9 @@ async function main() {
     }
 
     try {
-      await stopForgeWeb();
+      if (config.get('forge.web.enabled')) {
+        await stopForgeWeb();
+      }
     } catch (err) {
       // do nothing
     }

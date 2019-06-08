@@ -3,7 +3,9 @@ const fs = require('fs');
 const shell = require('shelljs');
 const chalk = require('chalk');
 const { symbols, getSpinner } = require('core/ui');
-const { config, debug, sleep } = require('core/env');
+const { config, debug, sleep, runNativeWebCommand } = require('core/env');
+
+const startForgeWeb = runNativeWebCommand('start', { silent: true });
 
 function getForgeReleaseEnv() {
   if (process.env.FORGE_RELEASE && fs.existsSync(process.env.FORGE_RELEASE)) {
@@ -58,7 +60,10 @@ async function main({ opts: { multiple } }) {
   spinner.start();
   shell.exec(command);
   await waitUntilStarted();
-  await sleep(3000);
+  await sleep(4000);
+  if (config.get('forge.web.enabled')) {
+    await startForgeWeb();
+  }
   spinner.succeed('Forge daemon successfully started');
   shell.exec('forge ps');
   shell.echo('');

@@ -1,3 +1,9 @@
+## 0.29.1 (June 10, 2019)
+
+- fix: forge create-project use more strict blacklist checking
+- chore: update dependency
+- chore: bump version
+
 ## 0.29.0 (June 08, 2019)
 
 - chore: update forge-sdk to v0.29.0

@@ -83,7 +83,9 @@ const questions = [
 ];
 
 function createDirectoryContents(fromPath, toPath, blacklist) {
-  const filesToCreate = fs.readdirSync(fromPath).filter(x => blacklist.every(s => !x.includes(s)));
+  const filesToCreate = fs
+    .readdirSync(fromPath)
+    .filter(x => blacklist.every(s => new RegExp(`${s}$`, 'i').test(x) === false));
 
   filesToCreate.forEach(file => {
     const origFilePath = `${fromPath}/${file}`;
@@ -175,8 +177,11 @@ async function main({ args: [_target], opts: { yes } }) {
       '.netlify',
       '.next',
       '.env',
+      'cache',
+      'tmp',
       'node_modules',
       'dist',
+      'build',
     ].concat(starter.blacklist || []);
     shell.echo(`${symbols.info} file blacklist`, blacklist);
     createDirectoryContents(starterDir, targetDir, blacklist);

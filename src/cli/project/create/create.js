@@ -83,9 +83,7 @@ const questions = [
 ];
 
 function createDirectoryContents(fromPath, toPath, blacklist) {
-  const filesToCreate = fs
-    .readdirSync(fromPath)
-    .filter(x => blacklist.every(s => new RegExp(`${s}$`, 'i').test(x) === false));
+  const filesToCreate = fs.readdirSync(fromPath).filter(x => blacklist.every(s => x !== s));
 
   filesToCreate.forEach(file => {
     const origFilePath = `${fromPath}/${file}`;

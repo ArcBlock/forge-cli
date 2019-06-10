@@ -2,28 +2,26 @@
 # yarn lockfile v1
 
 
-"@arcblock/did-util@^0.29.0":
-  version "0.29.0"
-  resolved "https://registry.npmjs.org/@arcblock/did-util/-/did-util-0.29.0.tgz#b74de668845c692170b4b1594e98c874b713e276"
-  integrity sha512-MZtdMZMhGhvdZt/9zhH1iKKnnuIOWTKvoH5kChQVe1jfcp8a5Mc9XsiYoZVPa71clLn/GA7bTmo0BkNaofmMxg==
+"@arcblock/did-util@^0.29.2":
+  version "0.29.2"
+  resolved "https://registry.npmjs.org/@arcblock/did-util/-/did-util-0.29.2.tgz#cdab84a0d3bd0e4f2c5df7b1bb4e60efc518ea3f"
+  integrity sha512-e0STZ7iMzAnk6LG45n5UHy/WaDLDI2MwuksxTZsYpIRkwbWuudmesqfixizmANqNcwyKQ0e2ImmJU7L6ndD/JA==
   dependencies:
-    "@arcblock/did" "^0.29.0"
+    "@arcblock/did" "^0.29.2"
     "@arcblock/forge-message" "^0.29.0"
     "@arcblock/forge-proto" "^0.29.0"
     "@arcblock/forge-util" "^0.29.0"
-    "@arcblock/forge-wallet" "^0.29.0"
+    "@arcblock/forge-wallet" "^0.29.2"
     "@arcblock/mcrypto" "^0.29.0"
 
-"@arcblock/did@^0.29.0":
-  version "0.29.0"
-  resolved "https://registry.npmjs.org/@arcblock/did/-/did-0.29.0.tgz#eec4b86b852644102a8650354d8b9fd30126823c"
-  integrity sha512-KauoGuAzm12Zv3bRKWlApBZFzWRANFE9ZWDpNuxmBDK2iVPV4Lf2/Nma3oeoK4SIIlfpuRjSPdHdMvv9zbIdIQ==
+"@arcblock/did@^0.29.2":
+  version "0.29.2"
+  resolved "https://registry.npmjs.org/@arcblock/did/-/did-0.29.2.tgz#9639535fb7051ff85462dbf33041e8974a821226"
+  integrity sha512-NpDNK7v4Jz0PhRrIeGaHMgGL5AKssxB0ds/xnIXVvSO+HFbuWkKClSANbpMUF2T6RPLXZ/o6FY1cyoBNJWNq4g==
   dependencies:
     "@arcblock/forge-util" "^0.29.0"
     "@arcblock/mcrypto" "^0.29.0"
-    base64-url "^2.2.0"
     debug "^4.1.1"
-    json-stable-stringify "^1.0.1"
     lodash "^4.17.11"
     multibase "^0.6.0"
 
@@ -65,24 +63,24 @@
     number-to-bn "^1.7.0"
     utf8 "^3.0.0"
 
-"@arcblock/forge-wallet@^0.29.0":
-  version "0.29.0"
-  resolved "https://registry.npmjs.org/@arcblock/forge-wallet/-/forge-wallet-0.29.0.tgz#1f34a7c27d89338f3ef059c4997bf699af1050d7"
-  integrity sha512-O7oh57ve5z9HGTIRp9TWzKeP1Lx6F0WPa7S5Jwv3vZIn8n5HKS8ms2JFB/eITllXltT4NHl68yLuaEWk28a9gA==
+"@arcblock/forge-wallet@^0.29.2":
+  version "0.29.2"
+  resolved "https://registry.npmjs.org/@arcblock/forge-wallet/-/forge-wallet-0.29.2.tgz#02ffe431d7553411ba808fea30109934211fb426"
+  integrity sha512-8ZI1njVtBNdo+9YF5XYoGqx5BFLR06UDt9wkTDU7Q9TMQ5AxZM2l681HjU1x6dryfIbpc/FWjZfv47tKT5631A==
   dependencies:
-    "@arcblock/did" "^0.29.0"
+    "@arcblock/did" "^0.29.2"
     "@arcblock/mcrypto" "^0.29.0"
     lodash.upperfirst "^4.3.1"
 
-"@arcblock/graphql-client@^0.29.0":
-  version "0.29.0"
-  resolved "https://registry.npmjs.org/@arcblock/graphql-client/-/graphql-client-0.29.0.tgz#d8ff6203c477733525c4f76a0aeff42af150c410"
-  integrity sha512-Y9UPpl0kHdhxxsh7rK+i74D9kPDKqwGtdfIdDBreIHJX/Y7V/qNABbqsgh4M9uckkyeW6cfan7lxByKaP0P1kA==
+"@arcblock/graphql-client@^0.29.2":
+  version "0.29.2"
+  resolved "https://registry.npmjs.org/@arcblock/graphql-client/-/graphql-client-0.29.2.tgz#238959198b567c7b29536b5cd113a41d1fe7f346"
+  integrity sha512-IH7sbjes8i/OCqAkeSoQyJfIfEPpQrF+N9KBcwOTW8pHPfW+gsPgo1cVVZEqPZCrSemytXR2J7B2W2bKXU8oEQ==
   dependencies:
     "@arcblock/forge-message" "^0.29.0"
     "@arcblock/forge-proto" "^0.29.0"
     "@arcblock/forge-util" "^0.29.0"
-    "@arcblock/forge-wallet" "^0.29.0"
+    "@arcblock/forge-wallet" "^0.29.2"
     "@arcblock/mcrypto" "^0.29.0"
     "@arcblock/sdk-util" "^0.21.0"
     babel-polyfill "^6.26.0"
@@ -4892,13 +4890,6 @@ json-stable-stringify-without-jsonify@^1.0.1:
   resolved "https://registry.npmjs.org/json-stable-stringify-without-jsonify/-/json-stable-stringify-without-jsonify-1.0.1.tgz#9db7b59496ad3f3cfef30a75142d2d930ad72651"
   integrity sha1-nbe1lJatPzz+8wp1FC0tkwrXJlE=
 
-json-stable-stringify@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.npmjs.org/json-stable-stringify/-/json-stable-stringify-1.0.1.tgz#9a759d39c5f2ff503fd5300646ed445f88c4f9af"
-  integrity sha1-mnWdOcXy/1A/1TAGRu1EX4jE+a8=
-  dependencies:
-    jsonify "~0.0.0"
-
 json-stringify-pretty-compact@^1.2.0:
   version "1.2.0"
   resolved "https://registry.npmjs.org/json-stringify-pretty-compact/-/json-stringify-pretty-compact-1.2.0.tgz#0bc316b5e6831c07041fc35612487fb4e9ab98b8"
@@ -4922,11 +4913,6 @@ jsonfile@^4.0.0:
   integrity sha1-h3Gq4HmbZAdrdmQPygWPnBDjPss=
   optionalDependencies:
     graceful-fs "^4.1.6"
-
-jsonify@~0.0.0:
-  version "0.0.0"
-  resolved "https://registry.npmjs.org/jsonify/-/jsonify-0.0.0.tgz#2c74b6ee41d93ca51b7b5aaee8f503631d252a73"
-  integrity sha1-LHS27kHZPKUbe1qu6PUDYx0lKnM=
 
 jsonparse@^1.2.0:
   version "1.3.1"

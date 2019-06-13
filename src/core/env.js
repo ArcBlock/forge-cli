@@ -183,6 +183,18 @@ function ensureForgeRelease(args, exitOn404 = true) {
       config.cli.webBinPath = webBinPath;
     }
 
+    // forge_workshop
+    const workshopBinPath = path.join(
+      releaseDir,
+      'forge_workshop',
+      currentVersion,
+      './bin/forge_workshop'
+    );
+    if (fs.existsSync(workshopBinPath) && fs.statSync(workshopBinPath).isFile()) {
+      debug(`${symbols.success} Using forge_web executable: ${workshopBinPath}`);
+      config.cli.workshopBinPath = workshopBinPath;
+    }
+
     // forge_kernel
     const forgeBinPath = path.join(releaseDir, 'forge', currentVersion, './bin/forge');
     if (fs.existsSync(forgeBinPath) && fs.statSync(forgeBinPath).isFile()) {
@@ -653,7 +665,7 @@ module.exports = {
   },
 
   DEFAULT_MIRROR: 'https://releases.arcblock.io',
-  RELEASE_ASSETS: ['forge', 'forge_starter', 'simulator', 'forge_web'],
+  RELEASE_ASSETS: ['forge', 'forge_starter', 'simulator', 'forge_web', 'forge_workshop'],
 
   debug,
   sleep,
@@ -668,6 +680,7 @@ module.exports = {
   ensureRpcClient,
   runNativeForgeCommand: makeNativeCommandRunner('forgeBinPath'),
   runNativeWebCommand: makeNativeCommandRunner('webBinPath'),
+  runNativeWorkshopCommand: makeNativeCommandRunner('workshopBinPath'),
   runNativeStarterCommand: makeNativeCommandRunner('starterBinPath'),
   runNativeSimulatorCommand: makeNativeCommandRunner('simulatorBinPath'),
   getForgeProcesses,

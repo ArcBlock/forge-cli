@@ -11,3 +11,4 @@ exports.start = require('./start');
 exports.state = require('./state');
 exports.stop = require('./stop');
 exports.web = require('./web');
+exports.workshop = require('./workshop');

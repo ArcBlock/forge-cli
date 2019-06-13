@@ -1,3 +1,9 @@
+## 0.30.0 (June 13, 2019)
+
+- chore: update forge js sdk version
+- chore: can download/start/stop/open forge workshop
+- chore: remove ci test for Node.js v11
+
 ## 0.29.1 (June 10, 2019)
 
 - fix: forge create-project use more strict blacklist checking

@@ -3,12 +3,11 @@ const shell = require('shelljs');
 const chalk = require('chalk');
 const base64 = require('base64-url');
 const Mcrypto = require('@arcblock/mcrypto');
-const GRpcClient = require('@arcblock/grpc-client');
 const { toItxAddress } = require('@arcblock/did-util');
 const { fromSecretKey, WalletType } = require('@arcblock/forge-wallet');
 const { bytesToHex, isHexStrict } = require('@arcblock/forge-util');
 const { symbols } = require('core/ui');
-const { isFile, debug } = require('core/env');
+const { isFile, debug, createRpcClient } = require('core/env');
 
 function ensureModeratorSecretKey() {
   const sk = process.env.FORGE_MODERATOR_SK;
@@ -43,7 +42,7 @@ async function main({ args: [itxPath] }) {
     const moderator = fromSecretKey(sk, type);
     shell.echo(`${symbols.info} moderator address ${moderator.toAddress()}`);
 
-    const client = new GRpcClient({ endpoint: 'tcp://127.0.0.1:28210' });
+    const client = createRpcClient();
 
     // eslint-disable-next-line
     const json = require(itxFile);

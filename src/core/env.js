@@ -460,7 +460,13 @@ function createRpcClient() {
     return client;
   }
 
-  client = new GRpcClient(config.forge.sockGrpc);
+  const sockGrpc =
+    process.env.FORGE_SOCK_GRPC ||
+    process.env.FORGE_CLI_SOCKET_GRPC ||
+    get(config, 'forge.sock_grpc') ||
+    'tcp://127.0.0.1:28210';
+
+  client = new GRpcClient(sockGrpc);
   return client;
 }
 

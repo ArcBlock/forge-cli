@@ -1,3 +1,6 @@
+## 0.30.1 (June 14, 2019)
+
+
 ## 0.30.0 (June 13, 2019)
 
 - chore: update forge js sdk version

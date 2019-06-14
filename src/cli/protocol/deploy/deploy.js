@@ -24,6 +24,27 @@ function ensureModeratorSecretKey() {
   return bytesToHex(Buffer.from(base64.unescape(sk), 'base64'));
 }
 
+function ensureModeratorDeclared(client, address) {
+  return new Promise((resolve, reject) => {
+    const stream = client.getAccountState({ address });
+    let account = null;
+    stream.on('data', ({ code, state }) => {
+      if (code === 0 && state) {
+        account = state;
+      }
+    });
+    stream.on('end', () => {
+      if (account) {
+        resolve(account);
+      } else {
+        reject(new Error('Moderator account not declared'));
+      }
+    });
+
+    stream.on('error', reject);
+  });
+}
+
 async function main({ args: [itxPath] }) {
   try {
     const itxFile = path.resolve(itxPath);
@@ -43,6 +64,10 @@ async function main({ args: [itxPath] }) {
     shell.echo(`${symbols.info} moderator address ${moderator.toAddress()}`);
 
     const client = createRpcClient();
+    await ensureModeratorDeclared(client, moderator.toAddress());
+    // eslint-disable-next-line no-underscore-dangle
+    shell.echo(`${symbols.info} deploy protocol to ${client._endpoint}`);
+    shell.echo(`${symbols.success} moderator declared on chain`);
 
     // eslint-disable-next-line
     const json = require(itxFile);
@@ -72,7 +97,7 @@ async function main({ args: [itxPath] }) {
     shell.echo(`${symbols.info} inspect tx with ${chalk.cyan(`forge tx ${hash}`)}`);
   } catch (err) {
     debug.error(err);
-    shell.echo(`${symbols.error} transaction protocol deploy failed`);
+    shell.echo(`${symbols.error} transaction protocol deploy failed: ${err.message}`);
   }
 }
 

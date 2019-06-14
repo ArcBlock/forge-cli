@@ -3,12 +3,11 @@ const shell = require('shelljs');
 const chalk = require('chalk');
 const base64 = require('base64-url');
 const Mcrypto = require('@arcblock/mcrypto');
-const GRpcClient = require('@arcblock/grpc-client');
 const { toItxAddress } = require('@arcblock/did-util');
 const { fromSecretKey, WalletType } = require('@arcblock/forge-wallet');
 const { bytesToHex, isHexStrict } = require('@arcblock/forge-util');
 const { symbols } = require('core/ui');
-const { isFile, debug } = require('core/env');
+const { isFile, debug, createRpcClient } = require('core/env');
 
 function ensureModeratorSecretKey() {
   const sk = process.env.FORGE_MODERATOR_SK;
@@ -23,6 +22,27 @@ function ensureModeratorSecretKey() {
 
   // debug('detected base64 moderator sk', base64.unescape(sk));
   return bytesToHex(Buffer.from(base64.unescape(sk), 'base64'));
+}
+
+function ensureModeratorDeclared(client, address) {
+  return new Promise((resolve, reject) => {
+    const stream = client.getAccountState({ address });
+    let account = null;
+    stream.on('data', ({ code, state }) => {
+      if (code === 0 && state) {
+        account = state;
+      }
+    });
+    stream.on('end', () => {
+      if (account) {
+        resolve(account);
+      } else {
+        reject(new Error('Moderator account not declared'));
+      }
+    });
+
+    stream.on('error', reject);
+  });
 }
 
 async function main({ args: [itxPath] }) {
@@ -43,7 +63,11 @@ async function main({ args: [itxPath] }) {
     const moderator = fromSecretKey(sk, type);
     shell.echo(`${symbols.info} moderator address ${moderator.toAddress()}`);
 
-    const client = new GRpcClient({ endpoint: 'tcp://127.0.0.1:28210' });
+    const client = createRpcClient();
+    await ensureModeratorDeclared(client, moderator.toAddress());
+    // eslint-disable-next-line no-underscore-dangle
+    shell.echo(`${symbols.info} deploy protocol to ${client._endpoint}`);
+    shell.echo(`${symbols.success} moderator declared on chain`);
 
     // eslint-disable-next-line
     const json = require(itxFile);
@@ -73,7 +97,7 @@ async function main({ args: [itxPath] }) {
     shell.echo(`${symbols.info} inspect tx with ${chalk.cyan(`forge tx ${hash}`)}`);
   } catch (err) {
     debug.error(err);
-    shell.echo(`${symbols.error} transaction protocol deploy failed`);
+    shell.echo(`${symbols.error} transaction protocol deploy failed: ${err.message}`);
   }
 }
 

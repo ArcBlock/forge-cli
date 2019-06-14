@@ -1,3 +1,8 @@
+## 0.30.2 (June 15, 2019)
+
+- fix: disable ipfs for logs
+
+
 ## 0.30.1 (June 14, 2019)
 
 

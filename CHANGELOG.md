@@ -1,3 +1,6 @@
+## 0.30.4 (June 15, 2019)
+
+
 ## 0.30.3 (June 15, 2019)
 
 - fix: install error when env without yarn

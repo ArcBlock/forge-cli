@@ -1,3 +1,8 @@
+## 0.30.3 (June 15, 2019)
+
+- fix: install error when env without yarn
+
+
 ## 0.30.2 (June 15, 2019)
 
 - fix: disable ipfs for logs

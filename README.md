@@ -1,7 +1,7 @@
 # forge-cli
 
 > Command line tool to manage local forge chain node
-> Last updated at 2019-06-05T05:44:51.776Z
+> Last updated at 2019-06-15T01:22:39.908Z
 
 ## Requirements
 
@@ -57,10 +57,11 @@ Commands:
   reset [options]                       Reset current chain state, run with caution
   restart [app]                         Restart the forge managed applications: core/app/tendermint/ipfs
   simulate|simulator [action]           Start/stop simulator and generate some random data
-  start                                 Start forge as a daemon in the background
+  start [options]                       Start forge as a daemon in the background
   state|status [type]                   List the information of the chain and the node, chain|core|net|validator|web
   stop                                  Stop the forge daemon (forge-core, forge-app, consensus engine, storage engine)
   web [options] [action]                Start or stop the web UI of running forge node
+  workshop [action]                     Start or stop the did workshop
   create-project [options] [targetDir]  Create a project from forge starter projects
   protocol:compile [sourceDir]          Compile a forge transaction protocol to formats that can be deployed to ABT Node
   protocol:deploy [itxPath]             Deploy a compiled transaction protocol to ABT Node
@@ -81,7 +82,7 @@ Examples:
   > forge init
 
   Curious about how to use a subcommand?
-  > forge help block
+  > forge help init
   
 
 ```

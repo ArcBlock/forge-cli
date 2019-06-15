@@ -34,7 +34,7 @@ const findBaseDirs = () => {
   baseDirs.push(path.join(npmGlobal.trim(), 'lib/node_modules'));
 
   // yarn packages and links
-  const { stdout: yarn } = shell.which('yarn', { silent: true });
+  const { stdout: yarn = '' } = shell.which('yarn', { silent: true }) || { stdout: '' };
   if (yarn.trim()) {
     const { stdout: yarnBase } = shell.exec('yarn global dir', { silent: true });
     baseDirs.push(path.join(yarnBase.trim(), 'node_modules'));

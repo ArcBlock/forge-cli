@@ -30,7 +30,7 @@ const getValidatorsInfo = makeInfoReporter(
   'validatorsInfo'
 );
 
-async function main({ args: [type = 'all'] }) {
+async function main({ args: [type = 'chain'] }) {
   const client = createRpcClient();
 
   if (type === 'chain') {

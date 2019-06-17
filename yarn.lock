@@ -43,10 +43,30 @@
     debug "^4.1.1"
     google-protobuf "3.7.0-rc.2"
 
+"@arcblock/forge-message@^0.30.3":
+  version "0.30.3"
+  resolved "https://registry.npmjs.org/@arcblock/forge-message/-/forge-message-0.30.3.tgz#6f299c589656a8c28638f75125e6272e54e97f09"
+  integrity sha512-D1p0XqIBvRsa9dP4DrSnPsDXDkQqh9eo8HcQDLvONRZtlV2zQm1BHulx4SSqNMkeQq2HP71yNzmd894O3pEnBQ==
+  dependencies:
+    "@arcblock/forge-proto" "^0.30.3"
+    "@arcblock/forge-util" "^0.30.0"
+    camelcase "^5.0.0"
+    debug "^4.1.1"
+    google-protobuf "3.7.0-rc.2"
+
 "@arcblock/forge-proto@^0.30.0":
   version "0.30.0"
   resolved "https://registry.npmjs.org/@arcblock/forge-proto/-/forge-proto-0.30.0.tgz#860d0a3385b2c7007b776dcca7f60ac782d29fca"
   integrity sha512-l3sJSglZ2JBh2+nllSa2knWYJHyEn2rEONiIfY29YOwPheEMfN12urNVDADszN7qKkKMS44eAOps7EE+uDkhUw==
+  dependencies:
+    camelcase "^5.3.1"
+    debug "^4.1.1"
+    lodash.get "^4.4.2"
+
+"@arcblock/forge-proto@^0.30.3":
+  version "0.30.3"
+  resolved "https://registry.npmjs.org/@arcblock/forge-proto/-/forge-proto-0.30.3.tgz#5797a7f668abc1e6483abef77e9d2a8d323640f6"
+  integrity sha512-/IP8G+IPeQ3AEQ717nP8olhwtSwvrYQc1UJBh9M2yI3+unScWiV2+PLRwMn1yfsp9m0saGvlyRngNaUR/l0hUA==
   dependencies:
     camelcase "^5.3.1"
     debug "^4.1.1"
@@ -72,13 +92,13 @@
     "@arcblock/mcrypto" "^0.30.0"
     lodash.upperfirst "^4.3.1"
 
-"@arcblock/graphql-client@^0.30.0":
-  version "0.30.0"
-  resolved "https://registry.npmjs.org/@arcblock/graphql-client/-/graphql-client-0.30.0.tgz#a62baa7f5fb7aac81eb54f5c543321f0a1022790"
-  integrity sha512-w5kbyhdsUgB9IaCbSiK/UjiyPjWCgPq4ZFpzkUoSklu/XHZTQ78StQPwvExK83mzazA8RSgCZmOILKrwCt9srg==
+"@arcblock/graphql-client@^0.30.3":
+  version "0.30.3"
+  resolved "https://registry.npmjs.org/@arcblock/graphql-client/-/graphql-client-0.30.3.tgz#fc2d5ad560b9b90ec229d838d83c6aa11c156131"
+  integrity sha512-Dchn/50XYA0OZ/j/Kbl02xIrkCrDIYlz0dirTOwUEjZ3TDZLyPxPtA6t/8czK5fLffQZLynkk/xvtOsTJfOzpg==
   dependencies:
-    "@arcblock/forge-message" "^0.30.0"
-    "@arcblock/forge-proto" "^0.30.0"
+    "@arcblock/forge-message" "^0.30.3"
+    "@arcblock/forge-proto" "^0.30.3"
     "@arcblock/forge-util" "^0.30.0"
     "@arcblock/forge-wallet" "^0.30.0"
     "@arcblock/mcrypto" "^0.30.0"
@@ -92,14 +112,14 @@
     phoenix-channels "^1.0.0"
     wolfy87-eventemitter "^5.2.5"
 
-"@arcblock/grpc-client@^0.30.0":
-  version "0.30.0"
-  resolved "https://registry.npmjs.org/@arcblock/grpc-client/-/grpc-client-0.30.0.tgz#fdcc4a611785d937c61c8ef2d0a76bbb30802d87"
-  integrity sha512-YI5GYZXexVzsX8AF/d5IAdLwfzIWyG8GnByqY/6PX3kY+vVH4q6QC7UBUKUTIsKEQJD512JwAL2OBbESM7ytIg==
+"@arcblock/grpc-client@^0.30.3":
+  version "0.30.3"
+  resolved "https://registry.npmjs.org/@arcblock/grpc-client/-/grpc-client-0.30.3.tgz#aae779ac21a095253540308c3f1726f41daf4a19"
+  integrity sha512-627WCrBVok1Aak5r16q2muD6EUi/mmw/POox7k8zp8jW9EeRtvlitnsP0XjdeUWXtyFcAOY5qA7/Xha9/o3i/w==
   dependencies:
     "@arcblock/forge-config" "^0.30.0"
-    "@arcblock/forge-message" "^0.30.0"
-    "@arcblock/forge-proto" "^0.30.0"
+    "@arcblock/forge-message" "^0.30.3"
+    "@arcblock/forge-proto" "^0.30.3"
     "@arcblock/forge-util" "^0.30.0"
     "@arcblock/forge-wallet" "^0.30.0"
     "@arcblock/mcrypto" "^0.30.0"

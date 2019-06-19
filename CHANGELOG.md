@@ -1,3 +1,7 @@
+## 0.30.7 (June 18, 2019)
+
+- remove CONTRIBUTE from readme
+
 ## 0.30.6 (June 17, 2019)
 
 

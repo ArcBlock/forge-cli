@@ -1,3 +1,9 @@
+## 0.30.8 (June 21, 2019)
+
+- feat: allow user to specify platform and
+- fix: use centos release for all linux
+- chore: bump version
+
 ## 0.30.7 (June 18, 2019)
 
 - remove CONTRIBUTE from readme

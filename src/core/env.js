@@ -556,6 +556,13 @@ async function getForgeProcesses() {
 
 function getPlatform() {
   return new Promise((resolve, reject) => {
+    const platform = process.env.FORGE_CLI_PLATFORM;
+    if (platform && ['darwin', 'ubuntu', 'centos'].includes(platform)) {
+      shell.echo(`${symbols.info} Using user specified platform ${platform}`);
+      resolve(platform);
+      return;
+    }
+
     getos((err, info) => {
       if (err) {
         console.error(err);
@@ -580,9 +587,14 @@ function getPlatform() {
           return resolve('centos');
         }
 
-        return resolve('linux');
+        // TODO: centos and ubuntu are actually the same
+        return resolve('centos');
       }
 
+      shell.echo(
+        `${symbols.error} Oops, you are on a platform that forge currently does not support`
+      );
+      process.exit(1);
       return resolve(info.os);
     });
   });

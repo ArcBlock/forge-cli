@@ -1,6 +1,6 @@
 {
   "name": "@arcblock/forge-cli",
-  "version": "0.30.8",
+  "version": "0.31.0",
   "description": "a general set of CLI for arcblock Forge framework",
   "license": "Apache-2.0",
   "main": "src/index.js",
@@ -77,6 +77,7 @@
     "glob": "^7.1.2",
     "inquirer": "^5.2.0",
     "inquirer-autocomplete-prompt": "^0.12.2",
+    "is-elevated": "^3.0.0",
     "json-stringify-pretty-compact": "^1.2.0",
     "lodash": "^4.17.11",
     "log-symbols": "^2.2.0",
@@ -100,20 +101,20 @@
     "yargs": "^12.0.5"
   },
   "devDependencies": {
+    "bdd-stdin": "^0.2.0",
     "eslint": "5.3.0",
     "eslint-config-airbnb-base": "13.1.0",
     "eslint-config-prettier": "latest",
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-prettier": "latest",
     "husky": "^2.3.0",
+    "jest": "^24.7.1",
     "js2dts": "^0.3.3",
     "jsdoc": "^3.5.5",
     "lerna": "^3.3.2",
     "lint-staged": "^7.2.2",
     "prettier": "^1.6.1",
-    "set-npm-auth-token-for-ci": "^2.0.13",
-    "bdd-stdin": "^0.2.0",
-    "jest": "^24.7.1"
+    "set-npm-auth-token-for-ci": "^2.0.13"
   },
   "husky": {
     "hooks": {

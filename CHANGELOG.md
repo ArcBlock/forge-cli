@@ -1,3 +1,9 @@
+## 0.31.0 (June 24, 2019)
+
+- chore: add timeout for `forge start` and print error message on timeout #25
+- chore: prompt user not to start forge as root #23
+- chore: update unsupported platform warning
+
 ## 0.30.8 (June 21, 2019)
 
 - feat: allow user to specify platform and
@@ -10,25 +16,19 @@
 
 ## 0.30.6 (June 17, 2019)
 
-
 ## 0.30.5 (June 17, 2019)
 
-
 ## 0.30.4 (June 15, 2019)
-
 
 ## 0.30.3 (June 15, 2019)
 
 - fix: install error when env without yarn
 
-
 ## 0.30.2 (June 15, 2019)
 
 - fix: disable ipfs for logs
 
-
 ## 0.30.1 (June 14, 2019)
-
 
 ## 0.30.0 (June 13, 2019)
 
@@ -58,11 +58,9 @@
 
 ## 0.28.10 (June 05, 2019)
 
-
 ## 0.28.9 (June 05, 2019)
 
 - fix: npm publish issue on travis
-
 
 ## 0.28.5 (June 05, 2019)
 

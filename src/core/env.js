@@ -13,6 +13,7 @@ const pidUsageTree = require('pidusage-tree');
 const pidInfo = require('find-process');
 const prettyTime = require('pretty-ms');
 const prettyBytes = require('pretty-bytes');
+const isElevated = require('is-elevated');
 const figlet = require('figlet');
 const { get, set } = require('lodash');
 const GRpcClient = require('@arcblock/grpc-client');
@@ -57,6 +58,8 @@ const config = { cli: { requiredDirs } }; // global shared forge-cli run time co
  * @param {*} requirements
  */
 async function setupEnv(args, requirements) {
+  await ensureNonRoot();
+
   // Support evaluating requirements at runtime
   Object.keys(requirements).forEach(x => {
     if (typeof requirements[x] === 'function') {
@@ -433,6 +436,24 @@ function findReleaseVersion(releaseDir) {
   return fs
     .readdirSync(parentDir)
     .find(x => fs.statSync(path.join(parentDir, x)).isDirectory() && semver.valid(x));
+}
+
+async function ensureNonRoot() {
+  try {
+    if (await isElevated()) {
+      shell.echo(
+        `${symbols.error} ${chalk.red('Error: forge cannot be started with root permission')}`
+      );
+      shell.echo(
+        `${symbols.info} Checkout the following guide on how to run forge as non-root user`
+      );
+      shell.echo('https://github.com/sindresorhus/guides/blob/master/npm-global-without-sudo.md');
+      process.exit(77);
+    }
+  } catch (err) {
+    debug.error(err);
+    shell.echo(`${symbols.error} cannot get current username`);
+  }
 }
 
 /**

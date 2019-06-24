@@ -37,7 +37,7 @@ function isStarted(silent = false) {
   return false;
 }
 
-async function main({ opts: { multiple, debug: isDebugging } }) {
+async function main({ opts: { multiple, dryRun } }) {
   if (multiple && !process.env.FORGE_CONFIG) {
     shell.echo(`${symbols.error} start multiple chain requires provided custom config`);
     return;
@@ -56,7 +56,7 @@ async function main({ opts: { multiple, debug: isDebugging } }) {
   const command = `FORGE_CONFIG=${forgeConfigPath} FORGE_RELEASE=${getForgeReleaseEnv()} ${starterBinPath} start`;
   debug('start command', command);
 
-  if (isDebugging) {
+  if (dryRun) {
     shell.echo(`${symbols.info} Command to debug forge starting issue: `);
     shell.echo(hr);
     shell.echo(chalk.cyan(command));
@@ -104,7 +104,7 @@ async function main({ opts: { multiple, debug: isDebugging } }) {
     debug.error(err);
     spinner.fail('Error: forge cannot be successfully started within 30 seconds');
     shell.echo(`${symbols.info} It's very likely that forge cannot be started on your environment`);
-    shell.echo(`${symbols.info} Please run : ${chalk.cyan('forge start --debug')}`);
+    shell.echo(`${symbols.info} Please run : ${chalk.cyan('forge start --dry-run')}`);
   }
 }
 

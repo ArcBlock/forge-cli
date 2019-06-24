@@ -591,9 +591,7 @@ function getPlatform() {
         return resolve('centos');
       }
 
-      shell.echo(
-        `${symbols.error} Oops, you are on a platform that forge currently does not support`
-      );
+      shell.echo(`${symbols.error} Oops, ${info.os} is not supported by forge currently`);
       process.exit(1);
       return resolve(info.os);
     });

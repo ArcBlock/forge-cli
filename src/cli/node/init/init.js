@@ -196,6 +196,9 @@ async function main({ args: [userVersion], opts: { mirror } }) {
 
     const platform = await getPlatform();
     shell.echo(`${symbols.info} Detected platform is: ${platform}`);
+    if (mirror !== DEFAULT_MIRROR) {
+      shell.echo(`${symbols.info} Using custom mirror: ${mirror}`);
+    }
 
     const userVer =
       userVersion && semver.coerce(userVersion) ? semver.coerce(userVersion).version : '';

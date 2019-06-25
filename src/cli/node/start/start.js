@@ -114,23 +114,21 @@ function waitUntilStarted(timeout = 30000) {
       return resolve();
     }
 
+    let timeElapsed = 0;
+    const interval = 800;
     const timer = setInterval(() => {
       if (isStarted(true)) {
         clearInterval(timer);
         return resolve();
       }
-    }, 800);
 
-    setTimeout(() => {
-      if (isStarted(true)) {
-        if (timer) {
-          clearInterval(timer);
-        }
-        return resolve();
+      if (timeElapsed > timeout) {
+        clearInterval(timer);
+        reject(new Error(`forge is not started within ${timeout / 1000} seconds`));
       }
 
-      reject(new Error(`forge is not started within ${timeout / 1000} seconds`));
-    }, timeout);
+      timeElapsed += interval;
+    }, interval);
   });
 }
 

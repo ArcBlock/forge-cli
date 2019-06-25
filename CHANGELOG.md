@@ -1,3 +1,8 @@
+## 0.31.1 (June 25, 2019)
+
+- chore: polish readme
+- chore: update faq docs
+
 ## 0.31.0 (June 24, 2019)
 
 - chore: add timeout for `forge start` and print error message on timeout #25

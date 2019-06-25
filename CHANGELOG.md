@@ -7,6 +7,7 @@
 - chore: add timeout for `forge start` and print error message on timeout #25
 - chore: prompt user not to start forge as root #23
 - chore: update unsupported platform warning
+
 ## 0.30.9 (June 24, 2019)
 
 - add availability check on latest LTS version of Node.js

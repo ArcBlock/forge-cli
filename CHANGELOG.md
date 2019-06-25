@@ -1,3 +1,8 @@
+## 0.31.2 (June 25, 2019)
+
+- chore: polish readme
+- chore: update faq docs
+
 ## 0.31.1 (June 24, 2019)
 
 - chore: bump version

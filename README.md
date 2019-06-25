@@ -12,6 +12,7 @@
 ## Table of Contents
 
 - [Introduction](#introduction)
+- [QuickStart](#quickstart)
 - [Requirements](#requirements)
 - [Install](#install)
 - [Usage](#usage)
@@ -40,6 +41,10 @@
 
 - Linux/Mac Command Line, **windows is not support currently**, [iTerm](http://www.iterm2.com/) is recommended.
 - [Node.js](https://nodejs.org/): please install using [nvm](https://github.com/creationix/nvm), v8+
+
+## QuickStart
+
+[![asciicast](https://asciinema.org/a/253439.svg)](https://asciinema.org/a/253439){target="_blank"}
 
 ## Install
 

@@ -1,3 +1,8 @@
+## 0.31.3 (June 25, 2019)
+
+- fix: forge start wait too long
+- chore: add keywords in package.json
+
 ## 0.31.2 (June 25, 2019)
 
 - chore: polish readme
@@ -16,7 +21,6 @@
 ## 0.30.9 (June 24, 2019)
 
 - add availability check on latest LTS version of Node.js
-
 
 ## 0.30.8 (June 21, 2019)
 

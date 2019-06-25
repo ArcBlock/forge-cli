@@ -14,6 +14,14 @@
   "bin": {
     "forge": "bin/forge"
   },
+  "keywords": [
+    "arcblock",
+    "blockchain",
+    "node",
+    "forge",
+    "cli",
+    "tools"
+  ],
   "publishConfig": {
     "access": "public"
   },

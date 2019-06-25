@@ -8,6 +8,7 @@ install: false
 branches:
   only:
   - master
+before_script: npm install -g .
 script: make travis
 deploy:
 - provider: script

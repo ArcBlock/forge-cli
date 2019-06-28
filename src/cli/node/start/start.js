@@ -53,7 +53,7 @@ async function main({ opts: { multiple, dryRun } }) {
     return;
   }
 
-  const command = `FORGE_CONFIG=${forgeConfigPath} FORGE_RELEASE=${getForgeReleaseEnv()} ${starterBinPath} start`;
+  const command = `FORGE_CONFIG=${forgeConfigPath} FORGE_RELEASE=${getForgeReleaseEnv()} ${starterBinPath} daemon`;
   debug('start command', command);
 
   if (dryRun) {

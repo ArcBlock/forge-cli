@@ -578,7 +578,7 @@ async function getForgeProcesses() {
 function getPlatform() {
   return new Promise((resolve, reject) => {
     const platform = process.env.FORGE_CLI_PLATFORM;
-    if (platform && ['darwin', 'ubuntu', 'centos'].includes(platform)) {
+    if (platform && ['darwin', 'centos'].includes(platform)) {
       shell.echo(`${symbols.info} Using user specified platform ${platform}`);
       resolve(platform);
       return;
@@ -595,20 +595,6 @@ function getPlatform() {
       }
 
       if (info.os === 'linux') {
-        if (/ubuntu/i.test(info.dist)) {
-          return resolve('ubuntu');
-        }
-
-        if (/centos/i.test(info.dist)) {
-          return resolve('centos');
-        }
-
-        // Amazon linux
-        if (/amzn/i.test(os.release())) {
-          return resolve('centos');
-        }
-
-        // TODO: centos and ubuntu are actually the same
         return resolve('centos');
       }
 

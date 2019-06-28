@@ -3,7 +3,7 @@ const shell = require('shelljs');
 const { runNativeWebCommand, webUrl, debug, sleep } = require('core/env');
 const { symbols } = require('core/ui');
 
-const startWebUI = runNativeWebCommand('start', { silent: true });
+const startWebUI = runNativeWebCommand('daemon', { silent: true });
 const stopWebUI = runNativeWebCommand('stop', { silent: true });
 const pidWebUI = runNativeWebCommand('pid', { silent: true });
 

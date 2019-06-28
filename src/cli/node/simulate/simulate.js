@@ -3,7 +3,7 @@ const chalk = require('chalk');
 const { symbols } = require('core/ui');
 const { runNativeSimulatorCommand } = require('core/env');
 
-const startSimulator = runNativeSimulatorCommand('foreground');
+const startSimulator = runNativeSimulatorCommand('start');
 const stopSimulator = runNativeSimulatorCommand('stop');
 const getSimulatorPid = runNativeSimulatorCommand('pid', { silent: true });
 

@@ -3,7 +3,7 @@ const shell = require('shelljs');
 const { runNativeWorkshopCommand, debug, sleep } = require('core/env');
 const { symbols } = require('core/ui');
 
-const startWorkshop = runNativeWorkshopCommand('start', { silent: true });
+const startWorkshop = runNativeWorkshopCommand('daemon', { silent: true });
 const stopWorkshop = runNativeWorkshopCommand('stop', { silent: true });
 const pidWorkshop = runNativeWorkshopCommand('pid', { silent: true });
 const workshopUrl = 'http://127.0.0.1:8807';

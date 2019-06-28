@@ -5,7 +5,7 @@ const chalk = require('chalk');
 const { symbols, hr, getSpinner } = require('core/ui');
 const { config, debug, sleep, runNativeWebCommand } = require('core/env');
 
-const startForgeWeb = runNativeWebCommand('start', { silent: true });
+const startForgeWeb = runNativeWebCommand('daemon', { silent: true });
 
 function getForgeReleaseEnv() {
   if (process.env.FORGE_RELEASE && fs.existsSync(process.env.FORGE_RELEASE)) {
@@ -84,7 +84,7 @@ async function main({ opts: { multiple, dryRun } }) {
     shell.echo('');
     shell.echo(
       `${symbols.info} If you want to access interactive console, please run ${chalk.cyan(
-        `${forgeBinPath} remote_console`
+        `${forgeBinPath} remote`
       )}`
     );
     shell.echo(

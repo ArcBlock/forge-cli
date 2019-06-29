@@ -1,28 +1,29 @@
 /* eslint-disable consistent-return */
 const shell = require('shelljs');
 const { symbols, getSpinner } = require('core/ui');
-const { config, getForgeProcesses, sleep, runNativeWebCommand } = require('core/env');
+const {
+  config,
+  getForgeProcesses,
+  findServicePid,
+  sleep,
+  runNativeWebCommand,
+} = require('core/env');
 
 const stopForgeWeb = runNativeWebCommand('stop', { silent: true });
 
-function isStopped() {
-  const { starterBinPath, forgeConfigPath } = config.get('cli');
-  const { stdout: pid } = shell.exec(`FORGE_CONFIG=${forgeConfigPath} ${starterBinPath} pid`, {
-    silent: true,
-  });
-
-  const pidNumber = Number(pid);
-  return !!pidNumber;
+async function isStopped() {
+  const pid = await findServicePid('forge_starter');
+  return !pid;
 }
 
 function waitUntilStopped() {
-  return new Promise(resolve => {
-    if (isStopped(true)) {
+  return new Promise(async resolve => {
+    if (await isStopped(true)) {
       return resolve();
     }
 
-    const timer = setInterval(() => {
-      if (isStopped(true)) {
+    const timer = setInterval(async () => {
+      if (await isStopped(true)) {
         clearInterval(timer);
         return resolve();
       }

@@ -1,20 +1,9 @@
 /* eslint no-case-declarations:"off" */
 const shell = require('shelljs');
-const { runNativeWebCommand, webUrl, debug, sleep } = require('core/env');
+const { runNativeWebCommand, findServicePid, webUrl, sleep } = require('core/env');
 const { symbols } = require('core/ui');
 
 const startWebUI = runNativeWebCommand('daemon', { silent: true });
-const stopWebUI = runNativeWebCommand('stop', { silent: true });
-const pidWebUI = runNativeWebCommand('pid', { silent: true });
-
-function isForgeWebStarted() {
-  const { stdout } = pidWebUI();
-  if (Number(stdout)) {
-    return true;
-  }
-
-  return false;
-}
 
 function processOutput(output, action) {
   if (/:error/.test(output)) {
@@ -29,29 +18,41 @@ function processOutput(output, action) {
 }
 
 async function main({ args: [action = 'none'], opts }) {
+  const pid = await findServicePid('forge_web');
   /* eslint-disable indent */
   switch (action) {
     case 'none':
       shell.exec('forge web -h --color always');
       break;
     case 'start':
+      if (!pid) {
+        shell.echo(`${symbols.info} forge web already started`);
+        process.exit(0);
+        return;
+      }
+
       const { stdout, stderr } = startWebUI();
       processOutput(stdout || stderr, action);
       shell.echo(`${symbols.info} forge web running at:     ${webUrl()}`);
       shell.echo(`${symbols.info} graphql endpoint at:      ${webUrl()}/api`);
-      shell.echo(`${symbols.info} graphql playground at:    ${webUrl()}/api/playground`);
       break;
     case 'stop':
-      const { stdout: stdout2, stderr: stderr2 } = stopWebUI();
-      debug('stop', { stdout2, stderr2 });
-      processOutput(stdout2 || stderr2, action);
+      if (!pid) {
+        shell.echo(`${symbols.info} forge web not started yet`);
+        process.exit(1);
+        return;
+      }
+
+      shell.echo('Stopping forge web...');
+      shell.exec(`kill ${pid}`);
       break;
     case 'open':
-      if (isForgeWebStarted() === false) {
+      if (!pid) {
         shell.echo(`${symbols.info} forge web not started yet`);
         await main({ args: ['start'] });
         await sleep(2000);
       }
+
       const url = opts.graphql ? `${webUrl()}/api/playground` : webUrl();
       shell.echo(`Opening ${url}...`);
       shell.exec(`open ${url}`);

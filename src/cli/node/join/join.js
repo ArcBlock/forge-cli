@@ -5,7 +5,7 @@ const shell = require('shelljs');
 const chalk = require('chalk');
 const inquirer = require('inquirer');
 const GraphQLClient = require('@arcblock/graphql-client');
-const { config } = require('core/env');
+const { config, findServicePid } = require('core/env');
 const { symbols } = require('core/ui');
 
 async function main({ args: [endpoint = ''] }) {
@@ -17,13 +17,8 @@ async function main({ args: [endpoint = ''] }) {
   }
 
   // Confirm stopped
-  const { starterBinPath, forgeConfigPath } = config.get('cli');
-  const { stdout: pid } = shell.exec(`FORGE_CONFIG=${forgeConfigPath} ${starterBinPath} pid`, {
-    silent: true,
-  });
-
-  const pidNumber = Number(pid);
-  if (pidNumber) {
+  const pid = await findServicePid('forge_starter');
+  if (pid) {
     shell.echo(`${symbols.error} forge is running!`);
     shell.echo(
       `${symbols.info} Please run ${chalk.cyan('forge stop')} first, then join another network!`
@@ -44,6 +39,7 @@ async function main({ args: [endpoint = ''] }) {
     },
   ];
   const { confirm } = await inquirer.prompt(questions);
+  const { forgeConfigPath } = config.get('cli');
   const myConfig = toml.parse(fs.readFileSync(forgeConfigPath).toString());
   if (confirm) {
     const oldDir = path.dirname(myConfig.forge.path);

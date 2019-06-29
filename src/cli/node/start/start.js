@@ -3,7 +3,7 @@ const fs = require('fs');
 const shell = require('shelljs');
 const chalk = require('chalk');
 const { symbols, hr, getSpinner } = require('core/ui');
-const { config, debug, sleep, runNativeWebCommand } = require('core/env');
+const { config, debug, sleep, runNativeWebCommand, findServicePid } = require('core/env');
 
 const startForgeWeb = runNativeWebCommand('daemon', { silent: true });
 
@@ -15,18 +15,10 @@ function getForgeReleaseEnv() {
   return config.get('cli.forgeReleaseDir');
 }
 
-function isStarted(silent = false) {
-  const { starterBinPath, forgeConfigPath } = config.get('cli');
-  const { stdout: pid } = shell.exec(
-    `FORGE_CONFIG=${forgeConfigPath} FORGE_RELEASE=${getForgeReleaseEnv()} ${starterBinPath} pid`,
-    {
-      silent: true,
-    }
-  );
-
-  const pidNumber = Number(pid);
-  debug('node.start.isStarted', { pidNumber, pid });
-  if (pidNumber) {
+async function isStarted(silent = false) {
+  const pid = await findServicePid('forge_starter');
+  debug('node.start.isStarted', { pid });
+  if (pid) {
     if (silent === false) {
       shell.echo(`${symbols.info} forge is already started!`);
       shell.echo(`${symbols.info} Please run ${chalk.cyan('forge stop')} first!`);
@@ -43,7 +35,7 @@ async function main({ opts: { multiple, dryRun } }) {
     return;
   }
 
-  if (!multiple && isStarted()) {
+  if (!multiple && (await isStarted())) {
     return;
   }
 
@@ -109,15 +101,15 @@ async function main({ opts: { multiple, dryRun } }) {
 }
 
 function waitUntilStarted(timeout = 30000) {
-  return new Promise((resolve, reject) => {
-    if (isStarted(true)) {
+  return new Promise(async (resolve, reject) => {
+    if (await isStarted(true)) {
       return resolve();
     }
 
     let timeElapsed = 0;
     const interval = 800;
-    const timer = setInterval(() => {
-      if (isStarted(true)) {
+    const timer = setInterval(async () => {
+      if (await isStarted(true)) {
         clearInterval(timer);
         return resolve();
       }

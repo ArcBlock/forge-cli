@@ -10,7 +10,7 @@ const shell = require('shelljs');
 const semver = require('semver');
 const inquirer = require('inquirer');
 const pidUsageTree = require('pidusage-tree');
-const pidInfo = require('find-process');
+const findProcess = require('find-process');
 const prettyTime = require('pretty-ms');
 const prettyBytes = require('pretty-bytes');
 const isElevated = require('is-elevated');
@@ -248,13 +248,8 @@ function ensureForgeRelease(args, exitOn404 = true) {
 }
 
 async function ensureRunningNode() {
-  const { starterBinPath, forgeConfigPath } = config.cli;
-  const { stdout: pid } = shell.exec(`FORGE_CONFIG=${forgeConfigPath} ${starterBinPath} pid`, {
-    silent: true,
-  });
-
-  const pidNumber = Number(pid);
-  if (!pidNumber) {
+  const pid = await findServicePid('forge_starter');
+  if (!pid) {
     shell.echo(`${symbols.error} forge is not started yet!`);
     shell.echo(`${symbols.info} Please run ${chalk.cyan('forge start')} first!`);
     process.exit(0);
@@ -528,23 +523,18 @@ function makeNativeCommandRunner(executable) {
 }
 
 async function getForgeProcesses() {
-  const { starterBinPath, forgeConfigPath } = config.cli;
-  const { stdout: pid } = shell.exec(`FORGE_CONFIG=${forgeConfigPath} ${starterBinPath} pid`, {
-    silent: true,
-  });
-
-  const pidNumber = Number(pid);
-  if (!pidNumber) {
+  const pid = await findServicePid('forge_starter');
+  if (!pid) {
     return [];
   }
 
-  debug(`${symbols.info} forge pid: ${pidNumber}`);
+  debug(`${symbols.info} forge pid: ${pid}`);
   try {
-    const processes = await pidUsageTree(pidNumber);
+    const processes = await pidUsageTree(pid);
     const results = await Promise.all(
       Object.values(processes).map(async x => {
         try {
-          const [info] = await pidInfo('pid', x.pid);
+          const [info] = await findProcess('pid', x.pid);
           Object.assign(x, info);
           debug(`${symbols.info} forge managed process info: `, x);
         } catch (err) {
@@ -555,14 +545,26 @@ async function getForgeProcesses() {
       })
     );
 
-    // Find app process with app command
-    const command = config.app ? config.app.executable : '';
-    const pattern = new RegExp(command, 'i');
+    const getProcessName = x => {
+      if (x.cmd.indexOf('/forge_starter/') > 0 && x.cmd.indexOf('/bin/beam.smp') > 0) {
+        return 'starter';
+      }
+
+      if (x.cmd.indexOf('/forge/') > 0 && x.cmd.indexOf('/bin/beam.smp') > 0) {
+        return 'forge';
+      }
+
+      if (x.cmd.indexOf('/tendermint/') > 0) {
+        return 'tendermint';
+      }
+
+      return x.name.replace(path.extname(x.name), '').replace(/^forge_/, '');
+    };
 
     return results
-      .filter(x => /(forge|tendermint|ipfs)/.test(x.name) || (command && pattern.test(x.cmd)))
+      .filter(x => /(forge|tendermint|beam.smp)/.test(x.name))
       .map(x => ({
-        name: x.name.replace(path.extname(x.name), '').replace(/^forge_/, ''),
+        name: getProcessName(x),
         pid: x.pid,
         uptime: prettyTime(x.elapsed),
         memory: prettyBytes(x.memory),
@@ -667,6 +669,12 @@ function checkUpdate() {
   }
 }
 
+async function findServicePid(n) {
+  const list = await findProcess('name', n);
+  const match = list.find(x => x.name === 'beam.smp');
+  return match ? match.pid : 0;
+}
+
 debug.error = (...args) => {
   if (debug.enabled) {
     console.error(...args);
@@ -707,6 +715,7 @@ module.exports = {
   runNativeStarterCommand: makeNativeCommandRunner('starterBinPath'),
   runNativeSimulatorCommand: makeNativeCommandRunner('simulatorBinPath'),
   getForgeProcesses,
+  findServicePid,
   getPlatform,
   createRpcClient,
   isDirectory,

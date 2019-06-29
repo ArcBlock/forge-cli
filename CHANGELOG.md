@@ -1,3 +1,10 @@
+## 0.32.0 (June 29, 2019)
+
+- fix: elixir binary pid subcommand issue #32
+- fix: forge start command change to daemon #32
+- chore: update elixir binary start command #32
+- chore: use centos release for all linux distributions #33
+
 ## 0.31.3 (June 25, 2019)
 
 - fix: forge start wait too long

@@ -1,21 +1,10 @@
 /* eslint no-case-declarations:"off" */
 const shell = require('shelljs');
-const { runNativeWorkshopCommand, debug, sleep } = require('core/env');
+const { runNativeWorkshopCommand, findServicePid, sleep } = require('core/env');
 const { symbols } = require('core/ui');
 
-const startWorkshop = runNativeWorkshopCommand('start', { silent: true });
-const stopWorkshop = runNativeWorkshopCommand('stop', { silent: true });
-const pidWorkshop = runNativeWorkshopCommand('pid', { silent: true });
+const startWorkshop = runNativeWorkshopCommand('daemon', { silent: true });
 const workshopUrl = 'http://127.0.0.1:8807';
-
-function isWorkshopStarted() {
-  const { stdout } = pidWorkshop();
-  if (Number(stdout)) {
-    return true;
-  }
-
-  return false;
-}
 
 function processOutput(output, action) {
   if (/:error/.test(output)) {
@@ -30,23 +19,35 @@ function processOutput(output, action) {
 }
 
 async function main({ args: [action = 'none'] }) {
+  const pid = await findServicePid('forge_workshop');
+
   /* eslint-disable indent */
   switch (action) {
     case 'none':
       shell.exec('forge workshop -h --color always');
       break;
     case 'start':
+      if (!pid) {
+        shell.echo(`${symbols.info} forge workshop already started`);
+        process.exit(0);
+        return;
+      }
+
       const { stdout, stderr } = startWorkshop();
       processOutput(stdout || stderr, action);
       shell.echo(`${symbols.info} forge workshop running at: ${workshopUrl}`);
       break;
     case 'stop':
-      const { stdout: stdout2, stderr: stderr2 } = stopWorkshop();
-      debug('stop', { stdout2, stderr2 });
-      processOutput(stdout2 || stderr2, action);
+      if (!pid) {
+        shell.echo(`${symbols.info} forge web not started yet`);
+        process.exit(1);
+        return;
+      }
+      shell.echo('Stopping forge workshop...');
+      shell.exec(`kill ${pid}`);
       break;
     case 'open':
-      if (isWorkshopStarted() === false) {
+      if (!pid) {
         shell.echo(`${symbols.info} forge workshop not started yet`);
         await main({ args: ['start'] });
         await sleep(2000);

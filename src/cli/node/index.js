@@ -5,7 +5,6 @@ exports.join = require('./join');
 exports.logs = require('./logs');
 exports.ps = require('./ps');
 exports.reset = require('./reset');
-exports.restart = require('./restart');
 exports.simulate = require('./simulate');
 exports.start = require('./start');
 exports.state = require('./state');

@@ -1,18 +1,12 @@
 const shell = require('shelljs');
 const chalk = require('chalk');
 const inquirer = require('inquirer');
-const { config } = require('core/env');
+const { findServicePid } = require('core/env');
 const { symbols } = require('core/ui');
 
 async function main({ opts: { yes } }) {
-  // Confirm stopped
-  const { starterBinPath, forgeConfigPath } = config.get('cli');
-  const { stdout: pid } = shell.exec(`FORGE_CONFIG=${forgeConfigPath} ${starterBinPath} pid`, {
-    silent: true,
-  });
-
-  const pidNumber = Number(pid);
-  if (pidNumber) {
+  const pid = await findServicePid('forge_starter');
+  if (pid) {
     shell.echo(`${symbols.error} forge is running!`);
     shell.echo(`${symbols.info} Please run ${chalk.cyan('forge stop')} first, then we can reset!`);
     process.exit(0);

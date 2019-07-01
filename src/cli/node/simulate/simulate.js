@@ -1,17 +1,14 @@
 const shell = require('shelljs');
 const chalk = require('chalk');
 const { symbols } = require('core/ui');
-const { runNativeSimulatorCommand } = require('core/env');
+const { runNativeSimulatorCommand, findServicePid } = require('core/env');
 
-const startSimulator = runNativeSimulatorCommand('start');
-const stopSimulator = runNativeSimulatorCommand('stop');
-const getSimulatorPid = runNativeSimulatorCommand('pid', { silent: true });
+const startSimulator = runNativeSimulatorCommand('daemon');
 
 async function main({ args: [action = 'start'] }) {
-  const { stdout } = getSimulatorPid();
-  const pidNumber = Number(stdout);
+  const pid = await findServicePid('simulator');
   if (action === 'start') {
-    if (pidNumber) {
+    if (pid) {
       shell.echo(`${symbols.error} simulator is already started!`);
       process.exit(0);
     } else {
@@ -21,8 +18,8 @@ async function main({ args: [action = 'start'] }) {
   }
 
   if (action === 'stop') {
-    if (pidNumber) {
-      stopSimulator();
+    if (pid) {
+      shell.exec(`kill ${pid}`);
       shell.echo(`${symbols.success} Simulator stopped`);
     } else {
       shell.echo(`${symbols.error} simulator is not started yet!`);

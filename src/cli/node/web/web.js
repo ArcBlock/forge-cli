@@ -19,13 +19,14 @@ function processOutput(output, action) {
 
 async function main({ args: [action = 'none'], opts }) {
   const pid = await findServicePid('forge_web');
+
   /* eslint-disable indent */
   switch (action) {
     case 'none':
       shell.exec('forge web -h --color always');
       break;
     case 'start':
-      if (!pid) {
+      if (pid) {
         shell.echo(`${symbols.info} forge web already started`);
         process.exit(0);
         return;

@@ -1,3 +1,9 @@
+## 0.32.1 (July 01, 2019)
+
+- chore: update simulator related commands
+- fix: forge workshop start command
+- fix: forge web start command
+
 ## 0.32.0 (June 29, 2019)
 
 - fix: elixir binary pid subcommand issue #32

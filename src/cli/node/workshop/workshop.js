@@ -27,7 +27,7 @@ async function main({ args: [action = 'none'] }) {
       shell.exec('forge workshop -h --color always');
       break;
     case 'start':
-      if (!pid) {
+      if (pid) {
         shell.echo(`${symbols.info} forge workshop already started`);
         process.exit(0);
         return;

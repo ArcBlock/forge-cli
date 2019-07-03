@@ -9,5 +9,6 @@ exports.simulate = require('./simulate');
 exports.start = require('./start');
 exports.state = require('./state');
 exports.stop = require('./stop');
+exports.upgrade = require('./upgrade');
 exports.web = require('./web');
 exports.workshop = require('./workshop');

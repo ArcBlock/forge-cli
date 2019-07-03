@@ -1,3 +1,11 @@
+## 0.32.2 (July 03, 2019)
+
+- feat: support forge upgrade command
+- chore: refactor protocol deploy command for upgrade command
+- chore: add one possible solution to start failure
+- chore: cleanup useless dependency and upgrade forge-sdk
+- fix: inconsistency pid detecting logic on `forge init` and `forge stop` #36
+
 ## 0.32.1 (July 01, 2019)
 
 - chore: update simulator related commands

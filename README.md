@@ -93,11 +93,11 @@ Commands:
   logs|log [type]                       Show logs for various forge components
   ps                                    List application status for forge (includes tendermint and ipfs)
   reset [options]                       Reset current chain state, run with caution
-  restart [app]                         Restart the forge managed applications: core/app/tendermint/ipfs
   simulate|simulator [action]           Start/stop simulator and generate some random data
   start [options]                       Start forge as a daemon in the background
   state|status [type]                   List the information of the chain and the node, chain|core|net|validator|web
   stop                                  Stop the forge daemon (forge-core, forge-app, consensus engine, storage engine)
+  upgrade                               Upgrade chain node to new version without reset
   web [options] [action]                Start or stop the web UI of running forge node
   workshop [action]                     Start or stop the did workshop
   create-project [options] [targetDir]  Create a project from forge starter projects

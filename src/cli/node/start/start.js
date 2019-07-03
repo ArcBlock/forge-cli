@@ -95,8 +95,20 @@ async function main({ opts: { multiple, dryRun } }) {
   } catch (err) {
     debug.error(err);
     spinner.fail('Error: forge cannot be successfully started within 30 seconds');
-    shell.echo(`${symbols.info} It's very likely that forge cannot be started on your environment`);
-    shell.echo(`${symbols.info} Please run : ${chalk.cyan('forge start --dry-run')}`);
+    shell.echo('');
+    shell.echo(`${symbols.info} Possible solutions:`);
+    shell.echo(hr);
+    shell.echo('1. Cleanup already running forge');
+    shell.echo('Ensure no running forge process that cannot be detected by forge-cli');
+    shell.echo(
+      `Run: ${chalk.cyan(
+        'ps aux | grep forge'
+      )}, and kill forge related process then try ${chalk.cyan('forge start')} again`
+    );
+    shell.echo('');
+    shell.echo('2. Report bug to our engineer');
+    shell.echo('It is very likely that forge cannot be started on your environment');
+    shell.echo(`Please run: ${chalk.cyan('forge start --dry-run')}`);
   }
 }
 

@@ -2,9 +2,8 @@ const path = require('path');
 const shell = require('shelljs');
 const chalk = require('chalk');
 const base64 = require('base64-url');
-const Mcrypto = require('@arcblock/mcrypto');
 const { toItxAddress } = require('@arcblock/did-util');
-const { fromSecretKey, WalletType } = require('@arcblock/forge-wallet');
+const { fromSecretKey } = require('@arcblock/forge-wallet');
 const { bytesToHex, isHexStrict } = require('@arcblock/forge-util');
 const { symbols } = require('core/ui');
 const { isFile, debug, createRpcClient } = require('core/env');
@@ -45,6 +44,16 @@ function ensureModeratorDeclared(client, address) {
   });
 }
 
+const ensureModerator = async client => {
+  const sk = ensureModeratorSecretKey();
+  const moderator = fromSecretKey(sk);
+  shell.echo(`${symbols.info} moderator address ${moderator.toAddress()}`);
+
+  await ensureModeratorDeclared(client, moderator.toAddress());
+  shell.echo(`${symbols.success} moderator declared on chain`);
+  return moderator;
+};
+
 async function main({ args: [itxPath] }) {
   try {
     const itxFile = path.resolve(itxPath);
@@ -53,21 +62,10 @@ async function main({ args: [itxPath] }) {
       process.exit(1);
     }
 
-    const type = WalletType({
-      role: Mcrypto.types.RoleType.ROLE_ACCOUNT,
-      pk: Mcrypto.types.KeyType.ED25519,
-      hash: Mcrypto.types.HashType.SHA3,
-    });
-
-    const sk = ensureModeratorSecretKey();
-    const moderator = fromSecretKey(sk, type);
-    shell.echo(`${symbols.info} moderator address ${moderator.toAddress()}`);
-
     const client = createRpcClient();
-    await ensureModeratorDeclared(client, moderator.toAddress());
+    const moderator = await ensureModerator(client);
     // eslint-disable-next-line no-underscore-dangle
     shell.echo(`${symbols.info} deploy protocol to ${client._endpoint}`);
-    shell.echo(`${symbols.success} moderator declared on chain`);
 
     // eslint-disable-next-line
     const json = require(itxFile);
@@ -103,3 +101,4 @@ async function main({ args: [itxPath] }) {
 
 exports.run = main;
 exports.execute = main;
+exports.ensureModerator = ensureModerator;

@@ -221,7 +221,7 @@ function ensureForgeRelease(args, exitOn404 = true) {
         );
         shell.echo(hr);
         shell.echo(
-          `1. run ${chalk.cyan('ps aux | grep forge')}, and kill all forge related process`
+          `1. run ${chalk.cyan('ps aux | grep forge')}, and kill all forge related processes`
         );
         shell.echo(`2. cleanup forge release dir: ${chalk.cyan('rm -rf ~/.forge_release')}`);
         shell.echo(`3. cleanup forge cli dir: ${chalk.cyan('rm -rf ~/.forge_cli')}`);

@@ -220,9 +220,12 @@ function ensureForgeRelease(args, exitOn404 = true) {
           `${symbols.info} if you want to use forge-cli@${version}, please following below steps:`
         );
         shell.echo(hr);
-        shell.echo(`1. stop running forge instance: ${chalk.cyan('forge stop')}`);
-        shell.echo(`2. cleanup forge release dir: ${chalk.cyan('forge reset --yes')}`);
-        shell.echo(`3. install latest version of forge: ${chalk.cyan('forge init')}`);
+        shell.echo(
+          `1. run ${chalk.cyan('ps aux | grep forge')}, and kill all forge related process`
+        );
+        shell.echo(`2. cleanup forge release dir: ${chalk.cyan('rm -rf ~/.forge_release')}`);
+        shell.echo(`3. cleanup forge cli dir: ${chalk.cyan('rm -rf ~/.forge_cli')}`);
+        shell.echo(`4. install latest forge: ${chalk.cyan('forge init')}`);
         process.exit(1);
       }
     } else if (exitOn404) {

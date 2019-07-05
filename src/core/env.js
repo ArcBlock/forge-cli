@@ -226,6 +226,7 @@ function ensureForgeRelease(args, exitOn404 = true) {
         shell.echo(`2. cleanup forge release dir: ${chalk.cyan('rm -rf ~/.forge_release')}`);
         shell.echo(`3. cleanup forge cli dir: ${chalk.cyan('rm -rf ~/.forge_cli')}`);
         shell.echo(`4. install latest forge: ${chalk.cyan('forge init')}`);
+        shell.echo(`5. start latest forge: ${chalk.cyan('forge start')}`);
         process.exit(1);
       }
     } else if (exitOn404) {

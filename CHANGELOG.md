@@ -1,3 +1,7 @@
+## 0.32.3 (July 05, 2019)
+
+- fix: forge version requirement tip
+
 ## 0.32.2 (July 03, 2019)
 
 - feat: support forge upgrade command

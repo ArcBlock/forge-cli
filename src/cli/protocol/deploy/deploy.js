@@ -2,12 +2,11 @@ const path = require('path');
 const shell = require('shelljs');
 const chalk = require('chalk');
 const base64 = require('base64-url');
-const Mcrypto = require('@arcblock/mcrypto');
 const { toItxAddress } = require('@arcblock/did-util');
-const { fromSecretKey, WalletType } = require('@arcblock/forge-wallet');
+const { fromSecretKey } = require('@arcblock/forge-wallet');
 const { bytesToHex, isHexStrict } = require('@arcblock/forge-util');
 const { symbols } = require('core/ui');
-const { isFile, debug, createRpcClient } = require('core/env');
+const { isFile, debug, config, sleep, createRpcClient } = require('core/env');
 
 function ensureModeratorSecretKey() {
   const sk = process.env.FORGE_MODERATOR_SK;
@@ -24,26 +23,64 @@ function ensureModeratorSecretKey() {
   return bytesToHex(Buffer.from(base64.unescape(sk), 'base64'));
 }
 
-function ensureModeratorDeclared(client, address) {
+function ensureModeratorDeclared(client, wallet) {
   return new Promise((resolve, reject) => {
-    const stream = client.getAccountState({ address });
+    const stream = client.getAccountState({ address: wallet.toAddress() });
     let account = null;
     stream.on('data', ({ code, state }) => {
       if (code === 0 && state) {
         account = state;
       }
     });
-    stream.on('end', () => {
+    stream.on('end', async () => {
       if (account) {
         resolve(account);
       } else {
-        reject(new Error('Moderator account not declared'));
+        const hash = await client.sendDeclareTx({
+          tx: {
+            itx: { moniker: 'moderator' },
+          },
+          wallet,
+        });
+        shell.echo(`${symbols.info} moderator declared ${hash}`);
+        resolve(hash);
       }
     });
 
     stream.on('error', reject);
   });
 }
+
+// eslint-disable-next-line consistent-return
+const ensureModerator = async client => {
+  const sk = ensureModeratorSecretKey();
+  const moderator = fromSecretKey(sk);
+  shell.echo(`${symbols.info} moderator address ${moderator.toAddress()}`);
+
+  if (!config.get('forge.moderator.address')) {
+    shell.echo(`${symbols.error} Abort because forge.moderator is not set in config file`);
+    shell.echo(
+      `${symbols.info} please add ${chalk.cyan('forge.moderator.address')} and ${chalk.cyan(
+        'forge.moderator.publicKey'
+      )} in config file ${chalk.cyan(config.get('cli.forgeConfigPath'))}`
+    );
+    shell.echo(`
+# Example
+[forge.moderator]
+address = "z1VFy8hB9ndynkWAAH9P1a2L5WaU7AvtKGy"
+publicKey = "WUtmovNw_DfkDPaffxQc7JjGQ9qOB85hOoC6Oi8an9k"
+`);
+    process.exit(1);
+  }
+
+  try {
+    await ensureModeratorDeclared(client, moderator);
+    shell.echo(`${symbols.success} moderator declared on chain`);
+    return moderator;
+  } catch (err) {
+    shell.echo(`${symbols.error} ${err.message}`);
+  }
+};
 
 async function main({ args: [itxPath] }) {
   try {
@@ -53,21 +90,14 @@ async function main({ args: [itxPath] }) {
       process.exit(1);
     }
 
-    const type = WalletType({
-      role: Mcrypto.types.RoleType.ROLE_ACCOUNT,
-      pk: Mcrypto.types.KeyType.ED25519,
-      hash: Mcrypto.types.HashType.SHA3,
-    });
-
-    const sk = ensureModeratorSecretKey();
-    const moderator = fromSecretKey(sk, type);
-    shell.echo(`${symbols.info} moderator address ${moderator.toAddress()}`);
-
     const client = createRpcClient();
-    await ensureModeratorDeclared(client, moderator.toAddress());
+    const moderator = await ensureModerator(client);
+    if (!moderator) {
+      return;
+    }
+
     // eslint-disable-next-line no-underscore-dangle
     shell.echo(`${symbols.info} deploy protocol to ${client._endpoint}`);
-    shell.echo(`${symbols.success} moderator declared on chain`);
 
     // eslint-disable-next-line
     const json = require(itxFile);
@@ -94,6 +124,7 @@ async function main({ args: [itxPath] }) {
       wallet: moderator,
     });
     shell.echo(`${symbols.success} transaction protocol deploy success`);
+    await sleep(5000);
     shell.echo(`${symbols.info} inspect tx with ${chalk.cyan(`forge tx ${hash}`)}`);
   } catch (err) {
     debug.error(err);
@@ -103,3 +134,4 @@ async function main({ args: [itxPath] }) {
 
 exports.run = main;
 exports.execute = main;
+exports.ensureModerator = ensureModerator;

@@ -1,13 +1,11 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable consistent-return */
-// const wget = require('wget');
 const fs = require('fs');
 const path = require('path');
 const yaml = require('yaml');
 const shell = require('shelljs');
 const chalk = require('chalk');
 const semver = require('semver');
-const findProcess = require('find-process');
 const { symbols, hr, getSpinner, getProgress } = require('core/ui');
 const {
   config,
@@ -18,14 +16,15 @@ const {
   findReleaseConfigOld,
   getPlatform,
   printLogo,
+  findServicePid,
   RELEASE_ASSETS,
   DEFAULT_MIRROR,
 } = require('core/env');
 
 async function isForgeStopped() {
-  const processes = await findProcess('name', 'forge.sh');
-  debug('Running forge process', processes);
-  if (processes.length) {
+  const pid = await findServicePid('forge_starter');
+  debug('Running forge pid', pid);
+  if (pid) {
     shell.echo(`${symbols.error} forge is running, reinitialize will break things!`);
     shell.echo(`${symbols.info} To reinitialize, please run ${chalk.cyan('forge stop')} first!`);
     return false;

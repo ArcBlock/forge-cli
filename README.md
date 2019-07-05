@@ -1,13 +1,6 @@
-<h1 align="center">@arcblock/forge-cli</h1> <br>
-<p align="center">
-  <a href="https://www.arcblock.io/">
-    <img alt="ArcBlock" title="ArcBlock" src="https://raw.github.com/ArcBlock/forge-cli/master/docs/logo.png" width="234">
-  </a>
-</p>
+![forge-cli](https://www.arcblock.io/.netlify/functions/badge/?text=Forge%20CLI)
 
-<p align="center">
-  Command line toolbox that helps developers to work with <a href="https://docs.arcblock.io/forge/latest/">ArcBlock Forge SDK</a>
-</p>
+> Command line toolbox that helps developers to work with [ArcBlock Forge SDK](https://docs.arcblock.io/forge/latest/)
 
 ## Table of Contents
 

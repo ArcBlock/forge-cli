@@ -35,11 +35,11 @@ program.on('--help', () => {
   shell.echo(`
 Examples:
 
-  Be sure to initialize before running any other commands
-  > ${chalk.cyan('forge init')}
+  Please install an forge-release before running any other commands
+  > ${chalk.cyan('forge install latest')}
 
   Curious about how to use a subcommand?
-  > ${chalk.cyan('forge help init')}
+  > ${chalk.cyan('forge help install')}
   `);
 });
 

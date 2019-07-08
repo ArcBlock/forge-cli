@@ -2,18 +2,7 @@
 const shell = require('shelljs');
 const chalk = require('chalk');
 const { symbols, getSpinner } = require('core/ui');
-const {
-  config,
-  findServicePid,
-  sleep,
-  runNativeWebCommand,
-  runNativeSimulatorCommand,
-  runNativeWorkshopCommand,
-} = require('core/env');
-
-const stopForgeWeb = runNativeWebCommand('stop', { silent: true });
-const stopWorkshop = runNativeWorkshopCommand('stop', { silent: true });
-const stopSimulator = runNativeSimulatorCommand('stop', { silent: true });
+const { findServicePid, sleep } = require('core/env');
 
 async function isStopped() {
   const pid = await findServicePid('forge_starter');
@@ -58,11 +47,19 @@ async function main({ opts: { force } }) {
     }
 
     try {
-      await stopSimulator();
-      await stopWorkshop();
+      const simulatorPid = await findServicePid('simulator');
+      if (simulatorPid) {
+        shell.exec(`kill ${simulatorPid}`, { silent: true });
+      }
 
-      if (config.get('forge.web.enabled')) {
-        await stopForgeWeb();
+      const workshopPid = await findServicePid('forge_workshop');
+      if (workshopPid) {
+        shell.exec(`kill ${workshopPid}`, { silent: true });
+      }
+
+      const webPid = await findServicePid('forge_web');
+      if (webPid) {
+        shell.exec(`kill ${webPid}`, { silent: true });
       }
     } catch (err) {
       // do nothing

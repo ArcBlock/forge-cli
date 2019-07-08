@@ -27,6 +27,9 @@ const { symbols, hr } = require('./ui');
 let baseDir = path.join(os.homedir(), '.forge_cli');
 if (process.env.FORGE_CLI_DIR) {
   try {
+    shell.echo(
+      `${symbols.info} ${chalk.yellow(`Using custom forge_cli dir: ${process.env.FORGE_CLI_DIR}`)}`
+    );
     const dir = path.resolve(process.env.FORGE_CLI_DIR);
     if (!fs.existsSync(dir)) {
       shell.mkdir(dir, { silent: true });
@@ -114,6 +117,13 @@ function ensureForgeRelease(args, exitOn404 = true) {
   const envReleaseDir = process.env.FORGE_RELEASE_DIR;
   const cliReleaseDir = requiredDirs.release;
   const argReleaseDir = args.releaseDir;
+  if (envReleaseDir || argReleaseDir) {
+    shell.echo(
+      `${symbols.info} ${chalk.yellow(
+        `Using custom release dir: ${envReleaseDir || argReleaseDir}`
+      )}`
+    );
+  }
 
   const releaseDir = argReleaseDir || envReleaseDir || cliReleaseDir;
   if (fs.existsSync(releaseDir)) {
@@ -269,10 +279,15 @@ async function ensureRunningNode() {
  * @param {*} args
  */
 function ensureRpcClient(args) {
-  const socketGrpc = args.socketGrpc || process.env.FORGE_CLI_SOCKET_GRPC;
+  const socketGrpc = args.socketGrpc || process.env.FORGE_SOCK_GRPC;
   const releaseConfig = path.join(path.dirname(requiredDirs.release), 'forge_release.toml');
   const configPath = args.configPath || process.env.FORGE_CONFIG || releaseConfig;
   if (socketGrpc) {
+    shell.echo(
+      `${symbols.info} ${chalk.yellow(
+        `Using custom grpc socket endpoint: ${process.env.FORGE_SOCK_GRPC}`
+      )}`
+    );
     const forgeConfig = {
       forge: {
         sockGrpc: socketGrpc,
@@ -486,10 +501,7 @@ function createRpcClient() {
   }
 
   const sockGrpc =
-    process.env.FORGE_SOCK_GRPC ||
-    process.env.FORGE_CLI_SOCKET_GRPC ||
-    get(config, 'forge.sock_grpc') ||
-    'tcp://127.0.0.1:28210';
+    process.env.FORGE_SOCK_GRPC || get(config, 'forge.sock_grpc') || 'tcp://127.0.0.1:28210';
 
   client = new GRpcClient(sockGrpc);
   return client;
@@ -516,10 +528,7 @@ function makeNativeCommandRunner(executable) {
       }
 
       const sockGrpc =
-        process.env.FORGE_SOCK_GRPC ||
-        process.env.FORGE_CLI_SOCKET_GRPC ||
-        get(config, 'forge.sock_grpc') ||
-        'tcp://127.0.0.1:28210';
+        process.env.FORGE_SOCK_GRPC || get(config, 'forge.sock_grpc') || 'tcp://127.0.0.1:28210';
 
       let command = `FORGE_CONFIG=${forgeConfigPath} ${binPath} ${subCommand}`;
       if (['webBinPath', 'simulatorBinPath'].includes(executable)) {
@@ -590,7 +599,11 @@ function getPlatform() {
   return new Promise((resolve, reject) => {
     const platform = process.env.FORGE_CLI_PLATFORM;
     if (platform && ['darwin', 'centos'].includes(platform)) {
-      shell.echo(`${symbols.info} Using user specified platform ${platform}`);
+      shell.echo(
+        `${symbols.info} ${chalk.yellow(
+          `Using custom platform: ${process.env.FORGE_CLI_PLATFORM}`
+        )}`
+      );
       resolve(platform);
       return;
     }

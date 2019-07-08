@@ -656,7 +656,7 @@ function sleep(timeout = 1000) {
 
 function printLogo() {
   shell.echo('');
-  shell.echo(chalk.red(figlet.textSync('By ArcBlock', { font: 'ANSI Shadow' })));
+  shell.echo(chalk.cyan(figlet.textSync('By ArcBlock', { font: 'ANSI Shadow' })));
 }
 
 function checkUpdate() {

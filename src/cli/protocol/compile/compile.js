@@ -254,3 +254,4 @@ async function main({ args: [dir], opts: { targets = 'elixir,javascript' } }) {
 
 exports.run = main;
 exports.execute = main;
+exports.ensureForgeCompiler = ensureForgeCompiler;

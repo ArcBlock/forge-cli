@@ -133,7 +133,7 @@ function ensureForgeRelease(args, exitOn404 = true) {
         shell.echo(`${symbols.error} required config file ${releaseYamlPath} not found`);
         shell.echo(
           `${symbols.info} if you have not setup forge yet, please run ${chalk.cyan(
-            'forge init'
+            'forge install'
           )} first`
         );
         process.exit(1);
@@ -181,7 +181,7 @@ function ensureForgeRelease(args, exitOn404 = true) {
       if (exitOn404) {
         shell.echo(
           `${symbols.error} forge_starter binary not found, please run ${chalk.cyan(
-            'forge init'
+            'forge install'
           )} first`
         );
         process.exit(1);
@@ -235,14 +235,14 @@ function ensureForgeRelease(args, exitOn404 = true) {
         );
         shell.echo(`2. cleanup forge release dir: ${chalk.cyan('rm -rf ~/.forge_release')}`);
         shell.echo(`3. cleanup forge cli dir: ${chalk.cyan('rm -rf ~/.forge_cli')}`);
-        shell.echo(`4. install latest forge: ${chalk.cyan('forge init')}`);
+        shell.echo(`4. install latest forge: ${chalk.cyan('forge install')}`);
         shell.echo(`5. start latest forge: ${chalk.cyan('forge start')}`);
         process.exit(1);
       }
     } else if (exitOn404) {
       shell.echo(
         `${symbols.error} forge release binary not found, please run ${chalk.cyan(
-          'forge init'
+          'forge install'
         )} first`
       );
       process.exit(1);
@@ -250,7 +250,7 @@ function ensureForgeRelease(args, exitOn404 = true) {
   } else if (exitOn404) {
     shell.echo(`${symbols.error} forge release dir does not exist
 
-  You can either run ${chalk.cyan('forge init')} to get the latest forge release.
+  You can either run ${chalk.cyan('forge install')} to get the latest forge release.
   Or start node with custom forge release folder
   > ${chalk.cyan('forge start --release-dir ~/Downloads/forge/')}
   > ${chalk.cyan('FORGE_RELEASE_DIR=~/Downloads/forge/ forge start')}
@@ -316,7 +316,7 @@ function ensureRpcClient(args) {
     shell.echo(`${symbols.error} forge-cli requires an forge config file to start
 
 If you have not setup any forge core release on this machine, run this first:
-> ${chalk.cyan('forge init')}
+> ${chalk.cyan('forge install')}
 
 Or you can run forge-cli with custom config path
 > ${chalk.cyan('forge start --config-path ~/Downloads/forge/forge_release.toml')}
@@ -522,7 +522,7 @@ function makeNativeCommandRunner(executable) {
         shell.echo(`${chalk.cyan('rm -rf ~/.forge_cli')}`);
         shell.echo(`${chalk.cyan('rm -rf ~/.forge_release')}`);
         shell.echo(`${chalk.cyan('npm install -g @arcblock/forge-cli')}`);
-        shell.echo(`${chalk.cyan('forge init')}`);
+        shell.echo(`${chalk.cyan('forge install')}`);
         shell.echo('');
         return process.exit(1);
       }

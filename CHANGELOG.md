@@ -1,3 +1,16 @@
+## 0.32.4 (July 08, 2019)
+
+- fix: change text logo color from red to cyan #70
+- feat: support aggresive mode forge-stop #56
+- fix: forge status web is not supported anymore #62
+- fix: forge status web is not supported anymore #62
+- chore: add install instructions for china users
+- fix: forge init displays NAN for some asset size #43
+- fix: show custom config in yellow text when found #55
+- fix: show custom forge config in yellow text when found #55
+- fix: only show custom mirror in yellow text when its set #46
+- fix: rename forge init to forge install and use init as alias #45
+
 ## 0.32.3 (July 05, 2019)
 
 - fix: forge version requirement tip

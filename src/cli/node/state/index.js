@@ -5,7 +5,7 @@ const { execute, run } = require('./state');
 
 cli(
   'status [type]',
-  'List the information of the chain and the node, chain|core|net|validator',
+  'List the information of the chain and the node, chain|core|net|validator|all',
   input => action(execute, run, input),
   {
     requirements: {

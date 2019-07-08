@@ -4,13 +4,16 @@ const chalk = require('chalk');
 const { symbols, getSpinner } = require('core/ui');
 const {
   config,
-  getForgeProcesses,
   findServicePid,
   sleep,
   runNativeWebCommand,
+  runNativeSimulatorCommand,
+  runNativeWorkshopCommand,
 } = require('core/env');
 
 const stopForgeWeb = runNativeWebCommand('stop', { silent: true });
+const stopWorkshop = runNativeWorkshopCommand('stop', { silent: true });
+const stopSimulator = runNativeSimulatorCommand('stop', { silent: true });
 
 async function isStopped() {
   const pid = await findServicePid('forge_starter');
@@ -44,22 +47,20 @@ async function main({ opts: { force } }) {
       return;
     }
 
-    const list = await getForgeProcesses();
-    const starterProcess = list.find(x => x.name === 'starter');
-    if (!starterProcess) {
-      throw new Error('cannot get starter process info');
-    }
-
+    const pid = await findServicePid('forge_starter');
     shell.echo(`${symbols.success} Sending kill signal to forge daemon...`);
     const spinner = getSpinner('Waiting for forge daemon to stop...');
     spinner.start();
-    const { code, stderr } = shell.exec(`kill ${starterProcess.pid}`, { silent: true });
+    const { code, stderr } = shell.exec(`kill ${pid}`, { silent: true });
     if (code !== 0) {
       spinner.fail(`Forge daemon stop failed ${stderr}!`);
       return;
     }
 
     try {
+      await stopSimulator();
+      await stopWorkshop();
+
       if (config.get('forge.web.enabled')) {
         await stopForgeWeb();
       }

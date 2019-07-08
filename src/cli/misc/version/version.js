@@ -1,5 +1,14 @@
 const shell = require('shelljs');
-const { config, debug, createFileFinder, getPlatform } = require('core/env');
+const {
+  config,
+  debug,
+  createFileFinder,
+  getPlatform,
+  runNativeWebCommand,
+  runNativeStarterCommand,
+  runNativeSimulatorCommand,
+  runNativeWorkshopCommand,
+} = require('core/env');
 const { symbols } = require('core/ui');
 const { version: forgeCliVersion } = require('../../../../package.json');
 
@@ -16,28 +25,32 @@ async function main() {
   )(releaseDir, currentVersion);
 
   // core
-  shell.echo(`${symbols.success} forge-core version ${currentVersion} on ${await getPlatform()}`);
-  shell.echo(`${symbols.success} forge-cli version ${forgeCliVersion}`);
+  shell.echo(`forge-core version ${currentVersion} on ${await getPlatform()}`);
+  shell.echo(`forge-cli version ${forgeCliVersion}`);
 
-  // tendermint
+  // components
+  runNativeWebCommand('version')();
+  runNativeStarterCommand('version')();
+  runNativeSimulatorCommand('version')();
+  runNativeWorkshopCommand('version')();
+
+  // ipfs
   if (storageEnginePath) {
     debug(`storage engine path: ${storageEnginePath}`);
     const { code, stdout, stderr } = shell.exec(`${storageEnginePath} version`, { silent: true });
     if (code === 0) {
-      shell.echo(`${symbols.success} storage engine: ${stdout.trim()}`);
+      shell.echo(`storage engine: ${stdout.trim()}`);
     } else {
       debug(`${storageEngine} version error: ${stderr.trim()}`);
     }
   }
 
-  // ipfs
+  // tendermint
   if (consensusEnginePath) {
     debug(`storage engine path: ${consensusEnginePath}`);
     const { code, stdout, stderr } = shell.exec(`${consensusEnginePath} version`, { silent: true });
     if (code === 0) {
-      shell.echo(
-        `${symbols.success} consensus engine: ${consensusEngine} version ${stdout.trim()}`
-      );
+      shell.echo(`consensus engine: ${consensusEngine} version ${stdout.trim()}`);
     } else {
       debug(`${consensusEngine} version error: ${stderr.trim()}`);
     }

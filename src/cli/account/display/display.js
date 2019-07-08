@@ -1,12 +1,17 @@
 const shell = require('shelljs');
+const { toTypeInfo } = require('@arcblock/did');
 const { fromUnitToToken } = require('@arcblock/forge-util');
 const { createRpcClient, config } = require('core/env');
-const { symbols, pretty } = require('core/ui');
+const { symbols, hr, pretty } = require('core/ui');
 
 async function execute({ args: [addr] }) {
   try {
     const client = createRpcClient();
     const address = addr === 'me' ? config.get('cli.wallet').address : addr;
+    const typeInfo = toTypeInfo(address, true);
+    shell.echo(`Account Type: ${pretty(typeInfo)}`);
+    shell.echo(hr);
+
     const stream = await client.getAccountState({ address });
     stream
       .on('data', result => {
@@ -14,7 +19,7 @@ async function execute({ args: [addr] }) {
           const { state } = result.$format();
           if (state) {
             state.balance = `${fromUnitToToken(state.balance)} TOKEN`;
-            shell.echo(`${pretty(state)}`);
+            shell.echo(`Account State: ${pretty(state)}`);
           } else {
             shell.echo(
               `${

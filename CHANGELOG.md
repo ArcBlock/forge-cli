@@ -1,5 +1,11 @@
 ## 0.32.4 (July 08, 2019)
 
+- feat: display account type info when do `forge account xxx` #74
+- chore: update forge-sdk dependency to latest
+- fix: account detail wallet env detecting
+- fix: forge -h and forge --help prints different contents #50
+- fix: stop all forge tools when do forge stop #52
+- feat: list version for all tools in forge-cli #29
 - fix: change text logo color from red to cyan #70
 - feat: support aggresive mode forge-stop #56
 - fix: forge status web is not supported anymore #62

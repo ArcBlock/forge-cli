@@ -102,8 +102,8 @@ async function main({ opts: { multiple, dryRun } }) {
     shell.echo('Ensure no running forge process that cannot be detected by forge-cli');
     shell.echo(
       `Run: ${chalk.cyan(
-        'ps aux | grep forge'
-      )}, and kill forge related process then try ${chalk.cyan('forge start')} again`
+        'forge stop --force'
+      )}, to kill forge related processes, then try ${chalk.cyan('forge start')} again`
     );
     shell.echo('');
     shell.echo('2. Report bug to our engineer');

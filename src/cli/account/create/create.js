@@ -3,7 +3,7 @@ const shell = require('shelljs');
 const inquirer = require('inquirer');
 const { config, createRpcClient, cache } = require('core/env');
 const { symbols, hr, pretty } = require('core/ui');
-const { enums } = require('@arcblock/forge-proto');
+const { types } = require('@arcblock/mcrypto');
 
 const questions = [
   {
@@ -31,23 +31,23 @@ const questions = [
   {
     type: 'list',
     name: 'role',
-    default: enums.RoleType.ROLE_ACCOUNT,
+    default: types.RoleType.ROLE_ACCOUNT,
     message: 'Please select a role type:',
-    choices: Object.keys(enums.RoleType),
+    choices: Object.keys(types.RoleType),
   },
   {
     type: 'list',
     name: 'pk',
-    default: enums.KeyType.ED25519,
+    default: types.KeyType.ED25519,
     message: 'Please select a key pair algorithm:',
-    choices: Object.keys(enums.KeyType),
+    choices: Object.keys(types.KeyType),
   },
   {
     type: 'list',
     name: 'hash',
-    default: enums.HashType.SHA3,
+    default: types.HashType.SHA3,
     message: 'Please select a hash algorithm:',
-    choices: Object.keys(enums.HashType),
+    choices: Object.keys(types.HashType),
   },
 ];
 
@@ -60,10 +60,10 @@ async function execute(data) {
       passphrase,
       moniker,
       type: {
-        pk: enums.KeyType[pk],
-        hash: enums.HashType[hash],
-        role: enums.RoleType[role],
-        address: enums.EncodingType.BASE58,
+        pk: types.KeyType[pk],
+        hash: types.HashType[hash],
+        role: types.RoleType[role],
+        address: types.EncodingType.BASE58,
       },
     });
     shell.echo(hr);

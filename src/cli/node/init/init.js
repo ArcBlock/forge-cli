@@ -69,8 +69,11 @@ function fetchAssetInfo(platform, version, key, mirror = DEFAULT_MIRROR) {
   const name = `${key}_${platform}_amd64.tgz`;
   const url = `${mirror}/forge/${version}/${name}`;
   const defaultSize = {
-    forge: 60 * 1024 * 1024,
-    simulator: 20 * 1024 * 1024,
+    forge: 28 * 1024 * 1024,
+    forge_web: 28 * 1024 * 1024,
+    forge_starter: 5 * 1024 * 1024,
+    forge_workshop: 13 * 1024 * 1024,
+    simulator: 9 * 1024 * 1024,
   };
 
   const spinner = getSpinner(`Fetching release asset info: ${name}...`);
@@ -195,8 +198,8 @@ async function main({ args: [userVersion], opts: { mirror } }) {
 
     const platform = await getPlatform();
     shell.echo(`${symbols.info} Detected platform is: ${platform}`);
-    if (mirror !== DEFAULT_MIRROR) {
-      shell.echo(`${symbols.info} Using custom mirror: ${mirror}`);
+    if (mirror && mirror !== DEFAULT_MIRROR) {
+      shell.echo(`${symbols.info} ${chalk.yellow(`Using custom mirror: ${mirror}`)}`);
     }
 
     const userVer =

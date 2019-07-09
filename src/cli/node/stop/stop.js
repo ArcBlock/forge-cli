@@ -1,15 +1,8 @@
 /* eslint-disable consistent-return */
 const shell = require('shelljs');
+const chalk = require('chalk');
 const { symbols, getSpinner } = require('core/ui');
-const {
-  config,
-  getForgeProcesses,
-  findServicePid,
-  sleep,
-  runNativeWebCommand,
-} = require('core/env');
-
-const stopForgeWeb = runNativeWebCommand('stop', { silent: true });
+const { findServicePid, sleep } = require('core/env');
 
 async function isStopped() {
   const pid = await findServicePid('forge_starter');
@@ -31,26 +24,42 @@ function waitUntilStopped() {
   });
 }
 
-async function main() {
+async function main({ opts: { force } }) {
   try {
-    const list = await getForgeProcesses();
-    const starterProcess = list.find(x => x.name === 'starter');
-    if (!starterProcess) {
-      throw new Error('cannot get starter process info');
+    if (force) {
+      shell.echo(`${symbols.warning} ${chalk.yellow('Stop all forge processes in force mode')}`);
+      // prettier-ignore
+      const command = 'ps -ef | grep -v grep | grep -v stop | grep forge | awk \'{print $2}\' | xargs kill';
+      shell.exec(command, { silent: true });
+      shell.echo(chalk.cyan(command));
+      shell.echo(`${symbols.info} It may take up to 10 seconds for all forge processes to stop`);
+      return;
     }
 
+    const pid = await findServicePid('forge_starter');
     shell.echo(`${symbols.success} Sending kill signal to forge daemon...`);
     const spinner = getSpinner('Waiting for forge daemon to stop...');
     spinner.start();
-    const { code, stderr } = shell.exec(`kill ${starterProcess.pid}`, { silent: true });
+    const { code, stderr } = shell.exec(`kill ${pid}`, { silent: true });
     if (code !== 0) {
       spinner.fail(`Forge daemon stop failed ${stderr}!`);
       return;
     }
 
     try {
-      if (config.get('forge.web.enabled')) {
-        await stopForgeWeb();
+      const simulatorPid = await findServicePid('simulator');
+      if (simulatorPid) {
+        shell.exec(`kill ${simulatorPid}`, { silent: true });
+      }
+
+      const workshopPid = await findServicePid('forge_workshop');
+      if (workshopPid) {
+        shell.exec(`kill ${workshopPid}`, { silent: true });
+      }
+
+      const webPid = await findServicePid('forge_web');
+      if (webPid) {
+        shell.exec(`kill ${webPid}`, { silent: true });
       }
     } catch (err) {
       // do nothing

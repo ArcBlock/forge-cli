@@ -27,6 +27,9 @@ const { symbols, hr } = require('./ui');
 let baseDir = path.join(os.homedir(), '.forge_cli');
 if (process.env.FORGE_CLI_DIR) {
   try {
+    shell.echo(
+      `${symbols.info} ${chalk.yellow(`Using custom forge_cli dir: ${process.env.FORGE_CLI_DIR}`)}`
+    );
     const dir = path.resolve(process.env.FORGE_CLI_DIR);
     if (!fs.existsSync(dir)) {
       shell.mkdir(dir, { silent: true });
@@ -114,6 +117,13 @@ function ensureForgeRelease(args, exitOn404 = true) {
   const envReleaseDir = process.env.FORGE_RELEASE_DIR;
   const cliReleaseDir = requiredDirs.release;
   const argReleaseDir = args.releaseDir;
+  if (envReleaseDir || argReleaseDir) {
+    shell.echo(
+      `${symbols.info} ${chalk.yellow(
+        `Using custom release dir: ${envReleaseDir || argReleaseDir}`
+      )}`
+    );
+  }
 
   const releaseDir = argReleaseDir || envReleaseDir || cliReleaseDir;
   if (fs.existsSync(releaseDir)) {
@@ -123,7 +133,7 @@ function ensureForgeRelease(args, exitOn404 = true) {
         shell.echo(`${symbols.error} required config file ${releaseYamlPath} not found`);
         shell.echo(
           `${symbols.info} if you have not setup forge yet, please run ${chalk.cyan(
-            'forge init'
+            'forge install'
           )} first`
         );
         process.exit(1);
@@ -171,7 +181,7 @@ function ensureForgeRelease(args, exitOn404 = true) {
       if (exitOn404) {
         shell.echo(
           `${symbols.error} forge_starter binary not found, please run ${chalk.cyan(
-            'forge init'
+            'forge install'
           )} first`
         );
         process.exit(1);
@@ -225,14 +235,14 @@ function ensureForgeRelease(args, exitOn404 = true) {
         );
         shell.echo(`2. cleanup forge release dir: ${chalk.cyan('rm -rf ~/.forge_release')}`);
         shell.echo(`3. cleanup forge cli dir: ${chalk.cyan('rm -rf ~/.forge_cli')}`);
-        shell.echo(`4. install latest forge: ${chalk.cyan('forge init')}`);
+        shell.echo(`4. install latest forge: ${chalk.cyan('forge install')}`);
         shell.echo(`5. start latest forge: ${chalk.cyan('forge start')}`);
         process.exit(1);
       }
     } else if (exitOn404) {
       shell.echo(
         `${symbols.error} forge release binary not found, please run ${chalk.cyan(
-          'forge init'
+          'forge install'
         )} first`
       );
       process.exit(1);
@@ -240,7 +250,7 @@ function ensureForgeRelease(args, exitOn404 = true) {
   } else if (exitOn404) {
     shell.echo(`${symbols.error} forge release dir does not exist
 
-  You can either run ${chalk.cyan('forge init')} to get the latest forge release.
+  You can either run ${chalk.cyan('forge install')} to get the latest forge release.
   Or start node with custom forge release folder
   > ${chalk.cyan('forge start --release-dir ~/Downloads/forge/')}
   > ${chalk.cyan('FORGE_RELEASE_DIR=~/Downloads/forge/ forge start')}
@@ -269,10 +279,15 @@ async function ensureRunningNode() {
  * @param {*} args
  */
 function ensureRpcClient(args) {
-  const socketGrpc = args.socketGrpc || process.env.FORGE_CLI_SOCKET_GRPC;
+  const socketGrpc = args.socketGrpc || process.env.FORGE_SOCK_GRPC;
   const releaseConfig = path.join(path.dirname(requiredDirs.release), 'forge_release.toml');
   const configPath = args.configPath || process.env.FORGE_CONFIG || releaseConfig;
   if (socketGrpc) {
+    shell.echo(
+      `${symbols.info} ${chalk.yellow(
+        `Using custom grpc socket endpoint: ${process.env.FORGE_SOCK_GRPC}`
+      )}`
+    );
     const forgeConfig = {
       forge: {
         sockGrpc: socketGrpc,
@@ -285,6 +300,11 @@ function ensureRpcClient(args) {
     debug(`${symbols.info} using forge-cli with remote node ${socketGrpc}`);
     Object.assign(config, forgeConfig);
   } else if (configPath && fs.existsSync(configPath)) {
+    if (process.env.FORGE_CONFIG) {
+      shell.echo(
+        `${symbols.info} ${chalk.yellow(`Using custom forge config: ${process.env.FORGE_CONFIG}`)}`
+      );
+    }
     const forgeConfig = parse(configPath);
     config.cli.forgeConfigPath = configPath;
     Object.assign(config, forgeConfig);
@@ -293,10 +313,10 @@ function ensureRpcClient(args) {
       `${symbols.success} Using forge config: ${util.inspect(config, { depth: 5, colors: true })}`
     );
   } else {
-    shell.echo(`${symbols.error} forge-cli requires an forge config file to start
+    shell.echo(`${symbols.error} forge-cli requires a valid forge config file to start
 
 If you have not setup any forge core release on this machine, run this first:
-> ${chalk.cyan('forge init')}
+> ${chalk.cyan('forge install')}
 
 Or you can run forge-cli with custom config path
 > ${chalk.cyan('forge start --config-path ~/Downloads/forge/forge_release.toml')}
@@ -481,10 +501,7 @@ function createRpcClient() {
   }
 
   const sockGrpc =
-    process.env.FORGE_SOCK_GRPC ||
-    process.env.FORGE_CLI_SOCKET_GRPC ||
-    get(config, 'forge.sock_grpc') ||
-    'tcp://127.0.0.1:28210';
+    process.env.FORGE_SOCK_GRPC || get(config, 'forge.sock_grpc') || 'tcp://127.0.0.1:28210';
 
   client = new GRpcClient(sockGrpc);
   return client;
@@ -505,16 +522,13 @@ function makeNativeCommandRunner(executable) {
         shell.echo(`${chalk.cyan('rm -rf ~/.forge_cli')}`);
         shell.echo(`${chalk.cyan('rm -rf ~/.forge_release')}`);
         shell.echo(`${chalk.cyan('npm install -g @arcblock/forge-cli')}`);
-        shell.echo(`${chalk.cyan('forge init')}`);
+        shell.echo(`${chalk.cyan('forge install')}`);
         shell.echo('');
         return process.exit(1);
       }
 
       const sockGrpc =
-        process.env.FORGE_SOCK_GRPC ||
-        process.env.FORGE_CLI_SOCKET_GRPC ||
-        get(config, 'forge.sock_grpc') ||
-        'tcp://127.0.0.1:28210';
+        process.env.FORGE_SOCK_GRPC || get(config, 'forge.sock_grpc') || 'tcp://127.0.0.1:28210';
 
       let command = `FORGE_CONFIG=${forgeConfigPath} ${binPath} ${subCommand}`;
       if (['webBinPath', 'simulatorBinPath'].includes(executable)) {
@@ -585,7 +599,11 @@ function getPlatform() {
   return new Promise((resolve, reject) => {
     const platform = process.env.FORGE_CLI_PLATFORM;
     if (platform && ['darwin', 'centos'].includes(platform)) {
-      shell.echo(`${symbols.info} Using user specified platform ${platform}`);
+      shell.echo(
+        `${symbols.info} ${chalk.yellow(
+          `Using custom platform: ${process.env.FORGE_CLI_PLATFORM}`
+        )}`
+      );
       resolve(platform);
       return;
     }
@@ -638,7 +656,7 @@ function sleep(timeout = 1000) {
 
 function printLogo() {
   shell.echo('');
-  shell.echo(chalk.red(figlet.textSync('By ArcBlock', { font: 'ANSI Shadow' })));
+  shell.echo(chalk.cyan(figlet.textSync('By ArcBlock', { font: 'ANSI Shadow' })));
 }
 
 function checkUpdate() {

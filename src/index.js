@@ -6,28 +6,24 @@ const chalk = require('chalk');
 const shell = require('shelljs');
 const program = require('commander');
 
-// eslint-disable-next-line import/no-unresolved
 const { initCli } = require('core/cli');
 const { symbols, hr } = require('core/ui');
+const { printLogo } = require('core/env');
 
 program
   .option('-v, --verbose', 'Output runtime logs when execute the command, used for debug')
   .option(
-    '-r, --release-dir',
+    '-r, --release-dir <dir>',
     'Forge release directory path (unzipped), use your own copy forge release'
   )
   .option(
-    '-c, --config-path',
+    '-c, --config-path <path>',
     'Forge config used when starting forge node and initializing gRPC clients'
   )
   .option(
-    '-g, --socket-grpc',
+    '-g, --socket-grpc <endpoint>',
     'Socket gRPC endpoint to connect, with this you can use forge-cli with a remote node'
   );
-// .option(
-//   '-s, --setup-script',
-//   'Path to a javascript file that loads application specific protobuf files into grpc-client'
-// );
 
 initCli(program);
 
@@ -35,11 +31,12 @@ program.on('--help', () => {
   shell.echo(`
 Examples:
 
-  Be sure to initialize before running any other commands
-  > ${chalk.cyan('forge init')}
+  Please install a forge-release before running any other commands
+  > ${chalk.cyan('forge install latest')}
+  > ${chalk.cyan('forge install --mirror http://arcblock.oss-cn-beijing.aliyuncs.com')}
 
   Curious about how to use a subcommand?
-  > ${chalk.cyan('forge help init')}
+  > ${chalk.cyan('forge help install')}
   `);
 });
 
@@ -54,5 +51,6 @@ program.on('command:*', () => {
 program.parse(process.argv);
 
 if (program.args.length === 0) {
+  printLogo();
   program.help();
 }

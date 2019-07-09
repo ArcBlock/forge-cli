@@ -2,60 +2,61 @@
 # yarn lockfile v1
 
 
-"@arcblock/did-util@^0.31.0":
-  version "0.31.0"
-  resolved "https://registry.npmjs.org/@arcblock/did-util/-/did-util-0.31.0.tgz#960e75feee5d82818257b3141f13e12dda29d0a2"
-  integrity sha512-qWqvqAkwyAUWnpuflooHQhyMTo05epJzilkWNmc+lMRZuNBh5fXbyw1MuDEl9yCD8kKme4Hr95jbFoxVnWaFig==
+"@arcblock/did-util@^0.32.1":
+  version "0.32.1"
+  resolved "https://registry.npmjs.org/@arcblock/did-util/-/did-util-0.32.1.tgz#e942a3715a9a4ad175ba4e55858b9d1c98a74154"
+  integrity sha512-sSEL1wWRSsUco/mJMypyxwM2v7NCcsU0JtLdUDQQa+cQZN8AmhvhMAQXTla5MOJjcu9qvyVpgmy9Cxv+dhqK5g==
   dependencies:
-    "@arcblock/did" "^0.31.0"
-    "@arcblock/forge-message" "^0.31.0"
-    "@arcblock/forge-proto" "^0.31.0"
-    "@arcblock/forge-util" "^0.31.0"
-    "@arcblock/forge-wallet" "^0.31.0"
-    "@arcblock/mcrypto" "^0.31.0"
+    "@arcblock/did" "^0.32.1"
+    "@arcblock/forge-message" "^0.32.1"
+    "@arcblock/forge-proto" "^0.32.1"
+    "@arcblock/forge-util" "^0.32.1"
+    "@arcblock/forge-wallet" "^0.32.1"
+    "@arcblock/mcrypto" "^0.32.1"
 
-"@arcblock/did@^0.31.0":
-  version "0.31.0"
-  resolved "https://registry.npmjs.org/@arcblock/did/-/did-0.31.0.tgz#8ee68ba52b4deac7688aac83f99b01d01e29680a"
-  integrity sha512-SMYSPPz4Q8kylF/NHsnoyPPQ/wYQZUrBjFLESj5G5xvybWxzBxoWKtzjX6jolFxwFxSrA3wsqNasnU3Db6lZxQ==
+"@arcblock/did@^0.32.1":
+  version "0.32.1"
+  resolved "https://registry.npmjs.org/@arcblock/did/-/did-0.32.1.tgz#eb755116fcbd92567bcee657ea8f63330c34dcbf"
+  integrity sha512-AlWAKczRHDXp/e9mufiLfGlSWiJwmqLusNOjMGExOgGfvs6YIYgzCNiytPvGn5WbHraAo4OB0ae6Bz++In5+RQ==
   dependencies:
-    "@arcblock/forge-util" "^0.31.0"
-    "@arcblock/mcrypto" "^0.31.0"
+    "@arcblock/forge-util" "^0.32.1"
+    "@arcblock/mcrypto" "^0.32.1"
+    bn.js "^5.0.0"
     debug "^4.1.1"
     lodash "^4.17.11"
 
-"@arcblock/forge-config@^0.31.0":
-  version "0.31.0"
-  resolved "https://registry.npmjs.org/@arcblock/forge-config/-/forge-config-0.31.0.tgz#2641e13e0f4ecfcb7de3898073daa484f3987cc4"
-  integrity sha512-nDDLkkXtUFBoZ6J4CBFmxLatBOcSg8PYQ9wl++7lNUdVkZY7IyidzdjPMRpB2lNJKybUcDylQIr1HvdOZwhW8A==
+"@arcblock/forge-config@^0.32.0":
+  version "0.32.0"
+  resolved "https://registry.npmjs.org/@arcblock/forge-config/-/forge-config-0.32.0.tgz#1ef794faf56ead0933e588c752b0b2f78d3a5fdc"
+  integrity sha512-eFViZMfTggPGj6H0z9ihUVhAMJPAD3BTGsYHneXh/nOx7OazgAeuQf1jdJn2FSf1fDYnhnlnwec7ED8ckoLXmQ==
   dependencies:
     "@iarna/toml" "^2.2.1"
     camelize "^1.0.0"
 
-"@arcblock/forge-message@^0.31.0":
-  version "0.31.0"
-  resolved "https://registry.npmjs.org/@arcblock/forge-message/-/forge-message-0.31.0.tgz#80b72cf08786a0767b1eca2ba83fd662686363c5"
-  integrity sha512-SWIquTeKkQlU8v5MM2EoTjm4QEGwhyysEQF0tdB2vQA38/qCMCzyeZ3DMuPgGU/+A+3gA6bv9ZZmZqp9l9DWsg==
+"@arcblock/forge-message@^0.32.1":
+  version "0.32.1"
+  resolved "https://registry.npmjs.org/@arcblock/forge-message/-/forge-message-0.32.1.tgz#4d96fcf835efe981b38f15a793ad1a8677333fea"
+  integrity sha512-3vyjIlR1zAnN5N67DroTNV+AuQ7Ug09rUzwGU9BdOSn5miLJdcqUjSDWGyhvuFH/XEz50JbNYQMbblGhJWCbvQ==
   dependencies:
-    "@arcblock/forge-proto" "^0.31.0"
-    "@arcblock/forge-util" "^0.31.0"
+    "@arcblock/forge-proto" "^0.32.1"
+    "@arcblock/forge-util" "^0.32.1"
     camelcase "^5.0.0"
     debug "^4.1.1"
     google-protobuf "3.7.0-rc.2"
 
-"@arcblock/forge-proto@^0.31.0":
-  version "0.31.0"
-  resolved "https://registry.npmjs.org/@arcblock/forge-proto/-/forge-proto-0.31.0.tgz#e9b7e4f9e33bbb0eaac851bfebcbe6e1e7619ab7"
-  integrity sha512-PEFii0vwwz9xCvydT1bhuZ076XpN+HCVij71sn4oN9GgOi8let7SlP+rEpWdSYkLt+b60Se1Gp0hmcIE26dgbQ==
+"@arcblock/forge-proto@^0.32.1":
+  version "0.32.1"
+  resolved "https://registry.npmjs.org/@arcblock/forge-proto/-/forge-proto-0.32.1.tgz#14d44b08e029f370d60dd3efa3539cfd2d629d54"
+  integrity sha512-IMrBVke824I2atgnqmYkx/tIqxwhvJ3zLTepFGB+RjaXsNsBsguAU0X44OIR9lSaQq/p0alavGPXAOq3VyXSTw==
   dependencies:
     camelcase "^5.3.1"
     debug "^4.1.1"
     lodash.get "^4.4.2"
 
-"@arcblock/forge-util@^0.31.0":
-  version "0.31.0"
-  resolved "https://registry.npmjs.org/@arcblock/forge-util/-/forge-util-0.31.0.tgz#b1456b36052131c52e768aea6f8e876591fc28b5"
-  integrity sha512-lPPZuzyQvMXckWLo/fqOJzbOXx+pOVLq24LP51Gt7Q+rwhY1NHYnVklZJ9n+nlSv2wiL/f7Mfdbfy7dQhv4ffg==
+"@arcblock/forge-util@^0.32.1":
+  version "0.32.1"
+  resolved "https://registry.npmjs.org/@arcblock/forge-util/-/forge-util-0.32.1.tgz#62a3f55990d0c0ac7e9abe7d4f679edb5fdf24aa"
+  integrity sha512-wetX0gHhQP0G1SO12qyQB5/9fP206gNDFsPzUUloj0vREc0JXcjen7UI3M1fPxDvxg5YtC1XX1dlAhsmPuc2xg==
   dependencies:
     bn.js "4.11.6"
     lodash "^4.17.11"
@@ -63,25 +64,25 @@
     number-to-bn "^1.7.0"
     utf8 "^3.0.0"
 
-"@arcblock/forge-wallet@^0.31.0":
-  version "0.31.0"
-  resolved "https://registry.npmjs.org/@arcblock/forge-wallet/-/forge-wallet-0.31.0.tgz#9a2cdc6c6023df4957405a04e575b045063125c3"
-  integrity sha512-dQwAmBVcsDK5EkQwBrMbyZAOHOzVvsWyoirSsmkhVOaiD1kAdbPhOeYP82rbUvP3zod0Dn9gKf+heVwIc6hUdA==
+"@arcblock/forge-wallet@^0.32.1":
+  version "0.32.1"
+  resolved "https://registry.npmjs.org/@arcblock/forge-wallet/-/forge-wallet-0.32.1.tgz#29178787fb6039ba83f147a32cb1ea1090b1236c"
+  integrity sha512-oIlPUny1hWzrsPdT2aILSE+Kt1Yoztg0T8QpD5ShTGQp/MHQDpdPRhu0AJKqFg0rLikqzNUion5NNrs9upTkKg==
   dependencies:
-    "@arcblock/did" "^0.31.0"
-    "@arcblock/mcrypto" "^0.31.0"
+    "@arcblock/did" "^0.32.1"
+    "@arcblock/mcrypto" "^0.32.1"
     lodash.upperfirst "^4.3.1"
 
-"@arcblock/graphql-client@^0.31.0":
-  version "0.31.0"
-  resolved "https://registry.npmjs.org/@arcblock/graphql-client/-/graphql-client-0.31.0.tgz#5045496e7d4c139dd8a5faf6636a6f1479ff6eb7"
-  integrity sha512-TOEWPsDVvH4CGPLp644+eaGsp5wmDBPbOjoT7pfq/s1WVCkbOtCi/GjSAC4zwjOZcybXkqm+dm+eFR4q15gouw==
+"@arcblock/graphql-client@^0.32.1":
+  version "0.32.1"
+  resolved "https://registry.npmjs.org/@arcblock/graphql-client/-/graphql-client-0.32.1.tgz#842a6c896f626ff3018961f77329eee97cbbbf51"
+  integrity sha512-Cgq0m8BfopjC8jHO8KLMWjHAgRxGEVnIDe4VLnpFVSIF//lqqRu03x3cTHuLo2SEqnxhbGw/Hq4xtpYmZhbDYQ==
   dependencies:
-    "@arcblock/forge-message" "^0.31.0"
-    "@arcblock/forge-proto" "^0.31.0"
-    "@arcblock/forge-util" "^0.31.0"
-    "@arcblock/forge-wallet" "^0.31.0"
-    "@arcblock/mcrypto" "^0.31.0"
+    "@arcblock/forge-message" "^0.32.1"
+    "@arcblock/forge-proto" "^0.32.1"
+    "@arcblock/forge-util" "^0.32.1"
+    "@arcblock/forge-wallet" "^0.32.1"
+    "@arcblock/mcrypto" "^0.32.1"
     "@arcblock/sdk-util" "^0.21.0"
     "@babel/polyfill" "^7.4.4"
     base64-url "^2.2.0"
@@ -93,27 +94,27 @@
     phoenix-channels "^1.0.0"
     wolfy87-eventemitter "^5.2.5"
 
-"@arcblock/grpc-client@^0.31.0":
-  version "0.31.0"
-  resolved "https://registry.npmjs.org/@arcblock/grpc-client/-/grpc-client-0.31.0.tgz#cbc97d80a8eda986b55671ae839a50d367d8f1f0"
-  integrity sha512-QZJikdoK7jB7dg1CGXeXvrXEy6mhd63tAa3ggxscZ0WNvINMS3rVHlLJIKoo2Nks+U26ObF85VIWxADdY3Cb4Q==
+"@arcblock/grpc-client@^0.32.1":
+  version "0.32.1"
+  resolved "https://registry.npmjs.org/@arcblock/grpc-client/-/grpc-client-0.32.1.tgz#772c32d887629d1134f540402e2bd37ba4762744"
+  integrity sha512-KvO9Ni7jS94sf58ynjBP6tFfqxP+qw5hkvDcu2sqqX1vM4bpEFRas5hd34HY/LZe5Jp1Y9RC5AQlTZ0BJrM97Q==
   dependencies:
-    "@arcblock/forge-config" "^0.31.0"
-    "@arcblock/forge-message" "^0.31.0"
-    "@arcblock/forge-proto" "^0.31.0"
-    "@arcblock/forge-util" "^0.31.0"
-    "@arcblock/forge-wallet" "^0.31.0"
-    "@arcblock/mcrypto" "^0.31.0"
+    "@arcblock/forge-config" "^0.32.0"
+    "@arcblock/forge-message" "^0.32.1"
+    "@arcblock/forge-proto" "^0.32.1"
+    "@arcblock/forge-util" "^0.32.1"
+    "@arcblock/forge-wallet" "^0.32.1"
+    "@arcblock/mcrypto" "^0.32.1"
     camelcase "^5.0.0"
     debug "^4.1.1"
     grpc "^1.20.2"
 
-"@arcblock/mcrypto@^0.31.0":
-  version "0.31.0"
-  resolved "https://registry.npmjs.org/@arcblock/mcrypto/-/mcrypto-0.31.0.tgz#8f80b0048e2c9e55c91fb2668679eaa3d436fa7e"
-  integrity sha512-8TCbyxt2fe37WSySii646C9VBdQMHZFrXvp6+1+4riqhb6jVNbW7mp3B05G4aKSSJQ0j3/CXFBGH7ZMyTnZwLQ==
+"@arcblock/mcrypto@^0.32.1":
+  version "0.32.1"
+  resolved "https://registry.npmjs.org/@arcblock/mcrypto/-/mcrypto-0.32.1.tgz#e892a4235a8b5fa8427649108ec72b23105ad66a"
+  integrity sha512-ys+x9Kx7EjNryu0e4vp9yJ1flbuKDq5BgKdiua4bji8yM/+91dhkQQ2JtuXhDjSZ2iOuLPDW9zJtZ9REbpHBcQ==
   dependencies:
-    "@arcblock/forge-util" "^0.31.0"
+    "@arcblock/forge-util" "^0.32.1"
     bn.js "4.11.8"
     crypto-js "^3.1.9-1"
     elliptic "^6.4.1"
@@ -1660,6 +1661,11 @@ bn.js@4.11.8, bn.js@^4.4.0:
   resolved "https://registry.npmjs.org/bn.js/-/bn.js-4.11.8.tgz#2cde09eb5ee341f484746bb0309b3253b1b1442f"
   integrity sha512-ItfYfPLkWHUjckQCk8xC+LwxgK8NYcXywGigJgSwOP8Y2iyWT4f2vsZnoOXTTbo+o5yXmIUJ4gn5538SO5S3gA==
 
+bn.js@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.npmjs.org/bn.js/-/bn.js-5.0.0.tgz#5c3d398021b3ddb548c1296a16f857e908f35c70"
+  integrity sha512-bVwDX8AF+72fIUNuARelKAlQUNtPOfG2fRxorbVvFk4zpHbqLrPdOGfVg5vrKwVzLLePqPBiATaOZNELQzmS0A==
+
 brace-expansion@^1.1.7:
   version "1.1.11"
   resolved "https://registry.npmjs.org/brace-expansion/-/brace-expansion-1.1.11.tgz#3c7fcbf529d87226f3d2f52b966ff5271eb441dd"
@@ -2051,7 +2057,7 @@ combined-stream@^1.0.6, combined-stream@~1.0.6:
   dependencies:
     delayed-stream "~1.0.0"
 
-commander@^2.11.0, commander@^2.14.1, commander@^2.19.0, commander@^2.9.0, commander@~2.20.0:
+commander@^2.11.0, commander@^2.14.1, commander@^2.20.0, commander@^2.9.0, commander@~2.20.0:
   version "2.20.0"
   resolved "https://registry.npmjs.org/commander/-/commander-2.20.0.tgz#d58bb2b5c1ee8f87b0d340027e9e94e222c5a422"
   integrity sha512-7j2y+40w61zy6YC2iRNpUe/NwhNyoXrYpHMrSunaMG64nRnaf96zO/KMQR4OyN/UnE5KLyEBnKHd4aG3rskjpQ==
@@ -7854,7 +7860,7 @@ yargs-parser@^11.1.1:
     camelcase "^5.0.0"
     decamelize "^1.2.0"
 
-yargs@^12.0.1, yargs@^12.0.2, yargs@^12.0.5:
+yargs@^12.0.1, yargs@^12.0.2:
   version "12.0.5"
   resolved "https://registry.npmjs.org/yargs/-/yargs-12.0.5.tgz#05f5997b609647b64f66b81e3b4b10a368e7ad13"
   integrity sha512-Lhz8TLaYnxq/2ObqHDql8dX8CJi97oHxrjUcYtzKbbykPtVW9WB+poxI+NM2UIzsMgNCZTIf0AQwsjK5yMAqZw==

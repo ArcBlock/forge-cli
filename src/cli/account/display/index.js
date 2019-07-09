@@ -8,7 +8,12 @@ cli('account <address>', 'Get an account info by address', input => action(execu
     forgeRelease: false,
     runningNode: true,
     rpcClient: true,
-    wallet: ({ _: [, address] }) => address === 'me',
+    wallet: args => {
+      if (args && args.args[0] === 'me') {
+        return true;
+      }
+      return false;
+    },
   },
   options: [],
   handlers: {

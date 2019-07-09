@@ -4,7 +4,7 @@ const { execute, run } = require('./join');
 
 cli(
   'join <endpoint>',
-  'Join a network by providing an forge web graphql endpoint to fetch config',
+  'Join a network by providing a valid forge web graphql endpoint to fetch config',
   input => action(execute, run, input),
   {
     requirements: {

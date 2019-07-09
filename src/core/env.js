@@ -313,7 +313,7 @@ function ensureRpcClient(args) {
       `${symbols.success} Using forge config: ${util.inspect(config, { depth: 5, colors: true })}`
     );
   } else {
-    shell.echo(`${symbols.error} forge-cli requires an forge config file to start
+    shell.echo(`${symbols.error} forge-cli requires a valid forge config file to start
 
 If you have not setup any forge core release on this machine, run this first:
 > ${chalk.cyan('forge install')}

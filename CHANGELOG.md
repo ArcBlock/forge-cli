@@ -1,3 +1,9 @@
+## 0.32.5 (July 09, 2019)
+
+- chore: update readme
+- chore: update update readme script
+- chore: update `forge stop` description
+
 ## 0.32.4 (July 08, 2019)
 
 - feat: display account type info when do `forge account xxx` #74

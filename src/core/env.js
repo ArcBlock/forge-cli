@@ -670,7 +670,7 @@ function checkUpdate() {
   writeCache('check-update', now);
 
   const { stdout: latest } = shell.exec('npm view @arcblock/forge-cli version', { silent: true });
-  const { stdout: installed } = shell.exec('forge --version', { silent: true });
+  const installed = version;
   debug('check update', { latest, installed });
 
   if (semver.gt(latest.trim(), installed.trim())) {

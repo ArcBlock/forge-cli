@@ -1,5 +1,8 @@
 ## 0.32.5 (July 09, 2019)
 
+- feat: support config forge chain/node from forge-cli #86
+- fix: `forge --version` is broken
+- feat: support creating wallets in forge-cli without a running node #4
 - chore: update readme
 - chore: update update readme script
 - chore: update `forge stop` description

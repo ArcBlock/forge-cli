@@ -10,7 +10,6 @@ const {
   runNativeWorkshopCommand,
 } = require('core/env');
 const { symbols } = require('core/ui');
-// const { ensureForgeCompiler } = require('../../protocol/compile/compile');
 const { version: forgeCliVersion } = require('../../../../package.json');
 
 async function main() {
@@ -34,9 +33,6 @@ async function main() {
   runNativeStarterCommand('version')();
   runNativeSimulatorCommand('version')();
   runNativeWorkshopCommand('version')();
-
-  // compiler
-  // const compiler = await ensureForgeCompiler();
 
   // ipfs
   if (storageEnginePath) {

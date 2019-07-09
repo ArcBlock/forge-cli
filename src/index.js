@@ -31,7 +31,7 @@ program.on('--help', () => {
   shell.echo(`
 Examples:
 
-  Please install an forge-release before running any other commands
+  Please install a forge-release before running any other commands
   > ${chalk.cyan('forge install latest')}
   > ${chalk.cyan('forge install --mirror http://arcblock.oss-cn-beijing.aliyuncs.com')}
 

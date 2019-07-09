@@ -100,3 +100,4 @@ function run() {
 
 exports.run = run;
 exports.execute = execute;
+exports.questions = questions;

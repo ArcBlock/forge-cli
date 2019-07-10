@@ -71,7 +71,7 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
     if (pid) {
       shell.echo(
         `${symbols.warning} ${chalk.yellow(
-          'You are trying to modify config of a running forge chain/node.'
+          'You are trying to modify the configuration of a running forge chain/node.'
         )}`
       );
       shell.echo(

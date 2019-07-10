@@ -3,7 +3,7 @@ const chalk = require('chalk');
 const { cli, action } = require('core/cli');
 const { execute, run } = require('./workshop');
 
-cli('workshop [action]', 'Start or stop the did workshop', input => action(execute, run, input), {
+cli('workshop [action]', 'Start/stop the dApps workshop', input => action(execute, run, input), {
   requirements: {
     forgeRelease: true,
     runningNode: true,

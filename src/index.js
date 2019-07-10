@@ -13,7 +13,7 @@ const { version } = require('../package.json');
 
 program
   .version(version)
-  .option('-v, --verbose', 'Output runtime logs when execute the command, used for debug')
+  .option('-v, --verbose', 'Output runtime info when execute subcommand, useful for debug')
   .option(
     '-r, --release-dir <dir>',
     'Forge release directory path (unzipped), use your own copy forge release'

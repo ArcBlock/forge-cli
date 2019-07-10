@@ -5,7 +5,7 @@ const { execute, run } = require('./use');
 
 cli(
   'use [version]',
-  'Active an already downloaded forge release',
+  'Activate an already downloaded forge release',
   input => action(execute, run, input),
   {
     requirements: {

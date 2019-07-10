@@ -72,42 +72,42 @@ Options:
   -h, --help                            output usage information
 
 Commands:
+  account <address>                     Get an account info by address
   account:create                        Interactively create an account, guarded by a passphrase
   account:delete <address>              Delete an account by address
-  account <address>                     Get an account info by address
   account:list [role]                   List all accounts stored in this node
   asset <address>                       Get asset info by address
   block [options] [height]              Get the block info from the running node
-  help <subcommand>                     Show help of a sub command
-  version                               Output version for all components, including forge-cli, forge, storage and consensus engine
+  checkin|poke                          Send a poke tx to the network to get tokens for test
   config [options] [action]             Read/Write chain/node config
+  create-project [options] [targetDir]  Create a project from forge starter projects
   declare:node                          Declare the current node to be a validator candidate
+  download [options] [version]          Download a forge release without activate it
+  help <subcommand>                     Show help of a sub command
   install|init [options] [version]      Download and setup forge release on this machine
-  join <endpoint>                       Join a network by providing a valid forge web graphql endpoint to fetch config
+  join <endpoint>                       Join a network by providing a valid forge web graphql endpoint
+  list|ls                               List forge releases installed locally
   logs|log [type]                       Show logs for various forge components
+  protocol:compile [sourceDir]          Compile a forge transaction protocol to formats that can be deployed to ABT Node
+  protocol:deploy [itxPath]             Deploy a compiled transaction protocol to ABT Node
   ps                                    List application status for forge (includes tendermint and ipfs)
   reset [options]                       Reset current chain state, run with caution
   simulate|simulator [action]           Start/stop simulator and generate some random data
+  stake [options] [show]                Stake to various entities: node/user/asset
   start [options]                       Start forge as a daemon in the background
   status|state [type]                   List the information of the chain and the node, chain|core|net|validator|all
   stop [options]                        Stop the forge daemon and all forge components
-  upgrade                               Upgrade chain node to new version without reset
-  web [options] [action]                Start or stop the web UI of running forge node
-  workshop [action]                     Start or stop the did workshop
-  create-project [options] [targetDir]  Create a project from forge starter projects
-  protocol:compile [sourceDir]          Compile a forge transaction protocol to formats that can be deployed to ABT Node
-  protocol:deploy [itxPath]             Deploy a compiled transaction protocol to ABT Node
-  download [options] [version]          Download a forge release without activate it
-  list|ls                               List forge releases installed locally
-  use [version]                         Active an already downloaded forge release
   tx [hash]                             Get a tx detail and display
   tx:list                               List latest transactions
-  checkin|poke                          Send a poke tx to the network to get tokens for test
   tx:send                               Send a signed tx to the network
   tx:sign                               Sign a transaction (base64) according to sender’s wallet
-  stake [options] [show]                Stake to various entities: node/user/asset
   unstake                               Revert stakes to various entities
-  wallet:create [options]               Create an local wallet and dump its public/private key
+  upgrade                               Upgrade chain node to new version without reset
+  use [version]                         Active an already downloaded forge release
+  version                               Output version for all forge components
+  wallet:create [options]               Create a local wallet and dump its public/private key
+  web [options] [action]                Start or stop the web UI of running forge node
+  workshop [action]                     Start or stop the did workshop
 
 Examples:
 

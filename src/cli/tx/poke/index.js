@@ -13,7 +13,6 @@ cli(
       rpcClient: true,
       wallet: true,
     },
-    alias: 'poke',
     options: [],
   }
 );

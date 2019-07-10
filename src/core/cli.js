@@ -43,33 +43,44 @@ function initCli(program) {
   // this will mutate allCommands
   const allCli = path.join(__dirname, '../cli/index.js');
   requireCli(allCli);
-  allCommands.forEach(x => {
-    const command = program
-      .command(x.command)
-      .description(x.desc)
-      .allowUnknownOption();
-
-    if (x.alias) {
-      command.alias(x.alias);
-    }
-
-    (x.options || []).forEach(o => command.option(...o));
-
-    if (Object.keys(x.handlers).length) {
-      Object.keys(x.handlers).forEach(k => command.on(k, x.handlers[k]));
-    }
-
-    command.action(async (...params) => {
-      const globalArgs = last(program.args).parent;
-
-      if (globalArgs.verbose) {
-        debug.enable('@arcblock/forge-cli');
+  allCommands
+    .sort((a, b) => {
+      if (a.command > b.command) {
+        return 1;
+      }
+      if (a.command < b.command) {
+        return -1;
       }
 
-      await setupEnv(globalArgs, x.requirements);
-      await x.handler({ args: params.filter(p => typeof p === 'string'), opts: command.opts() });
+      return 0;
+    })
+    .forEach(x => {
+      const command = program
+        .command(x.command)
+        .description(x.desc)
+        .allowUnknownOption();
+
+      if (x.alias) {
+        command.alias(x.alias);
+      }
+
+      (x.options || []).forEach(o => command.option(...o));
+
+      if (Object.keys(x.handlers).length) {
+        Object.keys(x.handlers).forEach(k => command.on(k, x.handlers[k]));
+      }
+
+      command.action(async (...params) => {
+        const globalArgs = last(program.args).parent;
+
+        if (globalArgs.verbose) {
+          debug.enable('@arcblock/forge-cli');
+        }
+
+        await setupEnv(globalArgs, x.requirements);
+        await x.handler({ args: params.filter(p => typeof p === 'string'), opts: command.opts() });
+      });
     });
-  });
 }
 
 async function action(execute, run, input) {

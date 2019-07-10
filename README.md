@@ -17,6 +17,7 @@
 [![docs](https://img.shields.io/badge/powered%20by-arcblock-green.svg)](https://docs.arcblock.io/forge/latest/tools/forge_cli.html)
 [![Build Status](https://img.shields.io/travis/arcblock/forge-cli.svg?style=flat-square)](https://travis-ci.com/arcblock/forge-cli)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
+[![Gitter](https://badges.gitter.im/ArcBlock/community.svg)](https://gitter.im/ArcBlock/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 `forge-cli` is an awesome toolbox for developers to work with forge, and forge is an awesome framework for building decentralized applications. Out of the box forge-cli support following features:
 
@@ -43,6 +44,8 @@
 
 ```shell
 npm install -g @arcblock/forge-cli
+# OR
+yarn global add @arcblock/forge-cli
 ```
 
 Now `forge` command is available to all new shell sessions.
@@ -65,49 +68,49 @@ Usage: forge [options] [command]
 
 Options:
   -V, --version                         output the version number
-  -v, --verbose                         Output runtime logs when execute the command, used for debug
+  -v, --verbose                         Output runtime info when execute subcommand, useful for debug
   -r, --release-dir <dir>               Forge release directory path (unzipped), use your own copy forge release
   -c, --config-path <path>              Forge config used when starting forge node and initializing gRPC clients
   -g, --socket-grpc <endpoint>          Socket gRPC endpoint to connect, with this you can use forge-cli with a remote node
   -h, --help                            output usage information
 
 Commands:
+  account <address>                     Get an account info by address
   account:create                        Interactively create an account, guarded by a passphrase
   account:delete <address>              Delete an account by address
-  account <address>                     Get an account info by address
   account:list [role]                   List all accounts stored in this node
   asset <address>                       Get asset info by address
   block [options] [height]              Get the block info from the running node
-  help <subcommand>                     Show help of a sub command
-  version                               Output version for all components, including forge-cli, forge, storage and consensus engine
-  config [options] [action]             Read/Write chain/node config
-  declare:node                          Declare the current node to be a validator candidate
-  install|init [options] [version]      Download and setup forge release on this machine
-  join <endpoint>                       Join a network by providing a valid forge web graphql endpoint to fetch config
-  logs|log [type]                       Show logs for various forge components
-  ps                                    List application status for forge (includes tendermint and ipfs)
-  reset [options]                       Reset current chain state, run with caution
-  simulate|simulator [action]           Start/stop simulator and generate some random data
-  start [options]                       Start forge as a daemon in the background
-  status|state [type]                   List the information of the chain and the node, chain|core|net|validator|all
-  stop [options]                        Stop the forge daemon and all forge components
-  upgrade                               Upgrade chain node to new version without reset
-  web [options] [action]                Start or stop the web UI of running forge node
-  workshop [action]                     Start or stop the did workshop
+  checkin                               Send a poke tx to the network to get tokens for test
+  config [options] [action]             Read/write chain/node config
   create-project [options] [targetDir]  Create a project from forge starter projects
-  protocol:compile [sourceDir]          Compile a forge transaction protocol to formats that can be deployed to ABT Node
-  protocol:deploy [itxPath]             Deploy a compiled transaction protocol to ABT Node
+  declare:node                          Declare the current node to be a validator candidate
   download [options] [version]          Download a forge release without activate it
-  list|ls                               List forge releases installed locally
-  use [version]                         Active an already downloaded forge release
+  help <subcommand>                     Show help of a sub command
+  install|init [options] [version]      Download and setup forge release on this machine
+  join <endpoint>                       Join a network by providing a valid forge web graphql endpoint
+  logs [type]                           Show logs for various forge components
+  ls                                    List forge releases installed locally
+  protocol:compile [sourceDir]          Compile a forge transaction protocol
+  protocol:deploy [itxPath]             Deploy a compiled transaction protocol to ABT Node
+  ps                                    List running forge component processes
+  reset [options]                       Reset current chain state, run with caution
+  simulator [action]                    Start/stop simulator and generate random traffic
+  stake [options] [show]                Stake to various entities: node/user/asset
+  start [options]                       Start forge as a daemon in the background
+  status [type]                         List info of the running chain/node
+  stop [options]                        Stop the forge daemon and all forge components
   tx [hash]                             Get a tx detail and display
   tx:list                               List latest transactions
-  checkin|poke                          Send a poke tx to the network to get tokens for test
   tx:send                               Send a signed tx to the network
   tx:sign                               Sign a transaction (base64) according to sender’s wallet
-  stake [options] [show]                Stake to various entities: node/user/asset
   unstake                               Revert stakes to various entities
-  wallet:create [options]               Create an local wallet and dump its public/private key
+  upgrade                               Upgrade chain node to new version without reset
+  use [version]                         Activate an already downloaded forge release
+  version                               Output version for all forge components
+  wallet:create [options]               Create a local wallet and dump its public/private key
+  web [options] [action]                Start/stop the web interface of running forge chain/node
+  workshop [action]                     Start/stop the dApps workshop
 
 Examples:
 

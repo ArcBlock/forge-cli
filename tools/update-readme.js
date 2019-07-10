@@ -24,6 +24,7 @@ const readmeContent = `![forge-cli](https://www.arcblock.io/.netlify/functions/b
 [![docs](https://img.shields.io/badge/powered%20by-arcblock-green.svg)](https://docs.arcblock.io/forge/latest/tools/forge_cli.html)
 [![Build Status](https://img.shields.io/travis/arcblock/forge-cli.svg?style=flat-square)](https://travis-ci.com/arcblock/forge-cli)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
+[![Gitter](https://badges.gitter.im/ArcBlock/community.svg)](https://gitter.im/ArcBlock/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 \`forge-cli\` is an awesome toolbox for developers to work with forge, and forge is an awesome framework for building decentralized applications. Out of the box forge-cli support following features:
 
@@ -50,6 +51,8 @@ const readmeContent = `![forge-cli](https://www.arcblock.io/.netlify/functions/b
 
 \`\`\`shell
 npm install -g @arcblock/forge-cli
+# OR
+yarn global add @arcblock/forge-cli
 \`\`\`
 
 Now \`forge\` command is available to all new shell sessions.

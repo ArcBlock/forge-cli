@@ -3,8 +3,8 @@ const { cli, action } = require('core/cli');
 const { execute, run } = require('./simulate');
 
 cli(
-  'simulate [action]',
-  'Start/stop simulator and generate some random data',
+  'simulator [action]',
+  'Start/stop simulator and generate random traffic',
   input => action(execute, run, input),
   {
     requirements: {
@@ -13,7 +13,6 @@ cli(
       rpcClient: false,
       wallet: false,
     },
-    alias: 'simulator',
     options: [],
   }
 );

@@ -25,7 +25,6 @@ function getModeratorSecretKey() {
     return sk;
   }
 
-  // debug('detected base64 moderator sk', base64.unescape(sk));
   return bytesToHex(Buffer.from(base64.unescape(sk), 'base64'));
 }
 
@@ -40,12 +39,11 @@ function getModerator() {
 
 function getNumberValidator(label, integer = true) {
   return v => {
-    if (!v) return `The ${label} should not be empty`;
+    if (!Number(v)) return `The ${label} should be a number`;
+    if (Number(v) <= 0) return `The ${label} should be a positive number`;
     if (integer) {
-      if (v.toString().indexOf('.') >= 0) return `The ${label} should be integer`;
+      if (v.toString().indexOf('.') >= 0) return `The ${label} should be a positive integer`;
     }
-    if (!Number(v)) return `The ${label} should be positive integer`;
-    if (Number(v) <= 0) return `The ${label} should be positive integer`;
     return true;
   };
 }
@@ -131,7 +129,7 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
         message: 'Please input chain name:',
         default: defaults.tendermint.moniker,
         validate: v => {
-          if (!v) return 'The chain name should not empty';
+          if (!v) return 'The chain name should not be empty';
           if (!/^[a-zA-Z][a-zA-Z0-9_\-\s]{3,23}$/.test(v)) {
             return 'The chain name should start with a letter, only contain 0-9,a-z,A-Z, and length between 4~24';
           }
@@ -159,7 +157,7 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
         default: tokenDefaults.name,
         when: d => d.customizeToken,
         validate: v => {
-          if (!v) return 'The token name should not empty';
+          if (!v) return 'The token name should not be empty';
           if (!/^[a-zA-Z][a-zA-Z0-9_\-\s]{5,35}$/.test(v)) {
             return 'The token name should start with a letter, only contain 0-9,a-z,A-Z, and length between 6~36';
           }
@@ -174,7 +172,7 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
         default: tokenDefaults.symbol,
         when: d => d.customizeToken,
         validate: v => {
-          if (!v) return 'The token symbol should not empty';
+          if (!v) return 'The token symbol should not be empty';
           if (!/^[a-zA-Z][a-zA-Z0-9]{2,5}$/.test(v)) {
             return 'The token symbol should start with a letter, only contain 0-9,a-z,A-Z, and length between 3~6';
           }
@@ -189,7 +187,7 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
         default: iconFile,
         when: d => d.customizeToken,
         validate: v => {
-          if (!v) return 'The token icon should not empty';
+          if (!v) return 'The token icon should not be empty';
           if (!fs.existsSync(v)) {
             return 'The token icon should be a valid file path';
           }
@@ -208,7 +206,7 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
         default: tokenDefaults.description,
         when: d => d.customizeToken,
         validate: v => {
-          if (!v) return 'The token description should not empty';
+          if (!v) return 'The token description should not be empty';
           if (!/^[a-zA-Z][a-zA-Z0-9_\-\s]{5,255}$/.test(v)) {
             return 'The token description should start with a letter, only contain 0-9,a-z,A-Z, and length between 6~256';
           }

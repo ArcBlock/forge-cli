@@ -3,7 +3,7 @@ const chalk = require('chalk');
 const { cli, action } = require('core/cli');
 const { execute, run } = require('./config');
 
-cli('config', 'Read and display forge config', input => action(execute, run, input), {
+cli('config [action]', 'Read/Write chain/node config', input => action(execute, run, input), {
   requirements: {
     forgeRelease: true,
     rpcClient: true,
@@ -14,8 +14,9 @@ cli('config', 'Read and display forge config', input => action(execute, run, inp
     '--help': () => {
       shell.echo(`
 Examples:
-  - ${chalk.cyan('forge config')}             show config for current node
-  - ${chalk.cyan('forge config --peer')}      generate config for peer(new node)
+  - ${chalk.cyan('forge config')}             Show config for current node
+  - ${chalk.cyan('forge config --peer')}      Generate config for peer(new node)
+  - ${chalk.cyan('forge config set')}         Update forge config
 `);
     },
   },

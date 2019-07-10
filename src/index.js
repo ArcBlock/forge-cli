@@ -9,8 +9,10 @@ const program = require('commander');
 const { initCli } = require('core/cli');
 const { symbols, hr } = require('core/ui');
 const { printLogo } = require('core/env');
+const { version } = require('../package.json');
 
 program
+  .version(version)
   .option('-v, --verbose', 'Output runtime logs when execute the command, used for debug')
   .option(
     '-r, --release-dir <dir>',

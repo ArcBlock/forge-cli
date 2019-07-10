@@ -7,3 +7,4 @@ exports.project = require('./project');
 exports.protocol = require('./protocol');
 exports.release = require('./release');
 exports.tx = require('./tx');
+exports.wallet = require('./wallet');

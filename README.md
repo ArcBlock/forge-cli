@@ -1,6 +1,6 @@
 ![forge-cli](https://www.arcblock.io/.netlify/functions/badge/?text=Forge%20CLI)
 
-> Command line toolbox that helps developers to work with [ArcBlock Forge SDK](https://docs.arcblock.io/forge/latest/)
+> Command line toolbox maintained by [Arcblock](https://www.arcblock.io) that helps developers to work with [Forge SDK](https://docs.arcblock.io/forge/latest/)
 
 ## Table of Contents
 
@@ -64,10 +64,11 @@ Run `forge` and get available options and subcommands.
 Usage: forge [options] [command]
 
 Options:
+  -V, --version                         output the version number
   -v, --verbose                         Output runtime logs when execute the command, used for debug
-  -r, --release-dir                     Forge release directory path (unzipped), use your own copy forge release
-  -c, --config-path                     Forge config used when starting forge node and initializing gRPC clients
-  -g, --socket-grpc                     Socket gRPC endpoint to connect, with this you can use forge-cli with a remote node
+  -r, --release-dir <dir>               Forge release directory path (unzipped), use your own copy forge release
+  -c, --config-path <path>              Forge config used when starting forge node and initializing gRPC clients
+  -g, --socket-grpc <endpoint>          Socket gRPC endpoint to connect, with this you can use forge-cli with a remote node
   -h, --help                            output usage information
 
 Commands:
@@ -79,17 +80,17 @@ Commands:
   block [options] [height]              Get the block info from the running node
   help <subcommand>                     Show help of a sub command
   version                               Output version for all components, including forge-cli, forge, storage and consensus engine
-  config [options]                      Read and display forge config
+  config [options] [action]             Read/Write chain/node config
   declare:node                          Declare the current node to be a validator candidate
-  init [options] [version]              Download and setup forge release on this machine
-  join <endpoint>                       Join a network by providing an forge web graphql endpoint to fetch config
+  install|init [options] [version]      Download and setup forge release on this machine
+  join <endpoint>                       Join a network by providing a valid forge web graphql endpoint to fetch config
   logs|log [type]                       Show logs for various forge components
   ps                                    List application status for forge (includes tendermint and ipfs)
   reset [options]                       Reset current chain state, run with caution
   simulate|simulator [action]           Start/stop simulator and generate some random data
   start [options]                       Start forge as a daemon in the background
-  state|status [type]                   List the information of the chain and the node, chain|core|net|validator|web
-  stop                                  Stop the forge daemon (forge-core, forge-app, consensus engine, storage engine)
+  status|state [type]                   List the information of the chain and the node, chain|core|net|validator|all
+  stop [options]                        Stop the forge daemon and all forge components
   upgrade                               Upgrade chain node to new version without reset
   web [options] [action]                Start or stop the web UI of running forge node
   workshop [action]                     Start or stop the did workshop
@@ -106,14 +107,16 @@ Commands:
   tx:sign                               Sign a transaction (base64) according to sender’s wallet
   stake [options] [show]                Stake to various entities: node/user/asset
   unstake                               Revert stakes to various entities
+  wallet:create [options]               Create an local wallet and dump its public/private key
 
 Examples:
 
-  Be sure to initialize before running any other commands
-  > forge init
+  Please install a forge-release before running any other commands
+  > forge install latest
+  > forge install --mirror http://arcblock.oss-cn-beijing.aliyuncs.com
 
   Curious about how to use a subcommand?
-  > forge help init
+  > forge help install
   
 
 ```

@@ -5,16 +5,9 @@ const shell = require('shelljs');
 
 const readmeFile = path.join(__dirname, '../README.md');
 const { stdout } = shell.exec(path.resolve(__dirname, '../bin/forge'), { silent: true });
-const readmeContent = `<h1 align="center">@arcblock/forge-cli</h1> <br>
-<p align="center">
-  <a href="https://www.arcblock.io/">
-    <img alt="ArcBlock" title="ArcBlock" src="https://raw.github.com/ArcBlock/forge-cli/master/docs/logo.png" width="234">
-  </a>
-</p>
+const readmeContent = `![forge-cli](https://www.arcblock.io/.netlify/functions/badge/?text=Forge%20CLI)
 
-<p align="center">
-  Command line toolbox that helps developers to work with <a href="https://docs.arcblock.io/forge/latest/">ArcBlock Forge SDK</a>
-</p>
+> Command line toolbox maintained by [Arcblock](https://www.arcblock.io) that helps developers to work with [Forge SDK](https://docs.arcblock.io/forge/latest/)
 
 ## Table of Contents
 

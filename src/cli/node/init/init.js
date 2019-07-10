@@ -6,6 +6,8 @@ const yaml = require('yaml');
 const shell = require('shelljs');
 const chalk = require('chalk');
 const semver = require('semver');
+const inquirer = require('inquirer');
+const { spawn } = require('child_process');
 const { symbols, hr, getSpinner, getProgress } = require('core/ui');
 const {
   config,
@@ -243,8 +245,32 @@ async function main({ args: [userVersion], opts: { mirror } }) {
 
     shell.echo(`${symbols.success} Congratulations! forge initialized successfully!`);
     shell.echo('');
-    shell.echo(`Now you can start a forge node with ${chalk.cyan('forge start')}`);
-    shell.echo('');
+
+    const questions = [
+      {
+        type: 'confirm',
+        name: 'customizeConfig',
+        message: 'Do you want to customize config for this chain?',
+        default: true,
+      },
+    ];
+    const { customizeConfig } = await inquirer.prompt(questions);
+    if (customizeConfig) {
+      const childProcess = spawn('forge', ['config', 'set'], {
+        stdio: 'inherit',
+        env: process.env,
+        cwd: process.cwd(),
+      });
+
+      childProcess.on('close', () => {
+        shell.echo('');
+        shell.echo(`Configured! Now you can start a forge node with ${chalk.cyan('forge start')}`);
+        shell.echo('');
+      });
+    } else {
+      shell.echo(`Now you can start a forge node with ${chalk.cyan('forge start')}`);
+      shell.echo('');
+    }
   } catch (err) {
     debug.error(err);
     shell.echo(`${symbols.error} Forge initialize failed, please try again later`);

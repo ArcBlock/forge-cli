@@ -10,8 +10,8 @@ cli(
   {
     requirements: {
       forgeRelease: true,
-      runningNode: true,
-      rpcClient: true,
+      runningNode: false,
+      rpcClient: false,
     },
     options: [['-f, --force', 'Kill all forge related processes, useful for cleanup']],
     handlers: {

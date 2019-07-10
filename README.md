@@ -64,6 +64,7 @@ Run `forge` and get available options and subcommands.
 Usage: forge [options] [command]
 
 Options:
+  -V, --version                         output the version number
   -v, --verbose                         Output runtime logs when execute the command, used for debug
   -r, --release-dir <dir>               Forge release directory path (unzipped), use your own copy forge release
   -c, --config-path <path>              Forge config used when starting forge node and initializing gRPC clients
@@ -79,7 +80,7 @@ Commands:
   block [options] [height]              Get the block info from the running node
   help <subcommand>                     Show help of a sub command
   version                               Output version for all components, including forge-cli, forge, storage and consensus engine
-  config [options]                      Read and display forge config
+  config [options] [action]             Read/Write chain/node config
   declare:node                          Declare the current node to be a validator candidate
   install|init [options] [version]      Download and setup forge release on this machine
   join <endpoint>                       Join a network by providing a valid forge web graphql endpoint to fetch config
@@ -106,6 +107,7 @@ Commands:
   tx:sign                               Sign a transaction (base64) according to sender’s wallet
   stake [options] [show]                Stake to various entities: node/user/asset
   unstake                               Revert stakes to various entities
+  wallet:create [options]               Create an local wallet and dump its public/private key
 
 Examples:
 

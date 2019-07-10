@@ -250,7 +250,7 @@ async function main({ args: [userVersion], opts: { mirror } }) {
       {
         type: 'confirm',
         name: 'customizeConfig',
-        message: 'Do you wang to customize config for this chain?',
+        message: 'Do you want to customize config for this chain?',
         default: true,
       },
     ];

@@ -5,7 +5,7 @@ const { execute, run } = require('./create');
 
 cli(
   'wallet:create',
-  'Create an local wallet and dump its public/private key',
+  'Create a local wallet and dump its public/private key',
   input => action(execute, run, input),
   {
     requirements: {

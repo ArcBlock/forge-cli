@@ -37,6 +37,15 @@ function getModerator() {
   return undefined;
 }
 
+function getIntegerValidator(label) {
+  return v => {
+    if (!v) return `The ${label} should not be empty`;
+    if (v.toString().indexOf('.') >= 0) return `The ${label} should be integer`;
+    if (Number(v) <= 0) return `The ${label} should be positive integer`;
+    return true;
+  };
+}
+
 async function main({ args: [action = 'get'], opts: { peer } }) {
   if (action === 'get') {
     if (peer) {
@@ -92,8 +101,8 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
         default: defaults.tendermint.moniker,
         validate: v => {
           if (!v) return 'The chain name should not empty';
-          if (!/^[a-zA-Z0-9][a-zA-Z0-9_\-\s]{3,23}$/.test(v)) {
-            return 'The chain name should only contain 0-9,a-z,A-Z, and length between 4~24';
+          if (!/^[a-zA-Z][a-zA-Z0-9_\-\s]{3,23}$/.test(v)) {
+            return 'The chain name should start with a letter, only contain 0-9,a-z,A-Z, and length between 4~24';
           }
           return true;
         },
@@ -103,28 +112,25 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
         name: 'blockTime',
         message: 'Please input block time (in seconds):',
         default: parseInt(defaults.tendermint.timeout_commit, 10),
-        validate: v => {
-          if (!v) return 'The block time should not empty';
-          if (Number(v) <= 0) return 'The block time should be positive number';
-          return true;
-        },
+        validate: getIntegerValidator('block time'),
       },
       {
         type: 'confirm',
         name: 'customizeToken',
-        message: 'Do you wang to customize token config for this chain?',
+        message: 'Do you want to customize token config for this chain?',
         default: false,
       },
       {
         type: 'text',
         name: 'tokenName',
-        message: 'Whats the token name?',
+        // eslint-disable-next-line quotes
+        message: "What's the token name?",
         default: tokenDefaults.name,
         when: d => d.customizeToken,
         validate: v => {
           if (!v) return 'The token name should not empty';
-          if (!/^[a-zA-Z0-9][a-zA-Z0-9_\-\s]{5,35}$/.test(v)) {
-            return 'The token name should only contain 0-9,a-z,A-Z, and length between 6~36';
+          if (!/^[a-zA-Z][a-zA-Z0-9_\-\s]{5,35}$/.test(v)) {
+            return 'The token name should start with a letter, only contain 0-9,a-z,A-Z, and length between 6~36';
           }
           return true;
         },
@@ -132,13 +138,14 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
       {
         type: 'text',
         name: 'tokenSymbol',
-        message: 'Whats the token symbol?',
+        // eslint-disable-next-line quotes
+        message: "What's the token symbol?",
         default: tokenDefaults.symbol,
         when: d => d.customizeToken,
         validate: v => {
           if (!v) return 'The token symbol should not empty';
-          if (!/^[a-zA-Z0-9][a-zA-Z0-9_]{2,5}$/.test(v)) {
-            return 'The token symbol should only contain 0-9,a-z,A-Z, and length between 3~6';
+          if (!/^[a-zA-Z][a-zA-Z0-9]{2,5}$/.test(v)) {
+            return 'The token symbol should start with a letter, only contain 0-9,a-z,A-Z, and length between 3~6';
           }
           return true;
         },
@@ -146,7 +153,8 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
       {
         type: 'text',
         name: 'tokenIcon',
-        message: 'Whats the token icon?',
+        // eslint-disable-next-line quotes
+        message: "What's the token icon?",
         default: iconFile,
         when: d => d.customizeToken,
         validate: v => {
@@ -170,21 +178,9 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
         when: d => d.customizeToken,
         validate: v => {
           if (!v) return 'The token description should not empty';
-          if (!/^[a-zA-Z0-9][a-zA-Z0-9_\-\s]{5,255}$/.test(v)) {
-            return 'The token description should only contain 0-9,a-z,A-Z, and length between 6~256';
+          if (!/^[a-zA-Z][a-zA-Z0-9_\-\s]{5,255}$/.test(v)) {
+            return 'The token description should start with a letter, only contain 0-9,a-z,A-Z, and length between 6~256';
           }
-          return true;
-        },
-      },
-      {
-        type: 'number',
-        name: 'tokenTotalSupply',
-        message: 'Please input token total supply:',
-        default: tokenDefaults.total_supply,
-        when: d => d.customizeToken,
-        validate: v => {
-          if (!v) return 'The total supply should not empty';
-          if (Number(v) <= 0) return 'The total supply should be positive number';
           return true;
         },
       },
@@ -194,11 +190,15 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
         message: 'Please input token initial supply:',
         default: tokenDefaults.initial_supply,
         when: d => d.customizeToken,
-        validate: v => {
-          if (!v) return 'The initial supply should not empty';
-          if (Number(v) <= 0) return 'The initial supply should be positive number';
-          return true;
-        },
+        validate: getIntegerValidator('initial supply'),
+      },
+      {
+        type: 'number',
+        name: 'tokenTotalSupply',
+        message: 'Please input token total supply:',
+        default: tokenDefaults.total_supply,
+        when: d => d.customizeToken,
+        validate: getIntegerValidator('total supply'),
       },
       {
         type: 'number',
@@ -206,16 +206,12 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
         message: 'Please input token decimal:',
         default: tokenDefaults.decimal,
         when: d => d.customizeToken,
-        validate: v => {
-          if (!v) return 'The token decimal should not empty';
-          if (Number(v) <= 0) return 'The token decimal should be positive number';
-          return true;
-        },
+        validate: getIntegerValidator('token decimal'),
       },
       {
         type: 'confirm',
         name: 'includeModerator',
-        message: 'Do you wang to include moderator config in the config?',
+        message: 'Do you want to include moderator config in the config?',
         when: () => moderator,
         default: true,
       },

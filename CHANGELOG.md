@@ -1,5 +1,11 @@
 ## 0.33.0 (July 11, 2019)
 
+- chore: add gitter badge
+- chore: update download complete tip
+- fix: `forge stop` requirements
+- chore: remove redundant command aliases
+- chore: polish command description
+- fix: sort commands by alphabetic in the list #83
 
 ## 0.32.5 (July 09, 2019)
 

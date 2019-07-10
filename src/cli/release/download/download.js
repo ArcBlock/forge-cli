@@ -42,7 +42,16 @@ async function main({ args: [userVersion], opts: { mirror } }) {
 
     shell.echo(`${symbols.success} Congratulations! forge v${version} download successfully!`);
     shell.echo('');
-    shell.echo(`Now you can use this version with ${chalk.cyan(`forge use ${version}`)}`);
+    shell.echo(
+      `Now you can use this version with ${chalk.cyan(
+        `forge use ${version}`
+      )}: requires reset chain state`
+    );
+    shell.echo(
+      `Or you can upgrade to this version with ${chalk.cyan(
+        'forge upgrade'
+      )}: does not requires reset chain state`
+    );
     shell.echo('');
   } catch (err) {
     debug.error(err);

@@ -12,7 +12,7 @@ const { fromSecretKey } = require('@arcblock/forge-wallet');
 const { bytesToHex, hexToBytes, isHexStrict } = require('@arcblock/forge-util');
 const GraphQLClient = require('@arcblock/graphql-client');
 const { symbols, hr, pretty } = require('core/ui');
-const { config, requiredDirs, webUrl } = require('core/env');
+const { config, requiredDirs, webUrl, findServicePid } = require('core/env');
 
 function getModeratorSecretKey() {
   const sk = process.env.FORGE_MODERATOR_SK;
@@ -67,6 +67,26 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
   }
 
   if (action === 'set') {
+    const pid = await findServicePid('forge_starter');
+    if (pid) {
+      shell.echo(
+        `${symbols.warning} ${chalk.yellow(
+          'You are trying to modify config of a running forge chain/node.'
+        )}`
+      );
+      shell.echo(
+        `${symbols.warning} ${chalk.yellow(
+          'token and chainId configuration cannot be changed once the chain is started'
+        )}`
+      );
+      shell.echo(
+        `${symbols.warning} ${chalk.yellow(
+          'If you really need to do so, please stop and reset the chain first'
+        )}`
+      );
+      process.exit(1);
+    }
+
     const { forgeConfigPath } = config.get('cli');
     const defaults = toml.parse(fs.readFileSync(forgeConfigPath).toString());
     const tokenDefaults = Object.assign(
@@ -249,9 +269,9 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
       defaults.forge.token.symbol = tokenSymbol;
       defaults.forge.token.icon = base64Img.base64Sync(tokenIcon);
       defaults.forge.token.description = tokenDescription;
-      defaults.forge.token.total_supply = tokenTotalSupply;
-      defaults.forge.token.initial_supply = tokenInitialSupply;
-      defaults.forge.token.tokenDecimal = tokenDecimal;
+      defaults.forge.token.total_supply = Number(tokenTotalSupply);
+      defaults.forge.token.initial_supply = Number(tokenInitialSupply);
+      defaults.forge.token.tokenDecimal = Number(tokenDecimal);
     }
 
     // moderator config
@@ -273,7 +293,10 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
 
     fs.writeFileSync(forgeConfigPath, toml.stringify(defaults));
 
+    const docUrl = 'https://docs.arcblock.io/forge/latest/core/configuration.html!';
     shell.echo(`${symbols.success} config file ${chalk.cyan(forgeConfigPath)} is updated!`);
+    shell.echo(`${symbols.info} full configuration documentation: ${docUrl}`);
+    shell.echo(hr);
     shell.echo(`${symbols.info} you need to restart the chain to load the new config!`);
   }
 }

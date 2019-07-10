@@ -14,8 +14,9 @@ cli('config [action]', 'Read/Write chain/node config', input => action(execute, 
     '--help': () => {
       shell.echo(`
 Examples:
-  - ${chalk.cyan('forge config')}             show config for current node
-  - ${chalk.cyan('forge config --peer')}      generate config for peer(new node)
+  - ${chalk.cyan('forge config')}             Show config for current node
+  - ${chalk.cyan('forge config --peer')}      Generate config for peer(new node)
+  - ${chalk.cyan('forge config set')}         Update forge config
 `);
     },
   },

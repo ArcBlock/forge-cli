@@ -65,7 +65,7 @@ Usage: forge [options] [command]
 
 Options:
   -V, --version                         output the version number
-  -v, --verbose                         Output runtime logs when execute the command, used for debug
+  -v, --verbose                         Output runtime info when execute subcommand, useful for debug
   -r, --release-dir <dir>               Forge release directory path (unzipped), use your own copy forge release
   -c, --config-path <path>              Forge config used when starting forge node and initializing gRPC clients
   -g, --socket-grpc <endpoint>          Socket gRPC endpoint to connect, with this you can use forge-cli with a remote node
@@ -78,24 +78,24 @@ Commands:
   account:list [role]                   List all accounts stored in this node
   asset <address>                       Get asset info by address
   block [options] [height]              Get the block info from the running node
-  checkin|poke                          Send a poke tx to the network to get tokens for test
-  config [options] [action]             Read/Write chain/node config
+  checkin                               Send a poke tx to the network to get tokens for test
+  config [options] [action]             Read/write chain/node config
   create-project [options] [targetDir]  Create a project from forge starter projects
   declare:node                          Declare the current node to be a validator candidate
   download [options] [version]          Download a forge release without activate it
   help <subcommand>                     Show help of a sub command
   install|init [options] [version]      Download and setup forge release on this machine
   join <endpoint>                       Join a network by providing a valid forge web graphql endpoint
-  list|ls                               List forge releases installed locally
-  logs|log [type]                       Show logs for various forge components
-  protocol:compile [sourceDir]          Compile a forge transaction protocol to formats that can be deployed to ABT Node
+  logs [type]                           Show logs for various forge components
+  ls                                    List forge releases installed locally
+  protocol:compile [sourceDir]          Compile a forge transaction protocol
   protocol:deploy [itxPath]             Deploy a compiled transaction protocol to ABT Node
-  ps                                    List application status for forge (includes tendermint and ipfs)
+  ps                                    List running forge component processes
   reset [options]                       Reset current chain state, run with caution
-  simulate|simulator [action]           Start/stop simulator and generate some random data
+  simulator [action]                    Start/stop simulator and generate random traffic
   stake [options] [show]                Stake to various entities: node/user/asset
   start [options]                       Start forge as a daemon in the background
-  status|state [type]                   List the information of the chain and the node, chain|core|net|validator|all
+  status [type]                         List info of the running chain/node
   stop [options]                        Stop the forge daemon and all forge components
   tx [hash]                             Get a tx detail and display
   tx:list                               List latest transactions
@@ -103,11 +103,11 @@ Commands:
   tx:sign                               Sign a transaction (base64) according to sender’s wallet
   unstake                               Revert stakes to various entities
   upgrade                               Upgrade chain node to new version without reset
-  use [version]                         Active an already downloaded forge release
+  use [version]                         Activate an already downloaded forge release
   version                               Output version for all forge components
   wallet:create [options]               Create a local wallet and dump its public/private key
-  web [options] [action]                Start or stop the web UI of running forge node
-  workshop [action]                     Start or stop the did workshop
+  web [options] [action]                Start/stop the web interface of running forge chain/node
+  workshop [action]                     Start/stop the dApps workshop
 
 Examples:
 

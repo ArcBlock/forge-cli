@@ -11,7 +11,6 @@ cli('status [type]', 'List info of the running chain/node', input => action(exec
     wallet: false,
   },
   options: [],
-  alias: 'state',
   handlers: {
     '--help': () => {
       shell.echo(`

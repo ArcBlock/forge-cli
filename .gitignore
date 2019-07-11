@@ -9,3 +9,4 @@ tmp
 .compiled
 yarn-debug.log
 yarn-error.log
+*.dump

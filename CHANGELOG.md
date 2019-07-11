@@ -1,3 +1,7 @@
+## 0.33.1 (July 11, 2019)
+
+- upgrade lodash to latest version to fix lodash prototype pollution #91
+
 ## 0.33.0 (July 11, 2019)
 
 - chore: add gitter badge

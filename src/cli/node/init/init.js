@@ -14,8 +14,7 @@ const {
   debug,
   requiredDirs,
   ensureForgeRelease,
-  findReleaseConfig,
-  findReleaseConfigOld,
+  copyReleaseConfig,
   getPlatform,
   printLogo,
   findServicePid,
@@ -157,23 +156,6 @@ function expandReleaseTarball(filePath, subFolder, version) {
   shell.exec(`cp ${filePath} ${targetDir}`);
   shell.exec(`cd ${targetDir} && tar -zxf ${fileName} && rm -f ${fileName}`);
   shell.echo(`${symbols.success} Expand release asset ${filePath} to ${targetDir}`);
-}
-
-function copyReleaseConfig(version) {
-  const configPath =
-    findReleaseConfig(requiredDirs.release, version) ||
-    findReleaseConfigOld(requiredDirs.release, version);
-  if (configPath) {
-    const baseDir = path.dirname(requiredDirs.release);
-    shell.echo(`${symbols.success} Extract forge config from ${configPath}`);
-    shell.exec(`cp ${configPath} ${baseDir}/`);
-    shell.echo(
-      `${symbols.success} Forge config written to ${baseDir}/${path.basename(configPath)}`
-    );
-  } else {
-    shell.echo(`${symbols.error} Forge config not found under release folder`);
-    process.exit(1);
-  }
 }
 
 function updateReleaseYaml(asset, version) {

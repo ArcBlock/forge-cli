@@ -1,6 +1,7 @@
 ## 0.33.3 (July 12, 2019)
 
 - fix: poke config not correct
+- fix: forge stop should abort when forge is not started
 - feat: remove config in `forge reset`
 
 ## 0.33.2 (July 12, 2019)

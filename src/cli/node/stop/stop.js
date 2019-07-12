@@ -37,6 +37,13 @@ async function main({ opts: { force } }) {
     }
 
     const pid = await findServicePid('forge_starter');
+    if (!pid) {
+      shell.echo(`${symbols.error} forge is not started yet!`);
+      shell.echo(`${symbols.info} start with ${chalk.cyan('forge start')}!`);
+      process.exit(1);
+      return;
+    }
+
     shell.echo(`${symbols.success} Sending kill signal to forge daemon...`);
     const spinner = getSpinner('Waiting for forge daemon to stop...');
     spinner.start();

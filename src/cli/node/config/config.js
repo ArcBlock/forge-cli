@@ -348,8 +348,8 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
     }
 
     // poke config
-    defaults.forge.poke = pokeDefaults;
     if (enablePoke) {
+      defaults.forge.poke = pokeDefaults;
       if (customizePoke) {
         defaults.forge.poke.balance = Number(pokeBalance || defaults.forge.poke.balance);
         defaults.forge.poke.daily_limit = Number(pokeDailyLimit || defaults.forge.poke.daily_limit);

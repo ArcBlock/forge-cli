@@ -22,7 +22,7 @@ async function main({ opts: { yes } }) {
         name: 'confirm',
         default: false,
         message: chalk.red(
-          'Reset chain state will erase all local data, including transactions/logs, are you sure to continue?'
+          'Reset chain state will erase chain state, logs and configuration are you sure to continue?'
         ),
       },
     ];
@@ -36,6 +36,8 @@ async function main({ opts: { yes } }) {
     shell.echo(`${symbols.info} rm -rf ~/.forge_release`);
     shell.exec('rm -rf ~/.forge_cli/keys');
     shell.echo(`${symbols.info} rm -rf ~/.forge_cli/keys`);
+    shell.exec('rm -f ~/.forge_cli/forge_release.toml');
+    shell.echo(`${symbols.info} rm -f ~/.forge_cli/forge_release.toml`);
   } else {
     shell.echo(`${symbols.info} User abort, nothing changed!`);
     process.exit();

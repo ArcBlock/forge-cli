@@ -375,7 +375,8 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
     // accounts config
     if (moderatorAsTokenHolder) {
       const total = customizeToken ? tokenInitialSupply : tokenDefaults.initial_supply;
-      const poked = enablePoke && customizePoke ? pokeBalance : pokeDefaults.balance;
+      // eslint-disable-next-line no-nested-ternary
+      const poked = enablePoke ? (customizePoke ? pokeBalance : pokeDefaults.balance) : 0;
 
       defaults.forge.accounts = [
         {

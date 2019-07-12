@@ -295,7 +295,8 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
         name: 'moderatorAsTokenHolder',
         message: d => {
           const total = d.customizeToken ? d.tokenInitialSupply : tokenDefaults.initial_supply;
-          const poked = d.enablePoke && d.customizePoke ? d.pokeBalance : pokeDefaults.balance;
+          // eslint-disable-next-line no-nested-ternary
+          const poked = d.enablePoke ? (d.customizePoke ? d.pokeBalance : pokeDefaults.balance) : 0;
           const symbol = d.customizeToken ? d.tokenSymbol : tokenDefaults.symbol;
           return `Set moderator as token owner of (${total - poked} ${symbol}) on chain start?`;
         },
@@ -356,6 +357,7 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
         defaults.forge.poke.amount = Number(pokeAmount || defaults.forge.poke.amount);
       }
     } else {
+      defaults.forge.poke = {};
       defaults.forge.poke.balance = 0;
       defaults.forge.poke.daily_limit = 0;
       defaults.forge.poke.amount = 0;

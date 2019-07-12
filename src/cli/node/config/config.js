@@ -381,7 +381,7 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
         {
           address: moderator.toAddress(),
           pk: base64.escape(base64.encode(hexToBytes(moderator.publicKey))),
-          balance: Number(total - poked),
+          balance: total - poked,
         },
       ];
     }

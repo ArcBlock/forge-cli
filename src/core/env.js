@@ -218,6 +218,7 @@ function ensureForgeRelease(args, exitOn404 = true) {
       debug(`${symbols.success} Using forge executable: ${forgeBinPath}`);
 
       if (semver.satisfies(currentVersion, engines.forge)) {
+        copyReleaseConfig(currentVersion, false);
         return releaseDir;
       }
       if (exitOn404) {
@@ -259,6 +260,26 @@ function ensureForgeRelease(args, exitOn404 = true) {
   }
 
   return false;
+}
+
+function copyReleaseConfig(currentVersion, overwrite = true) {
+  const targetPath = path.join(path.dirname(requiredDirs.release), 'forge_release.toml');
+  if (fs.existsSync(targetPath) && !overwrite) {
+    return;
+  }
+
+  const sourcePath =
+    findReleaseConfig(requiredDirs.release, currentVersion) ||
+    findReleaseConfigOld(requiredDirs.release, currentVersion);
+  if (sourcePath) {
+    const cliDir = path.dirname(requiredDirs.release);
+    shell.echo(`${symbols.success} Extract forge config from ${sourcePath}`);
+    shell.exec(`cp ${sourcePath} ${cliDir}/`);
+    shell.echo(`${symbols.success} Forge config written to ${cliDir}/${path.basename(sourcePath)}`);
+  } else {
+    shell.echo(`${symbols.error} Forge config not found under release folder`);
+    process.exit(1);
+  }
 }
 
 async function ensureRunningNode() {
@@ -726,6 +747,7 @@ module.exports = {
   requiredDirs,
   findReleaseConfig,
   findReleaseConfigOld,
+  copyReleaseConfig,
   findReleaseVersion,
   createFileFinder,
   ensureRequiredDirs,

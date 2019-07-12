@@ -276,7 +276,6 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
         message: 'How much token can be poked in total?',
         default: d =>
           Math.min(
-            pokeDefaults.balance,
             d.pokeDailyLimit * 365 * 4,
             d.tokenInitialSupply || defaults.forge.token.initial_supply
           ),
@@ -288,6 +287,18 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
         type: 'confirm',
         name: 'includeModerator',
         message: 'Do you want to include moderator config in the config?',
+        when: () => moderator,
+        default: true,
+      },
+      {
+        type: 'confirm',
+        name: 'moderatorAsTokenHolder',
+        message: d => {
+          const total = d.customizeToken ? d.tokenInitialSupply : tokenDefaults.initial_supply;
+          const poked = d.enablePoke && d.customizePoke ? d.pokeBalance : pokeDefaults.balance;
+          const symbol = d.customizeToken ? d.tokenSymbol : tokenDefaults.symbol;
+          return `Set moderator as token owner of (${total - poked} ${symbol}) on chain start?`;
+        },
         when: () => moderator,
         default: true,
       },
@@ -310,6 +321,7 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
       pokeBalance,
       pokeDailyLimit,
       pokeAmount,
+      moderatorAsTokenHolder,
     } = await inquirer.prompt(questions);
 
     defaults.tendermint.moniker = chainName;
@@ -339,11 +351,6 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
     defaults.forge.poke = pokeDefaults;
     if (enablePoke) {
       if (customizePoke) {
-        const total = tokenTotalSupply || defaults.forge.token.total_supply;
-        defaults.forge.poke.balance = total * 0.1;
-        defaults.forge.poke.daily_limit = (total * 0.1) / 1000;
-        defaults.forge.poke.amount = (total * 0.1) / 1000 / 1000;
-      } else {
         defaults.forge.poke.balance = Number(pokeBalance || defaults.forge.poke.balance);
         defaults.forge.poke.daily_limit = Number(pokeDailyLimit || defaults.forge.poke.daily_limit);
         defaults.forge.poke.amount = Number(pokeAmount || defaults.forge.poke.amount);
@@ -363,6 +370,20 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
       defaults.forge.moderator.publicKey = base64.escape(
         base64.encode(hexToBytes(moderator.publicKey))
       );
+    }
+
+    // accounts config
+    if (moderatorAsTokenHolder) {
+      const total = customizeToken ? tokenInitialSupply : tokenDefaults.initial_supply;
+      const poked = enablePoke && customizePoke ? pokeBalance : pokeDefaults.balance;
+
+      defaults.forge.accounts = [
+        {
+          address: moderator.toAddress(),
+          pk: base64.escape(base64.encode(hexToBytes(moderator.publicKey))),
+          balance: total - poked,
+        },
+      ];
     }
 
     shell.echo(hr);

@@ -16,7 +16,7 @@ async function main({ args: [userVersion] }) {
       return process.exit(1);
     }
 
-    if (!isForgeStopped()) {
+    if (!(await isForgeStopped())) {
       shell.echo(`${symbols.warning} Please stop forge before activate another version`);
       return process.exit(1);
     }

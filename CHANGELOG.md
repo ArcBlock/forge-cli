@@ -1,3 +1,10 @@
+## 0.33.2 (July 12, 2019)
+
+- feat: support generate `forge.accounts` in `forge config set` command
+- fix: `forge config` using wrong default of `forge.poke.daily_limit`
+- fix: incorrect forge started checking before switch forge version
+- fix: add version match check before join a network #84
+
 ## 0.33.1 (July 11, 2019)
 
 - upgrade lodash to latest version to fix lodash prototype pollution #91

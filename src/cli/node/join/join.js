@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const toml = require('@iarna/toml');
+const semver = require('semver');
 const shell = require('shelljs');
 const chalk = require('chalk');
 const inquirer = require('inquirer');
@@ -27,37 +28,72 @@ async function main({ args: [endpoint = ''] }) {
     return;
   }
 
-  // Confirm
-  const questions = [
-    {
-      type: 'confirm',
-      name: 'confirm',
-      default: false,
-      message: chalk.red(
-        'Join a new network means completely sync data from another peer, all local data will not be connected, are you sure?'
-      ),
-    },
-  ];
-  const { confirm } = await inquirer.prompt(questions);
-  const { forgeConfigPath } = config.get('cli');
-  const myConfig = toml.parse(fs.readFileSync(forgeConfigPath).toString());
-  if (confirm) {
-    const oldDir = path.dirname(myConfig.forge.path);
-    const bakDir = `${oldDir}_backup_${Date.now()}`;
-    shell.echo(`${symbols.info} all state backup to ${bakDir}`);
-    shell.exec(`mv ${oldDir} ${bakDir}`);
-    shell.echo(`${symbols.info} rm -rf ~/.forge_cli/keys`);
-    shell.exec('rm -rf ~/.forge_cli/keys');
-  } else {
-    shell.echo(`${symbols.info} User abort, nothing changed!`);
-    process.exit();
-    return;
-  }
-
   const client = new GraphQLClient(endpoint);
   try {
-    const res = await client.getConfig();
-    if (res.config) {
+    const [{ info }, res] = await Promise.all([client.getChainInfo(), client.getConfig()]);
+
+    if (info && res.config) {
+      // Detect version match
+      const { forgeConfigPath, currentVersion } = config.get('cli');
+      const localVersion = {
+        major: semver.major(currentVersion),
+        minor: semver.minor(currentVersion),
+      };
+      const remoteVersion = {
+        major: semver.major(info.version),
+        minor: semver.minor(info.version),
+      };
+      if (
+        localVersion.major !== remoteVersion.major ||
+        localVersion.minor !== remoteVersion.minor
+      ) {
+        shell.echo(
+          `${
+            symbols.error
+          } forge join requires version match: { local: ${currentVersion}, remote: ${
+            info.version
+          } }!`
+        );
+        shell.echo(
+          `${
+            symbols.info
+          } You can only join the remote chain if you are using the same forge version!`
+        );
+        shell.echo(
+          `${symbols.info} Run ${chalk.cyan(
+            `forge download v${info.version}`
+          )} to get the match version!`
+        );
+        process.exit(0);
+        return;
+      }
+
+      // Confirm operation
+      const questions = [
+        {
+          type: 'confirm',
+          name: 'confirm',
+          default: false,
+          message: chalk.red(
+            'Join a new network means completely sync data from another peer.\n All local data will be erased, are you sure to continue?'
+          ),
+        },
+      ];
+      const { confirm } = await inquirer.prompt(questions);
+      const myConfig = toml.parse(fs.readFileSync(forgeConfigPath).toString());
+      if (confirm) {
+        const oldDir = path.dirname(myConfig.forge.path);
+        const bakDir = `${oldDir}_backup_${Date.now()}`;
+        shell.echo(`${symbols.info} all state backup to ${bakDir}`);
+        shell.exec(`mv ${oldDir} ${bakDir}`);
+        shell.echo(`${symbols.info} rm -rf ~/.forge_cli/keys`);
+        shell.exec('rm -rf ~/.forge_cli/keys');
+      } else {
+        shell.echo(`${symbols.info} User abort, nothing changed!`);
+        process.exit();
+        return;
+      }
+
       const remoteConfig = toml.parse(res.config);
 
       // Backup old file

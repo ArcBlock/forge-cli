@@ -6,7 +6,7 @@ const shell = require('shelljs');
 const chalk = require('chalk');
 const inquirer = require('inquirer');
 const GraphQLClient = require('@arcblock/graphql-client');
-const { config, findServicePid } = require('core/env');
+const { config, findServicePid, ensureConfigComment } = require('core/env');
 const { symbols } = require('core/ui');
 
 async function main({ args: [endpoint = ''] }) {
@@ -105,6 +105,9 @@ async function main({ args: [endpoint = ''] }) {
       myConfig.forge.pub_sub_key = remoteConfig.forge.pub_sub_key;
       myConfig.forge.token = remoteConfig.forge.token;
       myConfig.forge.stake = remoteConfig.forge.stake;
+      myConfig.forge.moderator = remoteConfig.forge.moderator;
+      myConfig.forge.accounts = remoteConfig.forge.accounts;
+      myConfig.forge.poke = remoteConfig.forge.poke;
       myConfig.tendermint.moniker = remoteConfig.tendermint.moniker;
       myConfig.tendermint.persistent_peers = remoteConfig.tendermint.persistent_peers;
       myConfig.tendermint.genesis = remoteConfig.tendermint.genesis;
@@ -122,7 +125,7 @@ async function main({ args: [endpoint = ''] }) {
       );
 
       // Write new config
-      fs.writeFileSync(forgeConfigPath, toml.stringify(myConfig));
+      fs.writeFileSync(forgeConfigPath, ensureConfigComment(toml.stringify(myConfig)));
 
       shell.echo(
         `${symbols.success} Forge config was updated! Inspect by running ${chalk.cyan(

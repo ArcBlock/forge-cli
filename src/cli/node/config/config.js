@@ -13,7 +13,7 @@ const { fromSecretKey } = require('@arcblock/forge-wallet');
 const { bytesToHex, hexToBytes, isHexStrict } = require('@arcblock/forge-util');
 const GraphQLClient = require('@arcblock/graphql-client');
 const { symbols, hr, pretty } = require('core/ui');
-const { config, requiredDirs, webUrl, findServicePid } = require('core/env');
+const { config, requiredDirs, webUrl, findServicePid, ensureConfigComment } = require('core/env');
 
 function getModeratorSecretKey() {
   const sk = process.env.FORGE_MODERATOR_SK;
@@ -53,7 +53,7 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
     if (peer) {
       const client = new GraphQLClient(`${webUrl()}/api`);
       // eslint-disable-next-line no-shadow
-      const { config } = await client.getConfig();
+      const { config } = await client.getConfig({ parsed: true });
       shell.echo(`${symbols.success} config for peer:`);
       shell.echo(hr);
       shell.echo(config);
@@ -395,7 +395,7 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
     shell.echo(pretty(defaults));
     shell.echo(hr);
 
-    fs.writeFileSync(forgeConfigPath, toml.stringify(defaults));
+    fs.writeFileSync(forgeConfigPath, ensureConfigComment(toml.stringify(defaults)));
 
     const docUrl = 'https://docs.arcblock.io/forge/latest/core/configuration.html!';
     shell.echo(`${symbols.success} config file ${chalk.cyan(forgeConfigPath)} is updated!`);

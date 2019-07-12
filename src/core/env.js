@@ -718,6 +718,14 @@ async function findServicePid(n) {
   return match ? match.pid : 0;
 }
 
+// Because some comments have special usage, we need to add it back
+function ensureConfigComment(str) {
+  return str.replace(
+    '[[tendermint.genesis.validators]]',
+    '### begin validators\n[[tendermint.genesis.validators]]\n### end validators'
+  );
+}
+
 debug.error = (...args) => {
   if (debug.enabled) {
     console.error(...args);
@@ -766,4 +774,5 @@ module.exports = {
   isFile,
   isEmptyDirectory,
   printLogo,
+  ensureConfigComment,
 };

@@ -1,3 +1,8 @@
+## 0.33.3 (July 12, 2019)
+
+- fix: poke config not correct
+- feat: remove config in `forge reset`
+
 ## 0.33.2 (July 12, 2019)
 
 - feat: support generate `forge.accounts` in `forge config set` command

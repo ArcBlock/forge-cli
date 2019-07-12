@@ -1,3 +1,7 @@
+## 0.33.4 (July 12, 2019)
+
+- fix: forge config has some critical comments that should be reserved
+
 ## 0.33.3 (July 12, 2019)
 
 - fix: poke config not correct

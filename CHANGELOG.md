@@ -1,3 +1,7 @@
+## 0.33.5 (July 13, 2019)
+
+- feat: support different encoding formats for wallet keys #95
+
 ## 0.33.4 (July 12, 2019)
 
 - fix: forge config has some critical comments that should be reserved

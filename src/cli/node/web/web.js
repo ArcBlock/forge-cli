@@ -1,6 +1,7 @@
 /* eslint no-case-declarations:"off" */
 const shell = require('shelljs');
-const { runNativeWebCommand, findServicePid, webUrl, sleep } = require('core/env');
+const GraphQLClient = require('@arcblock/graphql-client');
+const { runNativeWebCommand, findServicePid, webUrl, sleep, debug } = require('core/env');
 const { symbols } = require('core/ui');
 
 const startWebUI = runNativeWebCommand('daemon', { silent: true });
@@ -15,6 +16,44 @@ function processOutput(output, action) {
   } else {
     shell.echo(`${symbols.success} forge web ${action} success!`);
   }
+}
+
+async function checkGraphQLServerStarted(client, maxRetry = 6) {
+  return new Promise(resolve => {
+    let counter = 0;
+
+    // eslint-disable-next-line
+    const intervalId = setInterval(async () => {
+      if (counter++ >= maxRetry) {
+        clearInterval(intervalId);
+        return resolve(false);
+      }
+
+      try {
+        const { code } = await client.getChainInfo();
+        if (code === 'OK') {
+          clearInterval(intervalId);
+          return resolve(true);
+        }
+
+        debug('check.graphql response', code);
+      } catch (error) {
+        debug.error('check.graphql error', error.message);
+      }
+    }, 1000);
+  });
+}
+
+async function startForgeWeb(timeout = 10000) {
+  const { stdout, stderr } = startWebUI();
+  processOutput(stdout || stderr, 'start');
+  const client = new GraphQLClient(`${webUrl()}/api`);
+  if (!(await checkGraphQLServerStarted(client, Math.ceil(timeout / 1000)))) {
+    debug(`${symbols.error} graphql service failed to start!`);
+    return false;
+  }
+
+  return true;
 }
 
 async function main({ args: [action = 'none'], opts }) {
@@ -32,8 +71,7 @@ async function main({ args: [action = 'none'], opts }) {
         return;
       }
 
-      const { stdout, stderr } = startWebUI();
-      processOutput(stdout || stderr, action);
+      await startForgeWeb();
       shell.echo(`${symbols.info} forge web running at:     ${webUrl()}`);
       shell.echo(`${symbols.info} graphql endpoint at:      ${webUrl()}/api`);
       break;
@@ -66,3 +104,4 @@ async function main({ args: [action = 'none'], opts }) {
 
 exports.run = main;
 exports.execute = main;
+exports.start = () => main({ args: ['start'] });

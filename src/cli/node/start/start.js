@@ -2,10 +2,11 @@
 const fs = require('fs');
 const shell = require('shelljs');
 const chalk = require('chalk');
+const findProcess = require('find-process');
 const { symbols, hr, getSpinner } = require('core/ui');
-const { config, debug, sleep, runNativeWebCommand, findServicePid } = require('core/env');
 
-const startForgeWeb = runNativeWebCommand('daemon', { silent: true });
+const { config, debug, sleep } = require('core/env');
+const { start } = require('../web/web');
 
 function getForgeReleaseEnv() {
   if (process.env.FORGE_RELEASE && fs.existsSync(process.env.FORGE_RELEASE)) {
@@ -16,14 +17,19 @@ function getForgeReleaseEnv() {
 }
 
 async function isStarted(silent = false) {
-  const pid = await findServicePid('forge_starter');
-  debug('node.start.isStarted', { pid });
-  if (pid) {
-    if (silent === false) {
-      shell.echo(`${symbols.info} forge is already started!`);
-      shell.echo(`${symbols.info} Please run ${chalk.cyan('forge stop')} first!`);
+  try {
+    const tendermintProcess = await findProcess('name', 'tendermint');
+    if (tendermintProcess && tendermintProcess.length > 0) {
+      debug('node.start.isStarted', { tendermintProcess });
+      if (silent === false) {
+        shell.echo(`${symbols.info} forge is already started!`);
+        shell.echo(`${symbols.info} Please run ${chalk.cyan('forge stop')} first!`);
+      }
+
+      return true;
     }
-    return true;
+  } catch (error) {
+    debug('node.start.isStarted', error.message);
   }
 
   return false;
@@ -66,10 +72,10 @@ async function main({ opts: { multiple, dryRun } }) {
   spinner.start();
   try {
     shell.exec(command);
-    await waitUntilStarted();
-    await sleep(4000);
+    await waitUntilStarted(40000);
+    await sleep(6000);
     if (config.get('forge.web.enabled')) {
-      await startForgeWeb();
+      await start();
     }
     spinner.succeed('Forge daemon successfully started');
     shell.exec('forge ps');
@@ -94,7 +100,7 @@ async function main({ opts: { multiple, dryRun } }) {
     );
   } catch (err) {
     debug.error(err);
-    spinner.fail('Error: forge cannot be successfully started within 30 seconds');
+    spinner.fail('Error: forge cannot be successfully started');
     shell.echo('');
     shell.echo(`${symbols.info} Possible solutions:`);
     shell.echo(hr);

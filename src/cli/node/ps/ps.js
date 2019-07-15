@@ -1,11 +1,11 @@
 const shell = require('shelljs');
 const chalk = require('chalk');
 const Table = require('cli-table-redemption');
-const { getForgeProcesses } = require('core/env');
+const { getRunningProcesses } = require('core/env');
 const { symbols } = require('core/ui');
 
 async function main() {
-  const processes = await getForgeProcesses();
+  const processes = await getRunningProcesses();
 
   if (!processes.length) {
     shell.echo(

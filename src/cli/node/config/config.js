@@ -418,8 +418,8 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
     } else {
       defaults.forge.accounts = [
         {
-          address: tokenHolderAddress,
-          pk: tokenHolderPk,
+          address: tokenHolderAddress.trim(),
+          pk: tokenHolderPk.trim(),
           balance: total - poked,
         },
       ];

@@ -312,8 +312,8 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
         name: 'tokenHolderAddress',
         message: 'Please input token holder address',
         validate: v => {
-          if (!v) return 'Token holder address should not be empty';
-          if (!isValid(v)) return 'Token holder address must be valid did';
+          if (!v.trim()) return 'Token holder address should not be empty';
+          if (!isValid(v.trim())) return 'Token holder address must be valid did';
           return true;
         },
         when: d => d.moderatorAsTokenHolder === false,
@@ -324,7 +324,7 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
         name: 'tokenHolderPk',
         message: 'Please input token holder public key in base64_url format',
         validate: v => {
-          if (!v) return 'Token holder public key should not be empty';
+          if (!v.trim()) return 'Token holder public key should not be empty';
           return true;
         },
         when: d => d.moderatorAsTokenHolder === false,

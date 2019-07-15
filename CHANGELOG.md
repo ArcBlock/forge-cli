@@ -1,3 +1,7 @@
+## 0.33.9 (July 16, 2019)
+
+- fix: wallet info encoding format default value
+
 ## 0.33.8 (July 15, 2019)
 
 - feat: support output pk/sk in multiple formats when create wallet

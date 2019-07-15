@@ -75,7 +75,9 @@ async function main({ opts: { multiple, dryRun } }) {
     await waitUntilStarted(40000);
     await sleep(6000);
     if (config.get('forge.web.enabled')) {
+      spinner.stop();
       await start();
+      spinner.start();
     }
     spinner.succeed('Forge daemon successfully started');
     shell.exec('forge ps');

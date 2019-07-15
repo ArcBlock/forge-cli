@@ -1,3 +1,7 @@
+## 0.33.6 (July 15, 2019)
+
+- chore: trigger cnpm sync on publish
+
 ## 0.33.5 (July 13, 2019)
 
 - feat: support different encoding formats for wallet keys #95

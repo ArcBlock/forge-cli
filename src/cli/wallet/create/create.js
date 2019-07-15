@@ -3,7 +3,7 @@ const inquirer = require('inquirer');
 const base64 = require('base64-url');
 const { types } = require('@arcblock/mcrypto');
 const { fromRandom, WalletType } = require('@arcblock/forge-wallet');
-const { toHex, toBase58, hexToBytes } = require('@arcblock/forge-util');
+const { toBase58, hexToBytes } = require('@arcblock/forge-util');
 const { pretty } = require('core/ui');
 
 const { questions } = require('../../account/create/create');
@@ -27,36 +27,39 @@ async function main({ opts: { defaults } }) {
 
   const { encoding } = await inquirer.prompt([
     {
-      type: 'list',
+      type: 'checkbox',
       name: 'encoding',
       default: 'BASE16',
       message: 'Please select public/secret key encoding format:',
-      choices: ['BASE16', 'BASE58', 'BASE64', 'BASE64_URL'],
+      choices: ['BASE16', 'BASE58', 'BASE64', 'BASE64_URL', 'BINARY'],
     },
   ]);
 
   const json = wallet.toJSON();
-  // prettier-ignore
-  switch (encoding) {
-  case 'BASE16':
-    json.pk = toHex(json.pk);
-    json.sk = toHex(json.sk);
-    break;
-  case 'BASE58':
-    json.pk = toBase58(json.pk);
-    json.sk = toBase58(json.sk);
-    break;
-  case 'BASE64':
-    json.pk = Buffer.from(hexToBytes(json.pk)).toString('base64');
-    json.sk = Buffer.from(hexToBytes(json.sk)).toString('base64');
-    break;
-  case 'BASE64_URL':
-    json.pk = base64.encode(hexToBytes(json.pk));
-    json.sk = base64.encode(hexToBytes(json.sk));
-    break;
-  default:
-    break;
+
+  if (encoding.includes('BASE58')) {
+    json.pk_base16 = json.pk;
+    json.sk_base16 = json.sk;
   }
+  if (encoding.includes('BASE58')) {
+    json.pk_base58 = toBase58(json.pk);
+    json.sk_base58 = toBase58(json.sk);
+  }
+  if (encoding.includes('BASE64')) {
+    json.pk_base64 = Buffer.from(hexToBytes(json.pk)).toString('base64');
+    json.sk_base64 = Buffer.from(hexToBytes(json.sk)).toString('base64');
+  }
+  if (encoding.includes('BASE64_URL')) {
+    json.pk_base64_url = base64.encode(hexToBytes(json.pk));
+    json.sk_base64_url = base64.encode(hexToBytes(json.sk));
+  }
+  if (encoding.includes('BINARY')) {
+    json.pk_binary = hexToBytes(json.pk).join(',');
+    json.sk_binary = hexToBytes(json.sk).join(',');
+  }
+
+  delete json.pk;
+  delete json.sk;
 
   shell.echo(pretty(json));
 }

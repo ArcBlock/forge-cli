@@ -4,11 +4,13 @@ const chalk = require('chalk');
 const shell = require('shelljs');
 const numeral = require('numeral');
 const inquirer = require('inquirer');
+const get = require('lodash/get');
 const toml = require('@iarna/toml');
 const base64 = require('base64-url');
 const base64Img = require('base64-img');
 const kebabCase = require('lodash/kebabCase');
 const terminalImage = require('terminal-image');
+const { isValid } = require('@arcblock/did');
 const { fromSecretKey } = require('@arcblock/forge-wallet');
 const { bytesToHex, hexToBytes, isHexStrict } = require('@arcblock/forge-util');
 const GraphQLClient = require('@arcblock/graphql-client');
@@ -277,7 +279,9 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
         default: d =>
           Math.min(
             d.pokeDailyLimit * 365 * 4,
-            d.tokenInitialSupply || defaults.forge.token.initial_supply
+            d.tokenInitialSupply ||
+              get(defaults, 'forge.token.initial_supply') ||
+              tokenDefaults.initial_supply
           ),
         when: d => d.customizePoke,
         validate: getNumberValidator('total poke amount', false),
@@ -303,6 +307,29 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
         when: () => moderator,
         default: true,
       },
+      {
+        type: 'text',
+        name: 'tokenHolderAddress',
+        message: 'Please input token holder address',
+        validate: v => {
+          if (!v) return 'Token holder address should not be empty';
+          if (!isValid(v)) return 'Token holder address must be valid did';
+          return true;
+        },
+        when: d => d.moderatorAsTokenHolder === false,
+        default: '',
+      },
+      {
+        type: 'text',
+        name: 'tokenHolderPk',
+        message: 'Please input token holder public key in base64_url format',
+        validate: v => {
+          if (!v) return 'Token holder public key should not be empty';
+          return true;
+        },
+        when: d => d.moderatorAsTokenHolder === false,
+        default: '',
+      },
     ];
 
     const {
@@ -323,6 +350,8 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
       pokeDailyLimit,
       pokeAmount,
       moderatorAsTokenHolder,
+      tokenHolderAddress,
+      tokenHolderPk,
     } = await inquirer.prompt(questions);
 
     defaults.tendermint.moniker = chainName;
@@ -375,15 +404,22 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
     }
 
     // accounts config
+    const total = customizeToken ? tokenInitialSupply : tokenDefaults.initial_supply;
+    // eslint-disable-next-line no-nested-ternary
+    const poked = enablePoke ? (customizePoke ? pokeBalance : pokeDefaults.balance) : 0;
     if (moderatorAsTokenHolder) {
-      const total = customizeToken ? tokenInitialSupply : tokenDefaults.initial_supply;
-      // eslint-disable-next-line no-nested-ternary
-      const poked = enablePoke ? (customizePoke ? pokeBalance : pokeDefaults.balance) : 0;
-
       defaults.forge.accounts = [
         {
           address: moderator.toAddress(),
           pk: base64.escape(base64.encode(hexToBytes(moderator.publicKey))),
+          balance: total - poked,
+        },
+      ];
+    } else {
+      defaults.forge.accounts = [
+        {
+          address: tokenHolderAddress,
+          pk: tokenHolderPk,
           balance: total - poked,
         },
       ];

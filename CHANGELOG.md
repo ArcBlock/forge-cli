@@ -1,3 +1,7 @@
+## 0.33.8 (July 15, 2019)
+
+- feat: support output pk/sk in multiple formats when create wallet
+
 ## 0.33.7 (July 15, 2019)
 
 - feat: support customize token holder address and pk

@@ -25,19 +25,22 @@ async function main({ opts: { defaults } }) {
     wallet = fromRandom(type);
   }
 
-  const { encoding } = await inquirer.prompt([
+  let { encoding } = await inquirer.prompt([
     {
       type: 'checkbox',
       name: 'encoding',
-      default: 'BASE16',
+      default: ['BASE16'],
       message: 'Please select public/secret key encoding format:',
       choices: ['BASE16', 'BASE58', 'BASE64', 'BASE64_URL', 'BINARY'],
     },
   ]);
 
   const json = wallet.toJSON();
+  if (!encoding.length) {
+    encoding = ['BASE16'];
+  }
 
-  if (encoding.includes('BASE58')) {
+  if (encoding.includes('BASE16')) {
     json.pk_base16 = json.pk;
     json.sk_base16 = json.sk;
   }

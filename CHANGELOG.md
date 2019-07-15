@@ -1,3 +1,7 @@
+## 0.33.7 (July 15, 2019)
+
+- feat: support customize token holder address and pk
+
 ## 0.33.6 (July 15, 2019)
 
 - chore: trigger cnpm sync on publish

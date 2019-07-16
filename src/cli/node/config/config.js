@@ -316,7 +316,7 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
           if (!isValid(v.trim())) return 'Token holder address must be valid did';
           return true;
         },
-        when: d => d.moderatorAsTokenHolder === false,
+        when: d => d.moderatorAsTokenHolder === false || !moderator,
         default: '',
       },
       {
@@ -327,7 +327,7 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
           if (!v.trim()) return 'Token holder public key should not be empty';
           return true;
         },
-        when: d => d.moderatorAsTokenHolder === false,
+        when: d => d.moderatorAsTokenHolder === false || !moderator,
         default: '',
       },
     ];

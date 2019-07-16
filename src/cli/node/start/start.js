@@ -104,7 +104,7 @@ async function main({ opts: { multiple, dryRun } }) {
     );
   } catch (err) {
     debug.error(err);
-    spinner.fail('Error: forge cannot be successfully started');
+    spinner.fail('Forge cannot be successfully started, now exiting...');
     await stop({ opts: { force: true } });
     shell.echo('');
     shell.echo(`${symbols.info} Possible solutions:`);

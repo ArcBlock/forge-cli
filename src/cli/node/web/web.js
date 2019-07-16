@@ -82,7 +82,7 @@ async function main({ args: [action = 'none'], opts }) {
       const succeed = await startForgeWeb(20000);
       if (!succeed) {
         shell.echo(
-          `${symbols.error} forge web failed to start, please retry with ${chalk.cyan(
+          `${symbols.warning} forge web failed to start, please retry with ${chalk.cyan(
             'forge web start'
           )}`
         );

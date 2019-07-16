@@ -6,7 +6,7 @@ const findProcess = require('find-process');
 const { symbols, hr, getSpinner } = require('core/ui');
 
 const { config, debug, sleep } = require('core/env');
-const { start } = require('../web/web');
+const { start: startWeb } = require('../web/web');
 
 function getForgeReleaseEnv() {
   if (process.env.FORGE_RELEASE && fs.existsSync(process.env.FORGE_RELEASE)) {
@@ -76,7 +76,7 @@ async function main({ opts: { multiple, dryRun } }) {
     await sleep(6000);
     if (config.get('forge.web.enabled')) {
       spinner.stop();
-      await start();
+      await startWeb();
       spinner.start();
     }
     spinner.succeed('Forge daemon successfully started');

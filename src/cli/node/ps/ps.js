@@ -18,7 +18,7 @@ async function main() {
   const table = new Table({
     head: ['Name', 'PID', 'Uptime', 'Memory', 'CPU'],
     style: { 'padding-left': 1, head: ['cyan', 'bold'], compact: true },
-    colWidths: [15, 10, 15, 15, 20],
+    colWidths: [15, 10, 10, 15, 20],
   });
 
   processes.forEach(x => table.push(Object.values(x)));

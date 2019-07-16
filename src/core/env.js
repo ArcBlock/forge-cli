@@ -12,7 +12,7 @@ const inquirer = require('inquirer');
 const pidUsage = require('pidusage');
 const pidUsageTree = require('pidusage-tree');
 const findProcess = require('find-process');
-const prettyTime = require('pretty-ms');
+const prettyMilliseconds = require('pretty-ms');
 const prettyBytes = require('pretty-bytes');
 const isElevated = require('is-elevated');
 const figlet = require('figlet');
@@ -105,6 +105,15 @@ function isFile(x) {
 
 function isEmptyDirectory(x) {
   return isDirectory(x) && fs.readdirSync(x).length === 0;
+}
+
+function prettyTime(ms) {
+  let result = prettyMilliseconds(ms, { compact: true });
+  if (result.startsWith('~')) {
+    result = result.slice(1);
+  }
+
+  return result;
 }
 
 /**
@@ -581,7 +590,7 @@ async function getRunningProcesses() {
     const processesStats = processes.map(x => ({
       name: processesMap[x.pid],
       pid: x.pid,
-      uptime: prettyTime(x.elapsed),
+      uptime: prettyTime(x.elapsed, { compact: true }),
       memory: prettyBytes(x.memory),
       cpu: `${x.cpu.toFixed(2)} %`,
     }));

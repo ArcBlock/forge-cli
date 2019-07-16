@@ -1,3 +1,7 @@
+## 0.33.12 (July 16, 2019)
+
+- feature: exit all processes if start failed #97
+
 ## 0.33.11 (July 16, 2019)
 
 - fix start web error display, extend graphql check timeout

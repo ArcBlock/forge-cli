@@ -7,6 +7,7 @@ const { symbols, hr, getSpinner } = require('core/ui');
 
 const { config, debug, sleep } = require('core/env');
 const { start: startWeb } = require('../web/web');
+const { run: stop } = require('../stop/stop');
 
 function getForgeReleaseEnv() {
   if (process.env.FORGE_RELEASE && fs.existsSync(process.env.FORGE_RELEASE)) {
@@ -79,6 +80,7 @@ async function main({ opts: { multiple, dryRun } }) {
       await startWeb();
       spinner.start();
     }
+
     spinner.succeed('Forge daemon successfully started');
     shell.exec('forge ps');
     shell.echo('');
@@ -103,6 +105,7 @@ async function main({ opts: { multiple, dryRun } }) {
   } catch (err) {
     debug.error(err);
     spinner.fail('Error: forge cannot be successfully started');
+    await stop({ opts: { force: true } });
     shell.echo('');
     shell.echo(`${symbols.info} Possible solutions:`);
     shell.echo(hr);

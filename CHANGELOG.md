@@ -1,3 +1,7 @@
+## 0.33.13 (July 16, 2019)
+
+- fix: should ask user to input token holder info when no moderator set
+
 ## 0.33.12 (July 16, 2019)
 
 - feature: exit all processes if start failed #97

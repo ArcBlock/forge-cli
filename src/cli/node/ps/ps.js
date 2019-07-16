@@ -1,11 +1,11 @@
 const shell = require('shelljs');
 const chalk = require('chalk');
 const Table = require('cli-table-redemption');
-const { getForgeProcesses } = require('core/env');
+const { getRunningProcesses } = require('core/env');
 const { symbols } = require('core/ui');
 
 async function main() {
-  const processes = await getForgeProcesses();
+  const processes = await getRunningProcesses();
 
   if (!processes.length) {
     shell.echo(
@@ -18,7 +18,7 @@ async function main() {
   const table = new Table({
     head: ['Name', 'PID', 'Uptime', 'Memory', 'CPU'],
     style: { 'padding-left': 1, head: ['cyan', 'bold'], compact: true },
-    colWidths: [15, 10, 15, 15, 20],
+    colWidths: [15, 10, 10, 15, 20],
   });
 
   processes.forEach(x => table.push(Object.values(x)));

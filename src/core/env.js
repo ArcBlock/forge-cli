@@ -9,9 +9,10 @@ const yaml = require('yaml');
 const shell = require('shelljs');
 const semver = require('semver');
 const inquirer = require('inquirer');
+const pidUsage = require('pidusage');
 const pidUsageTree = require('pidusage-tree');
 const findProcess = require('find-process');
-const prettyTime = require('pretty-ms');
+const prettyMilliseconds = require('pretty-ms');
 const prettyBytes = require('pretty-bytes');
 const isElevated = require('is-elevated');
 const figlet = require('figlet');
@@ -104,6 +105,15 @@ function isFile(x) {
 
 function isEmptyDirectory(x) {
   return isDirectory(x) && fs.readdirSync(x).length === 0;
+}
+
+function prettyTime(ms) {
+  let result = prettyMilliseconds(ms, { compact: true });
+  if (result.startsWith('~')) {
+    result = result.slice(1);
+  }
+
+  return result;
 }
 
 /**
@@ -561,6 +571,49 @@ function makeNativeCommandRunner(executable) {
   };
 }
 
+async function getRunningProcesses() {
+  try {
+    const processNames = ['workshop', 'simulator', 'forge_web'];
+    const processIds = await Promise.all(
+      processNames.map(processName => findServicePid(processName))
+    );
+
+    const processesMap = {};
+    processNames.forEach((processName, index) => {
+      if (processName) {
+        processesMap[processIds[index]] = processName;
+      }
+    });
+
+    const processes = await Promise.all(processIds.filter(Boolean).map(pid => pidUsage(pid)));
+
+    const processesStats = processes.map(x => ({
+      name: processesMap[x.pid],
+      pid: x.pid,
+      uptime: prettyTime(x.elapsed, { compact: true }),
+      memory: prettyBytes(x.memory),
+      cpu: `${x.cpu.toFixed(2)} %`,
+    }));
+
+    const forgeProcessStats = await getForgeProcesses();
+
+    // sort by name asc
+    return [...processesStats, ...forgeProcessStats].sort((x, y) => {
+      if (x.name > y.name) {
+        return 1;
+      }
+      if (x.name < y.name) {
+        return -1;
+      }
+
+      return 0;
+    });
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+}
+
 async function getForgeProcesses() {
   const pid = await findServicePid('forge_starter');
   if (!pid) {
@@ -608,7 +661,6 @@ async function getForgeProcesses() {
         uptime: prettyTime(x.elapsed),
         memory: prettyBytes(x.memory),
         cpu: `${x.cpu.toFixed(2)} %`,
-        // cmd: x.cmd,
       }));
   } catch (err) {
     console.error(err);
@@ -775,4 +827,5 @@ module.exports = {
   isEmptyDirectory,
   printLogo,
   ensureConfigComment,
+  getRunningProcesses,
 };

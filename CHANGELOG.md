@@ -1,3 +1,8 @@
+## 0.33.10 (July 16, 2019)
+
+- add graphql check after start web process #77
+- add simulator/forge-web/workshop stats into 'forge ps' command #77
+
 ## 0.33.9 (July 16, 2019)
 
 - fix: wallet info encoding format default value

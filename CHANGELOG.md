@@ -1,3 +1,7 @@
+## 0.33.11 (July 16, 2019)
+
+- fix start web error display, extend graphql check timeout
+
 ## 0.33.10 (July 16, 2019)
 
 - add graphql check after start web process #77

@@ -1,4 +1,5 @@
 /* eslint no-case-declarations:"off" */
+const chalk = require('chalk');
 const shell = require('shelljs');
 const GraphQLClient = require('@arcblock/graphql-client');
 const { runNativeWebCommand, findServicePid, webUrl, sleep, debug } = require('core/env');
@@ -45,8 +46,14 @@ async function checkGraphQLServerStarted(client, maxRetry = 6) {
 }
 
 async function startForgeWeb(timeout = 10000) {
-  const { stdout, stderr } = startWebUI();
-  processOutput(stdout || stderr, 'start');
+  const { stderr } = startWebUI();
+
+  if (stderr) {
+    debug(`${symbols.error} start webui failed: ${stderr}!`);
+    processOutput(stderr);
+    return false;
+  }
+
   const client = new GraphQLClient(`${webUrl()}/api`);
   if (!(await checkGraphQLServerStarted(client, Math.ceil(timeout / 1000)))) {
     debug(`${symbols.error} graphql service failed to start!`);
@@ -66,12 +73,22 @@ async function main({ args: [action = 'none'], opts }) {
       break;
     case 'start':
       if (pid) {
-        shell.echo(`${symbols.info} forge web already started`);
+        shell.echo(`${symbols.info} forge web already started.`);
         process.exit(0);
         return;
       }
 
-      await startForgeWeb();
+      shell.echo(`${symbols.info} Starting forge web...`);
+      const succeed = await startForgeWeb(20000);
+      if (!succeed) {
+        shell.echo(
+          `${symbols.warning} forge web failed to start, please retry with ${chalk.cyan(
+            'forge web start'
+          )}`
+        );
+        break;
+      }
+
       shell.echo(`${symbols.info} forge web running at:     ${webUrl()}`);
       shell.echo(`${symbols.info} graphql endpoint at:      ${webUrl()}/api`);
       break;
@@ -82,7 +99,7 @@ async function main({ args: [action = 'none'], opts }) {
         return;
       }
 
-      shell.echo('Stopping forge web...');
+      shell.echo(`${symbols.info} Stopping forge web...`);
       shell.exec(`kill ${pid}`);
       break;
     case 'open':

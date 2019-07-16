@@ -1,4 +1,5 @@
 /* eslint no-case-declarations:"off" */
+const chalk = require('chalk');
 const shell = require('shelljs');
 const GraphQLClient = require('@arcblock/graphql-client');
 const { runNativeWebCommand, findServicePid, webUrl, sleep, debug } = require('core/env');
@@ -80,7 +81,11 @@ async function main({ args: [action = 'none'], opts }) {
       shell.echo(`${symbols.info} Starting forge web...`);
       const succeed = await startForgeWeb(20000);
       if (!succeed) {
-        shell.echo(`${symbols.error} forge web failed to start, please retry.`);
+        shell.echo(
+          `${symbols.error} forge web failed to start, please retry with ${chalk.cyan(
+            'forge web start'
+          )}`
+        );
         break;
       }
 

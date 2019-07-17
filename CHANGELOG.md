@@ -1,3 +1,9 @@
+## 0.33.14 (July 17, 2019)
+
+- chore: make encoding options default when create wallet
+- fix: validate token holder pk before write config
+- fix: improve default poke config because workshop will exceed daily limit
+
 ## 0.33.13 (July 16, 2019)
 
 - fix: should ask user to input token holder info when no moderator set

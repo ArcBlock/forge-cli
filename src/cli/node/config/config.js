@@ -10,7 +10,7 @@ const base64 = require('base64-url');
 const base64Img = require('base64-img');
 const kebabCase = require('lodash/kebabCase');
 const terminalImage = require('terminal-image');
-const { isValid } = require('@arcblock/did');
+const { isValid, isFromPublicKey } = require('@arcblock/did');
 const { fromSecretKey } = require('@arcblock/forge-wallet');
 const { bytesToHex, hexToBytes, isHexStrict } = require('@arcblock/forge-util');
 const GraphQLClient = require('@arcblock/graphql-client');
@@ -267,7 +267,7 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
         type: 'number',
         name: 'pokeDailyLimit',
         message: 'How much token can be poked daily?',
-        default: d => d.pokeAmount * 100,
+        default: d => d.pokeAmount * 1000,
         when: d => d.customizePoke,
         validate: getNumberValidator('daily poke limit', false),
         transformer: v => numeral(v).format('0,0'),
@@ -310,7 +310,8 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
       {
         type: 'text',
         name: 'tokenHolderAddress',
-        message: 'Please input token holder address',
+        message:
+          'Please input token holder address (run `forge wallet:create` to generate if do not have one)',
         validate: v => {
           if (!v.trim()) return 'Token holder address should not be empty';
           if (!isValid(v.trim())) return 'Token holder address must be valid did';
@@ -323,8 +324,13 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
         type: 'text',
         name: 'tokenHolderPk',
         message: 'Please input token holder public key in base64_url format',
-        validate: v => {
+        validate: (v, d) => {
           if (!v.trim()) return 'Token holder public key should not be empty';
+          const pkBuffer = Buffer.from(base64.unescape(v), 'base64');
+          if (!isFromPublicKey(d.tokenHolderAddress, pkBuffer)) {
+            return 'Token holder public key does not match with address';
+          }
+
           return true;
         },
         when: d => d.moderatorAsTokenHolder === false || !moderator,

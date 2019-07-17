@@ -1,9 +1,8 @@
 const shell = require('shelljs');
 const chalk = require('chalk');
 const onExit = require('death');
-const { enums } = require('@arcblock/forge-proto');
 const { range, uniq } = require('lodash');
-const { createRpcClient, debug } = require('core/env');
+const { createRpcClient, debug, sleep } = require('core/env');
 const { symbols, hr, pretty } = require('core/ui');
 
 function parseBlockHeight(input, latest) {
@@ -43,7 +42,7 @@ function parseBlockHeight(input, latest) {
 
 function displayBlock(res, opts) {
   const { block } = res.$format();
-  if (!opts.showTxs) {
+  if (block && !opts.showTxs) {
     delete block.txs;
   }
   shell.echo(hr);
@@ -77,8 +76,8 @@ async function fetchBlocks(client, heights, opts) {
 async function streamingBlocks(client, opts) {
   let topic = '';
   client
-    .subscribe({ type: enums.TopicType.END_BLOCK, filter: '' })
-    .on('data', res => {
+    .subscribe({ topic: 'end_block', filter: '' })
+    .on('data', async res => {
       debug('streamingBlocks.data', res);
       if (res.topic) {
         shell.echo(`${symbols.success} Subscribe success, topic: ${res.topic}`);
@@ -89,6 +88,7 @@ async function streamingBlocks(client, opts) {
       }
 
       if (res.endBlock && res.endBlock.height) {
+        await sleep(1000);
         client
           .getBlock(res.endBlock)
           .on('data', d => displayBlock(d, opts))

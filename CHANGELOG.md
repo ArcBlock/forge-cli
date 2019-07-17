@@ -1,3 +1,7 @@
+## 0.33.14 (July 17, 2019)
+
+- fix: block streaming not working #71
+
 ## 0.33.13 (July 16, 2019)
 
 - fix: should ask user to input token holder info when no moderator set

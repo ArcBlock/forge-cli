@@ -267,7 +267,7 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
         type: 'number',
         name: 'pokeDailyLimit',
         message: 'How much token can be poked daily?',
-        default: d => d.pokeAmount * 100,
+        default: d => d.pokeAmount * 1000,
         when: d => d.customizePoke,
         validate: getNumberValidator('daily poke limit', false),
         transformer: v => numeral(v).format('0,0'),

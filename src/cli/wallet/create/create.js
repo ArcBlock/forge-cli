@@ -10,6 +10,8 @@ const { questions } = require('../../account/create/create');
 
 async function main({ opts: { defaults } }) {
   let wallet = fromRandom();
+  let encoding = ['BASE16', 'BASE58', 'BASE64', 'BASE64_URL'];
+
   if (!defaults) {
     const { pk, hash, role } = await inquirer.prompt(
       questions.filter(x => ['role', 'pk', 'hash'].includes(x.name))
@@ -23,17 +25,20 @@ async function main({ opts: { defaults } }) {
     });
 
     wallet = fromRandom(type);
-  }
 
-  let { encoding } = await inquirer.prompt([
-    {
-      type: 'checkbox',
-      name: 'encoding',
-      default: ['BASE16'],
-      message: 'Please select public/secret key encoding format:',
-      choices: ['BASE16', 'BASE58', 'BASE64', 'BASE64_URL', 'BINARY'],
-    },
-  ]);
+    const result = await inquirer.prompt([
+      {
+        type: 'checkbox',
+        name: 'encoding',
+        default: ['BASE16', 'BASE58', 'BASE64', 'BASE64_URL'],
+        message: 'Please select public/secret key encoding format:',
+        choices: ['BASE16', 'BASE58', 'BASE64', 'BASE64_URL', 'BINARY'],
+      },
+    ]);
+
+    // eslint-disable-next-line prefer-destructuring
+    encoding = result.encoding;
+  }
 
   const json = wallet.toJSON();
   if (!encoding.length) {

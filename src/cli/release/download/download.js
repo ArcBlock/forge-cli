@@ -10,7 +10,7 @@ const {
   downloadAsset,
   expandReleaseTarball,
   fetchReleaseVersion,
-} = require('cli/node/init/init');
+} = require('cli/node/install/install');
 
 // eslint-disable-next-line consistent-return
 async function main({ args: [userVersion], opts: { mirror } }) {

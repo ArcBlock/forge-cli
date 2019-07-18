@@ -5,7 +5,7 @@ const chalk = require('chalk');
 const yaml = require('yaml');
 const { symbols, getSpinner } = require('core/ui');
 const { debug, requiredDirs, isDirectory, isFile, DEFAULT_MIRROR } = require('core/env');
-const { downloadAsset } = require('../../node/init/init');
+const { downloadAsset } = require('../../node/install/install');
 
 // eslint-disable-next-line consistent-return
 function fetchCompilerVersion(mirror = DEFAULT_MIRROR) {

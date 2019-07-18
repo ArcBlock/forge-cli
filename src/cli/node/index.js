@@ -1,6 +1,6 @@
 exports.config = require('./config');
 exports.declare = require('./declare');
-exports.init = require('./init');
+exports.install = require('./install');
 exports.join = require('./join');
 exports.logs = require('./logs');
 exports.ps = require('./ps');

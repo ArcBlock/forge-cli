@@ -1,14 +1,13 @@
 const shell = require('shelljs');
 const chalk = require('chalk');
 const { cli, action } = require('core/cli');
-const { execute, run } = require('./init');
+const { execute, run } = require('./install');
 
 cli(
   'install [version]',
   'Download and setup forge release on this machine',
   input => action(execute, run, input),
   {
-    alias: 'init',
     requirements: {
       forgeRelease: false,
       rpcClient: false,

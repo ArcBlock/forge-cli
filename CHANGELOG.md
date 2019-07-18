@@ -1,3 +1,7 @@
+## 0.33.16 (July 18, 2019)
+
+- fix: endpoint choosing login when create grpc client
+
 ## 0.33.15 (July 17, 2019)
 
 - chore: make encoding options default when create wallet

@@ -532,8 +532,9 @@ function createRpcClient() {
   }
 
   const sockGrpc =
-    process.env.FORGE_SOCK_GRPC || get(config, 'forge.sock_grpc') || 'tcp://127.0.0.1:28210';
+    process.env.FORGE_SOCK_GRPC || get(config, 'forge.sockGrpc') || get(config, 'forge.sock_grpc');
 
+  shell.echo(`${symbols.info} Connect to grpc endpoint: ${sockGrpc}`);
   client = new GRpcClient(sockGrpc);
   return client;
 }

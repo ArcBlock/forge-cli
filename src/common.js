@@ -9,6 +9,9 @@ const Common = {
   printInfo: content => {
     shell.echo(`${symbols.info} ${content}`);
   },
+  printSuccess: content => {
+    shell.echo(`${symbols.success} ${content}`);
+  },
   printWarning: content => {
     shell.echo(`${symbols.warning} ${content}`);
   },

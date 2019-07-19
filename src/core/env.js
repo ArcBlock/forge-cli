@@ -20,36 +20,21 @@ const { get, set } = require('lodash');
 const GRpcClient = require('@arcblock/grpc-client');
 const { parse } = require('@arcblock/forge-config');
 const TOML = require('@iarna/toml');
+const debug = require('debug')('env');
 
-const { name, version, engines } = require('../../package.json');
-// eslint-disable-next-line import/order
-const debug = require('debug')(name);
-const { CONFIG_FILE_NAME } = require('../constant');
+const { version, engines } = require('../../package.json');
+
+const {
+  getForgeConfigDirectory,
+  getCliDirectory,
+  getReleaseDirectory,
+  getForgeRelaseFilePath,
+} = require('../forge-fs');
 
 const { symbols, hr } = require('./ui');
 
-function getForgeConfigDirectory() {
-  const homedir = os.homedir();
-  let currentDir = process.cwd();
-
-  if (!currentDir.startsWith(homedir)) {
-    return currentDir;
-  }
-
-  while (
-    currentDir !== homedir &&
-    !fs.existsSync(path.join(currentDir, CONFIG_FILE_NAME)) &&
-    currentDir.startsWith(homedir)
-  ) {
-    currentDir = path.join(currentDir, '..');
-  }
-
-  if (currentDir === homedir || !currentDir.startsWith(homedir)) {
-    return currentDir;
-  }
-
-  return path.join(currentDir, CONFIG_FILE_NAME);
-}
+const CURRENT_WORKING_PROFILE = getForgeConfigDirectory();
+process.env.CURRENT_WORKING_PROFILE = CURRENT_WORKING_PROFILE;
 
 let baseDir = path.join(os.homedir(), '.forge_cli');
 
@@ -77,8 +62,6 @@ const requiredDirs = {
   cache: path.join(baseDir, 'cache'),
   release: path.join(baseDir, 'release'),
 };
-
-const CURRENT_WORKING_PROFILE = getForgeConfigDirectory();
 
 shell.echo(hr);
 shell.echo(`${symbols.success} Current profile: ${chalk.cyan(CURRENT_WORKING_PROFILE)}`);
@@ -308,26 +291,18 @@ function ensureForgeRelease(args, exitOn404 = true) {
 function writeCurrentProfileToReleaseConfig(releaseConfigPath) {
   let content = fs.readFileSync(releaseConfigPath);
   content = TOML.parse(content.toString());
-  set(content, 'forge.path', path.join(CURRENT_WORKING_PROFILE, '.forge_release', 'core'));
-  set(content, 'tendermint.keypath', path.join(CURRENT_WORKING_PROFILE, '.forge_cli', 'keys'));
-  set(
-    content,
-    'tendermint.path',
-    path.join(CURRENT_WORKING_PROFILE, '.forge_release', 'tendermint')
-  );
-  set(content, 'ipfs.path', path.join(CURRENT_WORKING_PROFILE, '.forge_release', 'ipfs'));
-  set(
-    content,
-    'cache.path',
-    path.join(CURRENT_WORKING_PROFILE, '.forge_release', 'cache', 'mnesia_data_dir')
-  );
+  set(content, 'forge.path', path.join(getReleaseDirectory(), 'core'));
+  set(content, 'tendermint.keypath', path.join(getCliDirectory(), 'keys'));
+  set(content, 'tendermint.path', path.join(getReleaseDirectory(), 'tendermint'));
+  set(content, 'ipfs.path', path.join(getReleaseDirectory(), 'ipfs'));
+  set(content, 'cache.path', path.join(getReleaseDirectory(), 'cache', 'mnesia_data_dir'));
 
   return TOML.stringify(content);
 }
 
 function copyReleaseConfig(currentVersion, overwrite = true) {
-  const targetPath = path.join(CURRENT_WORKING_PROFILE, '.forge_cli', 'forge_release.toml');
-  if (fs.existsSync(path.join(targetPath, 'forge_release.toml')) && !overwrite) {
+  const targetPath = getForgeRelaseFilePath();
+  if (fs.existsSync(targetPath) && !overwrite) {
     return;
   }
 
@@ -336,6 +311,7 @@ function copyReleaseConfig(currentVersion, overwrite = true) {
     findReleaseConfigOld(requiredDirs.release, currentVersion);
   if (sourcePath) {
     shell.echo(`${symbols.success} Extract forge config from ${sourcePath}`);
+    console.log(targetPath);
     fs.writeFileSync(targetPath, writeCurrentProfileToReleaseConfig(sourcePath));
     shell.echo(`${symbols.success} Forge config written to ${targetPath}`);
   } else {
@@ -362,7 +338,7 @@ async function ensureRunningNode() {
  * @param {*} args
  */
 function ensureRpcClient(args) {
-  const releaseConfig = path.join(path.dirname(requiredDirs.release), 'forge_release.toml');
+  const releaseConfig = getForgeRelaseFilePath();
   const configPath = args.configPath || process.env.FORGE_CONFIG || releaseConfig;
 
   if (configPath && fs.existsSync(configPath)) {

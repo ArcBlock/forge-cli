@@ -1,3 +1,6 @@
+## 0.33.17 (July 19, 2019)
+
+
 ## 0.33.16 (July 18, 2019)
 
 - fix: endpoint choosing login when create grpc client

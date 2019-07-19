@@ -19,13 +19,40 @@ const figlet = require('figlet');
 const { get, set } = require('lodash');
 const GRpcClient = require('@arcblock/grpc-client');
 const { parse } = require('@arcblock/forge-config');
+const TOML = require('@iarna/toml');
+
 const { name, version, engines } = require('../../package.json');
 // eslint-disable-next-line import/order
 const debug = require('debug')(name);
+const { CONFIG_FILE_NAME } = require('../constant');
 
 const { symbols, hr } = require('./ui');
 
+function getForgeConfigDirectory() {
+  const homedir = os.homedir();
+  let currentDir = process.cwd();
+
+  if (!currentDir.startsWith(homedir)) {
+    return currentDir;
+  }
+
+  while (
+    currentDir !== homedir &&
+    !fs.existsSync(path.join(currentDir, CONFIG_FILE_NAME)) &&
+    currentDir.startsWith(homedir)
+  ) {
+    currentDir = path.join(currentDir, '..');
+  }
+
+  if (currentDir === homedir || !currentDir.startsWith(homedir)) {
+    return currentDir;
+  }
+
+  return path.join(currentDir, CONFIG_FILE_NAME);
+}
+
 let baseDir = path.join(os.homedir(), '.forge_cli');
+
 if (process.env.FORGE_CLI_DIR) {
   try {
     shell.echo(
@@ -50,6 +77,12 @@ const requiredDirs = {
   cache: path.join(baseDir, 'cache'),
   release: path.join(baseDir, 'release'),
 };
+
+const CURRENT_WORKING_PROFILE = getForgeConfigDirectory();
+
+shell.echo(hr);
+shell.echo(`${symbols.success} Current profile: ${chalk.cyan(CURRENT_WORKING_PROFILE)}`);
+shell.echo(hr);
 
 const config = { cli: { requiredDirs } }; // global shared forge-cli run time config
 
@@ -272,9 +305,29 @@ function ensureForgeRelease(args, exitOn404 = true) {
   return false;
 }
 
+function writeCurrentProfileToReleaseConfig(releaseConfigPath) {
+  let content = fs.readFileSync(releaseConfigPath);
+  content = TOML.parse(content.toString());
+  set(content, 'forge.path', path.join(CURRENT_WORKING_PROFILE, '.forge_release', 'core'));
+  set(content, 'tendermint.keypath', path.join(CURRENT_WORKING_PROFILE, '.forge_cli', 'keys'));
+  set(
+    content,
+    'tendermint.path',
+    path.join(CURRENT_WORKING_PROFILE, '.forge_release', 'tendermint')
+  );
+  set(content, 'ipfs.path', path.join(CURRENT_WORKING_PROFILE, '.forge_release', 'ipfs'));
+  set(
+    content,
+    'cache.path',
+    path.join(CURRENT_WORKING_PROFILE, '.forge_release', 'cache', 'mnesia_data_dir')
+  );
+
+  return TOML.stringify(content);
+}
+
 function copyReleaseConfig(currentVersion, overwrite = true) {
-  const targetPath = path.join(path.dirname(requiredDirs.release), 'forge_release.toml');
-  if (fs.existsSync(targetPath) && !overwrite) {
+  const targetPath = path.join(CURRENT_WORKING_PROFILE, '.forge_cli', 'forge_release.toml');
+  if (fs.existsSync(path.join(targetPath, 'forge_release.toml')) && !overwrite) {
     return;
   }
 
@@ -282,10 +335,9 @@ function copyReleaseConfig(currentVersion, overwrite = true) {
     findReleaseConfig(requiredDirs.release, currentVersion) ||
     findReleaseConfigOld(requiredDirs.release, currentVersion);
   if (sourcePath) {
-    const cliDir = path.dirname(requiredDirs.release);
     shell.echo(`${symbols.success} Extract forge config from ${sourcePath}`);
-    shell.exec(`cp ${sourcePath} ${cliDir}/`);
-    shell.echo(`${symbols.success} Forge config written to ${cliDir}/${path.basename(sourcePath)}`);
+    fs.writeFileSync(targetPath, writeCurrentProfileToReleaseConfig(sourcePath));
+    shell.echo(`${symbols.success} Forge config written to ${targetPath}`);
   } else {
     shell.echo(`${symbols.error} Forge config not found under release folder`);
     process.exit(1);

@@ -4,6 +4,8 @@ const inquirer = require('inquirer');
 const { findServicePid } = require('core/env');
 const { symbols } = require('core/ui');
 
+const { clearDataDirectories } = require('../../../forge-fs');
+
 async function main({ opts: { yes } }) {
   const pid = await findServicePid('forge_starter');
   if (pid) {
@@ -32,12 +34,7 @@ async function main({ opts: { yes } }) {
   }
 
   if (confirm) {
-    shell.exec('rm -rf ~/.forge_release');
-    shell.echo(`${symbols.info} rm -rf ~/.forge_release`);
-    shell.exec('rm -rf ~/.forge_cli/keys');
-    shell.echo(`${symbols.info} rm -rf ~/.forge_cli/keys`);
-    shell.exec('rm -f ~/.forge_cli/forge_release.toml');
-    shell.echo(`${symbols.info} rm -f ~/.forge_cli/forge_release.toml`);
+    clearDataDirectories();
   } else {
     shell.echo(`${symbols.info} User abort, nothing changed!`);
     process.exit();

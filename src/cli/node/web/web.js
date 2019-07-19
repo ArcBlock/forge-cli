@@ -49,7 +49,7 @@ async function startForgeWeb(timeout = 10000) {
   const { stderr } = startWebUI();
 
   if (stderr) {
-    debug(`${symbols.error} start webui failed: ${stderr}!`);
+    debug(`${symbols.error} start Web UI failed: ${stderr}!`);
     processOutput(stderr);
     return false;
   }

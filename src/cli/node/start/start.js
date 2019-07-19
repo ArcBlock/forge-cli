@@ -3,6 +3,7 @@ const fs = require('fs');
 const shell = require('shelljs');
 const chalk = require('chalk');
 const findProcess = require('find-process');
+
 const { symbols, hr, getSpinner } = require('core/ui');
 const { config, debug, sleep } = require('core/env');
 const { getLogfile } = require('core/forge-fs');
@@ -71,6 +72,7 @@ async function main({ opts: { multiple, dryRun } }) {
 
   const command = `FORGE_CONFIG=${forgeConfigPath} FORGE_RELEASE=${getForgeReleaseEnv()} ${starterBinPath} daemon`;
   debug('start command', command);
+  // process.exit(0);
 
   if (dryRun) {
     shell.echo(`${symbols.info} Command to debug forge starting issue: `);

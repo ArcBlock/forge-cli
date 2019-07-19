@@ -111,8 +111,8 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
 
     const pokeDefaults = {
       address: 'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz',
-      balance: 14600000,
-      daily_limit: 10000,
+      balance: 365 * 4 * 10 * 1000,
+      daily_limit: 10 * 1000,
       amount: 10,
     };
 

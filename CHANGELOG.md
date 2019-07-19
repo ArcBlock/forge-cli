@@ -1,5 +1,8 @@
 ## 0.33.17 (July 19, 2019)
 
+- chore: make large numbers readable
+- fix: forge config set default decimal should be 18 #110
+- fix: default poke.daily_limit should be 10000
 
 ## 0.33.16 (July 18, 2019)
 

@@ -2,7 +2,8 @@
 const shell = require('shelljs');
 const chalk = require('chalk');
 const { symbols, getSpinner } = require('core/ui');
-const { findServicePid, sleep } = require('core/env');
+const { sleep } = require('core/env');
+const { findServicePid } = require('forge-process');
 
 async function isStopped() {
   const pid = await findServicePid('forge_starter');

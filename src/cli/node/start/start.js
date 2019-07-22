@@ -72,7 +72,6 @@ async function main({ opts: { multiple, dryRun } }) {
 
   const command = `FORGE_CONFIG=${forgeConfigPath} FORGE_RELEASE=${getForgeReleaseEnv()} ${starterBinPath} daemon`;
   debug('start command', command);
-  // process.exit(0);
 
   if (dryRun) {
     shell.echo(`${symbols.info} Command to debug forge starting issue: `);

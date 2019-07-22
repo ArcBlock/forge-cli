@@ -8,7 +8,8 @@ const inquirer = require('inquirer');
 const get = require('lodash/get');
 const set = require('lodash/set');
 const GraphQLClient = require('@arcblock/graphql-client');
-const { config, findServicePid, ensureConfigComment } = require('core/env');
+const { config, ensureConfigComment } = require('core/env');
+const { findServicePid } = require('forge-process');
 const { symbols } = require('core/ui');
 
 async function main({ args: [endpoint = ''], opts: { yes } }) {

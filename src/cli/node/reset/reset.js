@@ -1,7 +1,7 @@
 const shell = require('shelljs');
 const chalk = require('chalk');
 const inquirer = require('inquirer');
-const { findServicePid } = require('core/env');
+const { findServicePid } = require('forge-process');
 const { symbols } = require('core/ui');
 
 const { clearDataDirectories } = require('../../../forge-fs');

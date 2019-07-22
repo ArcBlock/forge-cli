@@ -1,8 +1,9 @@
 const shell = require('shelljs');
 const chalk = require('chalk');
 const Table = require('cli-table-redemption');
-const { getRunningProcesses } = require('core/env');
 const { symbols } = require('core/ui');
+
+const { getRunningProcesses } = require('forge-process');
 
 async function main() {
   const processes = await getRunningProcesses();

@@ -2,8 +2,9 @@
 const chalk = require('chalk');
 const shell = require('shelljs');
 const GraphQLClient = require('@arcblock/graphql-client');
-const { runNativeWebCommand, findServicePid, webUrl, sleep, debug } = require('core/env');
+const { runNativeWebCommand, webUrl, sleep, debug } = require('core/env');
 const { symbols } = require('core/ui');
+const { findServicePid } = require('forge-process');
 
 const startWebUI = runNativeWebCommand('daemon', { silent: true });
 

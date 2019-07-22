@@ -9,11 +9,6 @@ const yaml = require('yaml');
 const shell = require('shelljs');
 const semver = require('semver');
 const inquirer = require('inquirer');
-const pidUsage = require('pidusage');
-const pidUsageTree = require('pidusage-tree');
-const findProcess = require('find-process');
-const prettyMilliseconds = require('pretty-ms');
-const prettyBytes = require('pretty-bytes');
 const isElevated = require('is-elevated');
 const figlet = require('figlet');
 const { get, set } = require('lodash');
@@ -21,6 +16,7 @@ const GRpcClient = require('@arcblock/grpc-client');
 const { parse } = require('@arcblock/forge-config');
 const TOML = require('@iarna/toml');
 const debug = require('debug')('env');
+const { findServicePid } = require('forge-process');
 
 const { version, engines } = require('../../package.json');
 
@@ -121,15 +117,6 @@ function isFile(x) {
 
 function isEmptyDirectory(x) {
   return isDirectory(x) && fs.readdirSync(x).length === 0;
-}
-
-function prettyTime(ms) {
-  let result = prettyMilliseconds(ms, { compact: true });
-  if (result.startsWith('~')) {
-    result = result.slice(1);
-  }
-
-  return result;
 }
 
 /**
@@ -596,103 +583,6 @@ function makeNativeCommandRunner(executable) {
   };
 }
 
-async function getRunningProcesses() {
-  try {
-    const processNames = ['workshop', 'simulator', 'forge_web'];
-    const processIds = await Promise.all(
-      processNames.map(processName => findServicePid(processName))
-    );
-
-    const processesMap = {};
-    processNames.forEach((processName, index) => {
-      if (processName) {
-        processesMap[processIds[index]] = processName;
-      }
-    });
-
-    const processes = await Promise.all(processIds.filter(Boolean).map(pid => pidUsage(pid)));
-
-    const processesStats = processes.map(x => ({
-      name: processesMap[x.pid],
-      pid: x.pid,
-      uptime: prettyTime(x.elapsed, { compact: true }),
-      memory: prettyBytes(x.memory),
-      cpu: `${x.cpu.toFixed(2)} %`,
-    }));
-
-    const forgeProcessStats = await getForgeProcesses();
-
-    // sort by name asc
-    return [...processesStats, ...forgeProcessStats].sort((x, y) => {
-      if (x.name > y.name) {
-        return 1;
-      }
-      if (x.name < y.name) {
-        return -1;
-      }
-
-      return 0;
-    });
-  } catch (error) {
-    console.error(error);
-    return [];
-  }
-}
-
-async function getForgeProcesses() {
-  const pid = await findServicePid('forge_starter');
-  if (!pid) {
-    return [];
-  }
-
-  debug(`${symbols.info} forge pid: ${pid}`);
-  try {
-    const processes = await pidUsageTree(pid);
-    const results = await Promise.all(
-      Object.values(processes).map(async x => {
-        try {
-          const [info] = await findProcess('pid', x.pid);
-          Object.assign(x, info);
-          debug(`${symbols.info} forge managed process info: `, x);
-        } catch (err) {
-          console.error(`Error getting pid info: ${x.pid}`, err);
-        }
-
-        return x;
-      })
-    );
-
-    const getProcessName = x => {
-      if (x.cmd.indexOf('/forge_starter/') > 0 && x.cmd.indexOf('/bin/beam.smp') > 0) {
-        return 'starter';
-      }
-
-      if (x.cmd.indexOf('/forge/') > 0 && x.cmd.indexOf('/bin/beam.smp') > 0) {
-        return 'forge';
-      }
-
-      if (x.cmd.indexOf('/tendermint/') > 0) {
-        return 'tendermint';
-      }
-
-      return x.name.replace(path.extname(x.name), '').replace(/^forge_/, '');
-    };
-
-    return results
-      .filter(x => /(forge|tendermint|beam.smp)/.test(x.name))
-      .map(x => ({
-        name: getProcessName(x),
-        pid: x.pid,
-        uptime: prettyTime(x.elapsed),
-        memory: prettyBytes(x.memory),
-        cpu: `${x.cpu.toFixed(2)} %`,
-      }));
-  } catch (err) {
-    console.error(err);
-    return [];
-  }
-}
-
 function getPlatform() {
   return new Promise((resolve, reject) => {
     const platform = process.env.FORGE_CLI_PLATFORM;
@@ -789,12 +679,6 @@ function checkUpdate() {
   }
 }
 
-async function findServicePid(n) {
-  const list = await findProcess('name', n);
-  const match = list.find(x => x.name === 'beam.smp');
-  return match ? match.pid : 0;
-}
-
 // Because some comments have special usage, we need to add it back
 function ensureConfigComment(str) {
   return str.replace(
@@ -843,7 +727,6 @@ module.exports = {
   runNativeWorkshopCommand: makeNativeCommandRunner('workshopBinPath'),
   runNativeStarterCommand: makeNativeCommandRunner('starterBinPath'),
   runNativeSimulatorCommand: makeNativeCommandRunner('simulatorBinPath'),
-  getForgeProcesses,
   findServicePid,
   getPlatform,
   createRpcClient,
@@ -852,5 +735,4 @@ module.exports = {
   isEmptyDirectory,
   printLogo,
   ensureConfigComment,
-  getRunningProcesses,
 };

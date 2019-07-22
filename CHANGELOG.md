@@ -1,3 +1,8 @@
+## 0.34.0 (July 22, 2019)
+
+- chore: update forge sdk version
+- fix: FORGE_SOCK_GRPC and FORGE_CONFIG should both be respected
+
 ## 0.33.17 (July 19, 2019)
 
 - chore: make large numbers readable

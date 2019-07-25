@@ -2,7 +2,7 @@ const shell = require('shelljs');
 const chalk = require('chalk');
 const { symbols } = require('core/ui');
 const { runNativeSimulatorCommand } = require('core/env');
-const { findServicePid } = require('forge-process');
+const { findServicePid } = require('core/forge-process');
 
 const startSimulator = runNativeSimulatorCommand('daemon');
 

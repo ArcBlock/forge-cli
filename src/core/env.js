@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+const debug = require('debug');
 const fs = require('fs');
 const os = require('os');
 const util = require('util');
@@ -15,17 +16,15 @@ const { get, set } = require('lodash');
 const GRpcClient = require('@arcblock/grpc-client');
 const { parse } = require('@arcblock/forge-config');
 const TOML = require('@iarna/toml');
-const debug = require('debug')('env');
-const { findServicePid } = require('forge-process');
-
-const { version, engines } = require('../../package.json');
-
+const { findServicePid, isForgeStarted } = require('core/forge-process');
 const {
   getForgeConfigDirectory,
   getCliDirectory,
   getReleaseDirectory,
   getForgeRelaseFilePath,
-} = require('../forge-fs');
+} = require('core/forge-fs');
+
+const { version, engines } = require('../../package.json');
 
 const { symbols, hr } = require('./ui');
 
@@ -308,8 +307,7 @@ function copyReleaseConfig(currentVersion, overwrite = true) {
 }
 
 async function ensureRunningNode() {
-  const pid = await findServicePid('forge_starter');
-  if (!pid) {
+  if (!(await isForgeStarted())) {
     shell.echo(`${symbols.error} forge is not started yet!`);
     shell.echo(`${symbols.info} Please run ${chalk.cyan('forge start')} first!`);
     process.exit(0);

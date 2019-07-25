@@ -1,42 +1,16 @@
 /* eslint-disable consistent-return */
+const chalk = require('chalk');
 const fs = require('fs');
 const shell = require('shelljs');
-const chalk = require('chalk');
-const findProcess = require('find-process');
 
 const { symbols, hr, getSpinner } = require('core/ui');
 const { config, debug, sleep } = require('core/env');
 const { getLogfile } = require('core/forge-fs');
+const { getForgeProcessTag } = require('core/util');
+const { isForgeStarted } = require('core/forge-process');
 
 const { start: startWeb } = require('../web/web');
 const { run: stop } = require('../stop/stop');
-
-function getForgeReleaseEnv() {
-  if (process.env.FORGE_RELEASE && fs.existsSync(process.env.FORGE_RELEASE)) {
-    return process.env.FORGE_RELEASE;
-  }
-
-  return config.get('cli.forgeReleaseDir');
-}
-
-async function isStarted(silent = false) {
-  try {
-    const tendermintProcess = await findProcess('name', 'tendermint');
-    if (tendermintProcess && tendermintProcess.length > 0) {
-      debug('node.start.isStarted', { tendermintProcess });
-      if (silent === false) {
-        shell.echo(`${symbols.info} forge is already started!`);
-        shell.echo(`${symbols.info} Please run ${chalk.cyan('forge stop')} first!`);
-      }
-
-      return true;
-    }
-  } catch (error) {
-    debug('node.start.isStarted', error.message);
-  }
-
-  return false;
-}
 
 function checkError(startAtMs) {
   return new Promise(resolve => {
@@ -53,14 +27,11 @@ function checkError(startAtMs) {
   });
 }
 
-async function main({ opts: { multiple, dryRun } }) {
+async function main({ opts: { dryRun } }) {
   const startAt = Date.now();
-  if (multiple && !process.env.FORGE_CONFIG) {
-    shell.echo(`${symbols.error} start multiple chain requires provided custom config`);
-    return;
-  }
-
-  if (!multiple && (await isStarted())) {
+  if (await isForgeStarted()) {
+    shell.echo(`${symbols.info} forge is already started!`);
+    shell.echo(`${symbols.info} Please run ${chalk.cyan('forge stop')} first!`);
     return;
   }
 
@@ -70,7 +41,11 @@ async function main({ opts: { multiple, dryRun } }) {
     return;
   }
 
-  const command = `FORGE_CONFIG=${forgeConfigPath} FORGE_RELEASE=${getForgeReleaseEnv()} ${starterBinPath} daemon`;
+  // add `-sname` parameter to enable start multiple forge processes
+  const command = `ERL_AFLAGS="-sname ${getForgeProcessTag(
+    process.env.CURRENT_WORKING_PROFILE
+  )}" FORGE_CONFIG=${forgeConfigPath} ${forgeBinPath} daemon`;
+
   debug('start command', command);
 
   if (dryRun) {
@@ -128,11 +103,13 @@ async function main({ opts: { multiple, dryRun } }) {
   } catch (err) {
     debug.error(err);
     shell.echo();
-    shell.echo(`${symbols.error} Start failed: ${err.message}`);
+    shell.echo(`${symbols.error} Forge start failed: ${err.message}`);
 
     spinner.fail('Forge cannot be successfully started, now exiting...');
+
     await stop({ opts: { force: true } });
-    shell.echo('');
+
+    shell.echo();
     shell.echo(`${symbols.info} Possible solutions:`);
     shell.echo(hr);
     shell.echo('1. Cleanup already running forge');
@@ -151,14 +128,14 @@ async function main({ opts: { multiple, dryRun } }) {
 
 function waitUntilStarted(timeout = 30000) {
   return new Promise(async (resolve, reject) => {
-    if (await isStarted(true)) {
+    if (await isForgeStarted()) {
       return resolve();
     }
 
     let timeElapsed = 0;
     const interval = 800;
     const timer = setInterval(async () => {
-      if (await isStarted(true)) {
+      if (await isForgeStarted(true)) {
         clearInterval(timer);
         return resolve();
       }

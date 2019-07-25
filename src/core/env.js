@@ -1,5 +1,4 @@
 /* eslint-disable no-console */
-const debug = require('debug');
 const fs = require('fs');
 const os = require('os');
 const util = require('util');
@@ -13,10 +12,13 @@ const inquirer = require('inquirer');
 const isElevated = require('is-elevated');
 const figlet = require('figlet');
 const { get, set } = require('lodash');
+const getPort = require('get-port');
+
 const GRpcClient = require('@arcblock/grpc-client');
 const { parse } = require('@arcblock/forge-config');
 const TOML = require('@iarna/toml');
-const { findServicePid, isForgeStarted } = require('core/forge-process');
+
+const { findServicePid, isForgeStarted, getForgeWebProcessTag } = require('core/forge-process');
 const {
   getForgeConfigDirectory,
   getCliDirectory,
@@ -27,6 +29,7 @@ const {
 const { version, engines } = require('../../package.json');
 
 const { symbols, hr } = require('./ui');
+const debug = require('./debug')('env');
 
 const CURRENT_WORKING_PROFILE = getForgeConfigDirectory();
 process.env.CURRENT_WORKING_PROFILE = CURRENT_WORKING_PROFILE;
@@ -125,7 +128,7 @@ function isEmptyDirectory(x) {
  * @param {boolean} [exitOn404=true]
  * @returns
  */
-function ensureForgeRelease(args, exitOn404 = true) {
+async function ensureForgeRelease(args, exitOn404 = true) {
   const envReleaseDir = process.env.FORGE_RELEASE_DIR;
   const cliReleaseDir = requiredDirs.release;
   const argReleaseDir = args.releaseDir;
@@ -230,7 +233,7 @@ function ensureForgeRelease(args, exitOn404 = true) {
       debug(`${symbols.success} Using forge executable: ${forgeBinPath}`);
 
       if (semver.satisfies(currentVersion, engines.forge)) {
-        copyReleaseConfig(currentVersion, false);
+        await copyReleaseConfig(currentVersion, false);
         return releaseDir;
       }
       if (exitOn404) {
@@ -274,19 +277,35 @@ function ensureForgeRelease(args, exitOn404 = true) {
   return false;
 }
 
-function writeCurrentProfileToReleaseConfig(releaseConfigPath) {
+async function writeCurrentProfileToReleaseConfig(releaseConfigPath) {
   let content = fs.readFileSync(releaseConfigPath);
   content = TOML.parse(content.toString());
+
+  const forgeWebPort = await getPort({ port: getPort.makeRange(28001, 30000) });
+
+  const forgeGrpcPort = await getPort({ port: getPort.makeRange(20000, 22000) });
+  const tendminRpcPort = await getPort({ port: getPort.makeRange(22001, 24000) });
+  const tendmintGrpcPort = await getPort({ port: getPort.makeRange(26001, 27000) });
+  const tendmintP2pPort = await getPort({ port: getPort.makeRange(27001, 28000) });
+
+  set(content, 'forge.web.port', forgeWebPort);
+
   set(content, 'forge.path', path.join(getReleaseDirectory(), 'core'));
+  set(content, 'forge.sock_grpc', `tcp://127.0.0.1:${forgeGrpcPort}`);
+
   set(content, 'tendermint.keypath', path.join(getCliDirectory(), 'keys'));
   set(content, 'tendermint.path', path.join(getReleaseDirectory(), 'tendermint'));
+  set(content, 'tendermint.sock_rpc', `tcp://127.0.0.1:${tendminRpcPort}`);
+  set(content, 'tendermint.sock_grpc', `tcp://127.0.0.1:${tendmintGrpcPort}`);
+  set(content, 'tendermint.sock_p2p', `tcp://0.0.0.0:${tendmintP2pPort}`);
+
   set(content, 'ipfs.path', path.join(getReleaseDirectory(), 'ipfs'));
   set(content, 'cache.path', path.join(getReleaseDirectory(), 'cache', 'mnesia_data_dir'));
 
   return TOML.stringify(content);
 }
 
-function copyReleaseConfig(currentVersion, overwrite = true) {
+async function copyReleaseConfig(currentVersion, overwrite = true) {
   const targetPath = getForgeRelaseFilePath();
   if (fs.existsSync(targetPath) && !overwrite) {
     return;
@@ -298,7 +317,7 @@ function copyReleaseConfig(currentVersion, overwrite = true) {
   if (sourcePath) {
     shell.echo(`${symbols.success} Extract forge config from ${sourcePath}`);
     console.log(targetPath);
-    fs.writeFileSync(targetPath, writeCurrentProfileToReleaseConfig(sourcePath));
+    fs.writeFileSync(targetPath, await writeCurrentProfileToReleaseConfig(sourcePath));
     shell.echo(`${symbols.success} Forge config written to ${targetPath}`);
   } else {
     shell.echo(`${symbols.error} Forge config not found under release folder`);
@@ -569,12 +588,17 @@ function makeNativeCommandRunner(executable) {
       }
 
       const sockGrpc =
-        process.env.FORGE_SOCK_GRPC || get(config, 'forge.sock_grpc') || 'tcp://127.0.0.1:28210';
+        process.env.FORGE_SOCK_GRPC || get(config, 'forge.sockGrpc') || 'tcp://127.0.0.1:28210';
 
-      let command = `FORGE_CONFIG=${forgeConfigPath} ${binPath} ${subCommand}`;
+      const erlAflagsParam = `ERL_AFLAGS="-sname ${getForgeWebProcessTag(
+        process.env.CURRENT_WORKING_PROFILE
+      )}"`;
+      let command = `${erlAflagsParam} FORGE_CONFIG=${forgeConfigPath} ${binPath} ${subCommand}`;
       if (['webBinPath', 'simulatorBinPath'].includes(executable)) {
-        command = `FORGE_CONFIG=${forgeConfigPath} FORGE_SOCK_GRPC=${sockGrpc} ${binPath} ${subCommand}`;
+        command = `${erlAflagsParam} FORGE_CONFIG=${forgeConfigPath} FORGE_SOCK_GRPC=${sockGrpc} ${binPath} ${subCommand}`; // eslint-disable-line
       }
+
+      console.log(command);
       debug(`runNativeCommand.${executable}`, command);
       return shell.exec(command, options);
     };

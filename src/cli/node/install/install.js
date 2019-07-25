@@ -34,8 +34,8 @@ async function isForgeStopped() {
   return true;
 }
 
-function releaseDirExists() {
-  const releaseDir = ensureForgeRelease({}, false);
+async function releaseDirExists() {
+  const releaseDir = await ensureForgeRelease({}, false);
   if (releaseDir) {
     const version = config.get('cli.currentVersion');
     shell.echo(`${symbols.warning} forge version ${version} already initialized: ${releaseDir}`);
@@ -218,7 +218,7 @@ async function main({ args: [userVersion], opts: { mirror, silent } }) {
       expandReleaseTarball(assetTarball, asset, version);
       if (asset === 'forge') {
         // FIXME: copy the latest config as shared config on each release?
-        copyReleaseConfig(version);
+        await copyReleaseConfig(version); // eslint-disable-line
       }
       if (asset === 'forge' || asset === 'simulator') {
         updateReleaseYaml(asset, version);

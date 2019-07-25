@@ -6,6 +6,4 @@ const md5 = data =>
     .update(data)
     .digest('hex');
 
-const getForgeProcessTag = str => `forge-${md5(str)}`;
-
-module.exports = { md5, getForgeProcessTag };
+module.exports = { md5 };

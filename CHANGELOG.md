@@ -1,3 +1,8 @@
+## 0.34.2 (July 25, 2019)
+
+- chore: wording improvement (#113)
+- chore: forge start improvement (#114)
+
 ## 0.34.1 (July 25, 2019)
 
 - Output more details if forge exited by [exit logs](https://github.com/ArcBlock/forge/pull/888)

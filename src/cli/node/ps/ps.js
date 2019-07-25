@@ -3,7 +3,7 @@ const chalk = require('chalk');
 const Table = require('cli-table-redemption');
 const { symbols } = require('core/ui');
 
-const { getRunningProcesses } = require('forge-process');
+const { getRunningProcesses } = require('core/forge-process');
 
 async function main() {
   const processes = await getRunningProcesses();

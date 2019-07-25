@@ -16,7 +16,7 @@ const { bytesToHex, hexToBytes, isHexStrict } = require('@arcblock/forge-util');
 const GraphQLClient = require('@arcblock/graphql-client');
 const { symbols, hr, pretty } = require('core/ui');
 const { config, requiredDirs, webUrl, ensureConfigComment } = require('core/env');
-const { findServicePid } = require('forge-process');
+const { findServicePid } = require('core/forge-process');
 
 function getModeratorSecretKey() {
   const sk = process.env.FORGE_MODERATOR_SK;

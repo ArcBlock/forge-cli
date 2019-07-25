@@ -1,10 +1,10 @@
 const shell = require('shelljs');
 const chalk = require('chalk');
 const inquirer = require('inquirer');
-const { findServicePid } = require('forge-process');
+const { findServicePid } = require('core/forge-process');
 const { symbols } = require('core/ui');
 
-const { clearDataDirectories } = require('../../../forge-fs');
+const { clearDataDirectories } = require('core/forge-fs');
 
 async function main({ opts: { yes } }) {
   const pid = await findServicePid('forge_starter');

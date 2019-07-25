@@ -3,7 +3,9 @@ const shell = require('shelljs');
 const chalk = require('chalk');
 const { symbols, getSpinner } = require('core/ui');
 const { sleep } = require('core/env');
-const { findServicePid } = require('forge-process');
+const debug = require('debug')('@arcblock/forge-cli:stop');
+
+const { findServicePid, isForgeStarted, getForgeProcess } = require('core/forge-process');
 
 async function isStopped() {
   const pid = await findServicePid('forge_starter');
@@ -38,8 +40,12 @@ async function main({ opts: { force } }) {
       return;
     }
 
-    const pid = await findServicePid('forge_starter');
-    if (!pid) {
+    const forgeProcessId = await getForgeProcess();
+    const isStarted = await isForgeStarted();
+
+    debug(`forge started status: ${isStarted}, processId: ${isStarted}`);
+
+    if (!isStarted || !forgeProcessId) {
       shell.echo(`${symbols.error} forge is not started yet!`);
       shell.echo(`${symbols.info} start with ${chalk.cyan('forge start')}!`);
       process.exit(1);
@@ -49,7 +55,8 @@ async function main({ opts: { force } }) {
     shell.echo(`${symbols.success} Sending stop signal to forge daemon...`);
     const spinner = getSpinner('Waiting for forge daemon to stop...');
     spinner.start();
-    const { code, stderr } = shell.exec(`kill ${pid}`, { silent: true });
+
+    const { code, stderr } = shell.exec(`kill ${forgeProcessId}`, { silent: true });
     if (code !== 0) {
       spinner.fail(`Forge daemon stop failed ${stderr}!`);
       return;
@@ -79,6 +86,8 @@ async function main({ opts: { force } }) {
 
     process.exit(0);
   } catch (err) {
+    shell.echo();
+    debug(err.message);
     shell.echo(`${symbols.error} cannot get daemon process info, ensure forge is started!`);
     process.exit(1);
   }

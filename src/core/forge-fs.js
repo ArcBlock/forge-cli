@@ -14,7 +14,7 @@ function clearDataDirectories() {
     printInfo(`rm -f ${filePath}`);
   });
 
-  printSuccess('Data profiles cleared');
+  printSuccess('Data profiles cleared!');
 }
 
 function getForgeConfigDirectory() {

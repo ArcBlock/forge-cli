@@ -9,7 +9,10 @@ const debug = require('debug')('forge-process');
 
 const { prettyTime } = require('../common');
 const { getTendermintHomeDir } = require('./forge-fs');
-const { getForgeProcessTag } = require('./util');
+const { md5 } = require('./util');
+
+const getForgeProcessTag = str => `forge-${md5(str)}`;
+const getForgeWebProcessTag = str => `forge-web-${md5(str)}`;
 
 async function findServicePid(n) {
   const list = await findProcess('name', n);
@@ -134,7 +137,26 @@ async function getForgeProcess() {
       cmd.includes(getForgeProcessTag(process.env.CURRENT_WORKING_PROFILE))
   );
 
-  return forgeProcess ? forgeProcess.pid : null;
+  return forgeProcess ? forgeProcess.pid : 0;
 }
 
-module.exports = { getRunningProcesses, findServicePid, isForgeStarted, getForgeProcess };
+async function getForgeWebProcess() {
+  const list = await findProcess('name', 'forge-web');
+  const match = list.find(
+    ({ name, cmd }) =>
+      name === 'beam.smp' &&
+      cmd.includes(getForgeWebProcessTag(process.env.CURRENT_WORKING_PROFILE))
+  );
+
+  return match ? match.pid : 0;
+}
+
+module.exports = {
+  getRunningProcesses,
+  findServicePid,
+  isForgeStarted,
+  getForgeProcess,
+  getForgeWebProcess,
+  getForgeProcessTag,
+  getForgeWebProcessTag,
+};

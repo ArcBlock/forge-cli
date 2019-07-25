@@ -2,9 +2,11 @@
 const chalk = require('chalk');
 const shell = require('shelljs');
 const GraphQLClient = require('@arcblock/graphql-client');
-const { runNativeWebCommand, webUrl, sleep, debug } = require('core/env');
+
+const debug = require('core/debug')('web');
+const { runNativeWebCommand, webUrl, sleep } = require('core/env');
 const { symbols } = require('core/ui');
-const { findServicePid } = require('core/forge-process');
+const { getForgeWebProcess } = require('core/forge-process');
 
 const startWebUI = runNativeWebCommand('daemon', { silent: true });
 
@@ -65,7 +67,9 @@ async function startForgeWeb(timeout = 10000) {
 }
 
 async function main({ args: [action = 'none'], opts }) {
-  const pid = await findServicePid('forge_web');
+  const pid = await getForgeWebProcess('');
+
+  debug(`forge web pid: ${pid}`);
 
   /* eslint-disable indent */
   switch (action) {

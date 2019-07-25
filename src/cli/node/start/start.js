@@ -6,8 +6,7 @@ const shell = require('shelljs');
 const { symbols, hr, getSpinner } = require('core/ui');
 const { config, debug, sleep } = require('core/env');
 const { getLogfile } = require('core/forge-fs');
-const { getForgeProcessTag } = require('core/util');
-const { isForgeStarted } = require('core/forge-process');
+const { isForgeStarted, getForgeProcessTag } = require('core/forge-process');
 
 const { start: startWeb } = require('../web/web');
 const { run: stop } = require('../stop/stop');

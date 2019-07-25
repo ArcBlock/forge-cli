@@ -4,8 +4,9 @@ const shell = require('shelljs');
 const chalk = require('chalk');
 const findProcess = require('find-process');
 const { symbols, hr, getSpinner } = require('core/ui');
-
 const { config, debug, sleep } = require('core/env');
+const { getLogfile } = require('core/forge-fs');
+
 const { start: startWeb } = require('../web/web');
 const { run: stop } = require('../stop/stop');
 
@@ -36,7 +37,23 @@ async function isStarted(silent = false) {
   return false;
 }
 
+function checkError(startAtMs) {
+  return new Promise(resolve => {
+    const errorFilePath = getLogfile('exit_status.json');
+
+    fs.stat(errorFilePath, (err, stats) => {
+      if (!err && stats.ctimeMs > startAtMs) {
+        const { status, message } = JSON.parse(fs.readFileSync(errorFilePath).toString());
+        return resolve(`${status}: ${message}`);
+      }
+
+      resolve(null);
+    });
+  });
+}
+
 async function main({ opts: { multiple, dryRun } }) {
+  const startAt = Date.now();
   if (multiple && !process.env.FORGE_CONFIG) {
     shell.echo(`${symbols.error} start multiple chain requires provided custom config`);
     return;
@@ -75,6 +92,11 @@ async function main({ opts: { multiple, dryRun } }) {
     shell.exec(command);
     await waitUntilStarted(40000);
     await sleep(6000);
+    const errMessage = await checkError(startAt);
+    if (errMessage) {
+      throw new Error(errMessage);
+    }
+
     if (config.get('forge.web.enabled')) {
       spinner.stop();
       await startWeb();
@@ -104,6 +126,9 @@ async function main({ opts: { multiple, dryRun } }) {
     );
   } catch (err) {
     debug.error(err);
+    shell.echo();
+    shell.echo(`${symbols.error} Start failed: ${err.message}`);
+
     spinner.fail('Forge cannot be successfully started, now exiting...');
     await stop({ opts: { force: true } });
     shell.echo('');

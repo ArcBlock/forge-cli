@@ -45,7 +45,7 @@ async function main({ opts: { force } }) {
       return;
     }
 
-    shell.echo(`${symbols.success} Sending kill signal to forge daemon...`);
+    shell.echo(`${symbols.success} Sending stop signal to forge daemon...`);
     const spinner = getSpinner('Waiting for forge daemon to stop...');
     spinner.start();
     const { code, stderr } = shell.exec(`kill ${pid}`, { silent: true });

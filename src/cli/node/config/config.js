@@ -380,7 +380,7 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
       defaults.forge.token.description = tokenDescription;
       defaults.forge.token.total_supply = Number(tokenTotalSupply);
       defaults.forge.token.initial_supply = Number(tokenInitialSupply);
-      defaults.forge.token.token_decimal = Number(tokenDecimal);
+      defaults.forge.token.decimal = Number(tokenDecimal);
     }
 
     // poke config

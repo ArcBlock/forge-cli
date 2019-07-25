@@ -29,7 +29,8 @@ async function main({ opts: { force } }) {
     if (force) {
       shell.echo(`${symbols.warning} ${chalk.yellow('Stop all forge processes in force mode')}`);
       // prettier-ignore
-      const command = 'ps -ef | grep -v grep | grep -v stop | grep forge | awk \'{print $2}\' | xargs kill';
+      // eslint-disable-next-line
+      const command = `ps -ef | grep -v grep | grep -v ${process.pid} | grep -v stop | grep forge | awk '{print $2}' | xargs kill`;
       shell.exec(command, { silent: true });
       shell.echo(chalk.cyan(command));
       shell.echo(`${symbols.info} It may take up to 10 seconds for all forge processes to stop`);

@@ -1,3 +1,7 @@
+## 0.34.1 (July 25, 2019)
+
+- Output more details if forge exited by [exit logs](https://github.com/ArcBlock/forge/pull/888)
+
 ## 0.34.0 (July 22, 2019)
 
 - chore: update forge sdk version

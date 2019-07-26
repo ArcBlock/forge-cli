@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 const fs = require('fs');
 const os = require('os');
 const util = require('util');
@@ -18,7 +17,7 @@ const GRpcClient = require('@arcblock/grpc-client');
 const { parse } = require('@arcblock/forge-config');
 const TOML = require('@iarna/toml');
 
-const { findServicePid, isForgeStarted, getForgeWebProcessTag } = require('core/forge-process');
+const { findServicePid, isForgeStarted, getProcessTag } = require('core/forge-process');
 const {
   getForgeConfigDirectory,
   getCliDirectory,
@@ -567,7 +566,8 @@ function createRpcClient() {
   return client;
 }
 
-function makeNativeCommandRunner(executable) {
+// TODO: need to refact to on name parameter
+function makeNativeCommandRunner(executable, name) {
   return function runNativeForgeCommand(subCommand, options = {}) {
     return function rumCommand() {
       // eslint-disable-next-line prefer-destructuring
@@ -590,15 +590,12 @@ function makeNativeCommandRunner(executable) {
       const sockGrpc =
         process.env.FORGE_SOCK_GRPC || get(config, 'forge.sockGrpc') || 'tcp://127.0.0.1:28210';
 
-      const erlAflagsParam = `ERL_AFLAGS="-sname ${getForgeWebProcessTag(
-        process.env.CURRENT_WORKING_PROFILE
-      )}"`;
+      const erlAflagsParam = `ERL_AFLAGS="-sname ${getProcessTag(name)}"`;
       let command = `${erlAflagsParam} FORGE_CONFIG=${forgeConfigPath} ${binPath} ${subCommand}`;
       if (['webBinPath', 'simulatorBinPath'].includes(executable)) {
         command = `${erlAflagsParam} FORGE_CONFIG=${forgeConfigPath} FORGE_SOCK_GRPC=${sockGrpc} ${binPath} ${subCommand}`; // eslint-disable-line
       }
 
-      console.log(command);
       debug(`runNativeCommand.${executable}`, command);
       return shell.exec(command, options);
     };
@@ -745,10 +742,10 @@ module.exports = {
   ensureForgeRelease,
   ensureRpcClient,
   runNativeForgeCommand: makeNativeCommandRunner('forgeBinPath'),
-  runNativeWebCommand: makeNativeCommandRunner('webBinPath'),
-  runNativeWorkshopCommand: makeNativeCommandRunner('workshopBinPath'),
-  runNativeStarterCommand: makeNativeCommandRunner('starterBinPath'),
-  runNativeSimulatorCommand: makeNativeCommandRunner('simulatorBinPath'),
+  runNativeWebCommand: makeNativeCommandRunner('webBinPath', 'web'),
+  runNativeWorkshopCommand: makeNativeCommandRunner('workshopBinPath', 'workshop'),
+  runNativeStarterCommand: makeNativeCommandRunner('starterBinPath', 'starter'), // deprecated
+  runNativeSimulatorCommand: makeNativeCommandRunner('simulatorBinPath', 'simulator'),
   findServicePid,
   getPlatform,
   createRpcClient,

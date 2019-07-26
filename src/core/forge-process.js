@@ -1,18 +1,21 @@
 /* eslint-disable no-console */
 
 const pidUsage = require('pidusage');
-const path = require('path');
-const pidUsageTree = require('pidusage-tree');
 const prettyBytes = require('pretty-bytes');
 const findProcess = require('find-process');
-const debug = require('debug')('forge-process');
+const debug = require('./debug')('forge-process');
 
 const { prettyTime } = require('../common');
 const { getTendermintHomeDir } = require('./forge-fs');
 const { md5 } = require('./util');
 
-const getForgeProcessTag = str => `forge-${md5(str)}`;
-const getForgeWebProcessTag = str => `forge-web-${md5(str)}`;
+const getProcessTag = name => {
+  if (!name) {
+    return `forge-${md5(process.env.CURRENT_WORKING_PROFILE)}`;
+  }
+
+  return `forge-${name}-${md5(process.env.CURRENT_WORKING_PROFILE)}`;
+};
 
 async function findServicePid(n) {
   const list = await findProcess('name', n);
@@ -20,34 +23,67 @@ async function findServicePid(n) {
   return match ? match.pid : 0;
 }
 
+async function getTendermintProcess(homeDir = getTendermintHomeDir()) {
+  const tendermintProcess = await findProcess('name', 'tendermint');
+
+  const tmp = tendermintProcess.find(({ cmd }) => cmd.includes(homeDir));
+  return { name: 'tendermint', pid: tmp ? tmp.pid : 0 };
+}
+
+async function isForgeStarted() {
+  const { pid } = await getTendermintProcess();
+
+  return !!pid;
+}
+
+async function getForgeProcess() {
+  const forgeProcesses = await findProcess('name', 'forge');
+
+  const forgeProcess = forgeProcesses.find(
+    ({ cmd }) => cmd.includes('/bin/beam.smp') && cmd.includes(getProcessTag())
+  );
+
+  return { name: 'forge', pid: forgeProcess ? forgeProcess.pid : 0 };
+}
+
+async function getForgeWebProcess() {
+  const list = await findProcess('name', 'forge-web');
+  const match = list.find(
+    ({ name, cmd }) => name === 'beam.smp' && cmd.includes(getProcessTag('web'))
+  );
+
+  return { name: 'forge web', pid: match ? match.pid : 0 };
+}
+
 async function getRunningProcesses() {
-  try {
-    const processNames = ['workshop', 'simulator', 'forge_web'];
-    const processIds = await Promise.all(
-      processNames.map(processName => findServicePid(processName))
-    );
+  debug('get running processes');
 
-    const processesMap = {};
-    processNames.forEach((processName, index) => {
-      if (processName) {
-        processesMap[processIds[index]] = processName;
-      }
-    });
+  const processes = await Promise.all([
+    getForgeProcess(),
+    getForgeWebProcess(),
+    getTendermintProcess(),
+    getSimulatorProcess(),
+  ]);
 
-    const processes = await Promise.all(processIds.filter(Boolean).map(pid => pidUsage(pid)));
+  const processesUsage = await Promise.all(
+    processes
+      .filter(({ pid }) => pid > 0)
+      .map(async item => {
+        item.usage = await pidUsage(item.pid);
 
-    const processesStats = processes.map(x => ({
-      name: processesMap[x.pid],
-      pid: x.pid,
-      uptime: prettyTime(x.elapsed, { compact: true }),
-      memory: prettyBytes(x.memory),
-      cpu: `${x.cpu.toFixed(2)} %`,
-    }));
+        return item;
+      })
+  );
 
-    const forgeProcessStats = await getForgeProcesses();
-
-    // sort by name asc
-    return [...processesStats, ...forgeProcessStats].sort((x, y) => {
+  const processesStats = processesUsage
+    .map(({ pid, name, usage }) => ({
+      name,
+      pid,
+      uptime: prettyTime(usage.elapsed, { compact: true }),
+      memory: prettyBytes(usage.memory),
+      cpu: `${usage.cpu.toFixed(2)} %`,
+    }))
+    .sort((x, y) => {
       if (x.name > y.name) {
         return 1;
       }
@@ -57,98 +93,18 @@ async function getRunningProcesses() {
 
       return 0;
     });
-  } catch (error) {
-    console.error(error);
-    return [];
-  }
+
+  return processesStats;
 }
 
-async function getForgeProcesses() {
-  const pid = await findServicePid('forge_starter');
-  if (!pid) {
-    return [];
-  }
+async function getSimulatorProcess() {
+  const processes = await findProcess('name', 'simulator');
 
-  debug(`forge pid: ${pid}`);
-  try {
-    const processes = await pidUsageTree(pid);
-    const results = await Promise.all(
-      Object.values(processes).map(async x => {
-        try {
-          const [info] = await findProcess('pid', x.pid);
-          Object.assign(x, info);
-          debug('forge managed process info: ', x);
-        } catch (err) {
-          console.error(`Error getting pid info: ${x.pid}`, err);
-        }
-
-        return x;
-      })
-    );
-
-    const getProcessName = x => {
-      if (x.cmd.indexOf('/forge_starter/') > 0 && x.cmd.indexOf('/bin/beam.smp') > 0) {
-        return 'starter';
-      }
-
-      if (x.cmd.indexOf('/forge/') > 0 && x.cmd.indexOf('/bin/beam.smp') > 0) {
-        return 'forge';
-      }
-
-      if (x.cmd.indexOf('/tendermint/') > 0) {
-        return 'tendermint';
-      }
-
-      return x.name.replace(path.extname(x.name), '').replace(/^forge_/, '');
-    };
-
-    return results
-      .filter(x => /(forge|tendermint|beam.smp)/.test(x.name))
-      .map(x => ({
-        name: getProcessName(x),
-        pid: x.pid,
-        uptime: prettyTime(x.elapsed),
-        memory: prettyBytes(x.memory),
-        cpu: `${x.cpu.toFixed(2)} %`,
-      }));
-  } catch (err) {
-    console.error(err);
-    return [];
-  }
-}
-
-async function getTendermintProcess(homeDir) {
-  const tendermintProcess = await findProcess('name', 'tendermint');
-  return tendermintProcess.find(({ cmd }) => cmd.includes(homeDir));
-}
-
-async function isForgeStarted() {
-  const tendermintProcess = await getTendermintProcess(getTendermintHomeDir());
-
-  return !!tendermintProcess;
-}
-
-async function getForgeProcess() {
-  const forgeProcesses = await findProcess('name', 'forge');
-
-  const forgeProcess = forgeProcesses.find(
-    ({ cmd }) =>
-      cmd.includes('/bin/beam.smp') &&
-      cmd.includes(getForgeProcessTag(process.env.CURRENT_WORKING_PROFILE))
+  const tmp = processes.find(
+    ({ cmd }) => cmd.includes('/bin/beam.smp') && cmd.includes(getProcessTag('simulator'))
   );
 
-  return forgeProcess ? forgeProcess.pid : 0;
-}
-
-async function getForgeWebProcess() {
-  const list = await findProcess('name', 'forge-web');
-  const match = list.find(
-    ({ name, cmd }) =>
-      name === 'beam.smp' &&
-      cmd.includes(getForgeWebProcessTag(process.env.CURRENT_WORKING_PROFILE))
-  );
-
-  return match ? match.pid : 0;
+  return { name: 'simulator', pid: tmp ? tmp.pid : 0 };
 }
 
 module.exports = {
@@ -157,6 +113,6 @@ module.exports = {
   isForgeStarted,
   getForgeProcess,
   getForgeWebProcess,
-  getForgeProcessTag,
-  getForgeWebProcessTag,
+  getProcessTag,
+  getSimulatorProcess,
 };

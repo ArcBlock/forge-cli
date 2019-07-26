@@ -40,7 +40,7 @@ async function main({ opts: { force } }) {
       return;
     }
 
-    const forgeProcessId = await getForgeProcess();
+    const { id: forgeProcessId } = await getForgeProcess();
     const isStarted = await isForgeStarted();
 
     debug(`forge started status: ${isStarted}, processId: ${isStarted}`);

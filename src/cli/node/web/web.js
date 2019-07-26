@@ -67,7 +67,7 @@ async function startForgeWeb(timeout = 10000) {
 }
 
 async function main({ args: [action = 'none'], opts }) {
-  const pid = await getForgeWebProcess('');
+  const { pid } = await getForgeWebProcess();
 
   debug(`forge web pid: ${pid}`);
 

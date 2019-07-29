@@ -11,10 +11,10 @@ const { md5 } = require('./util');
 
 const getProcessTag = name => {
   if (!name) {
-    return `forge-${md5(process.env.CURRENT_WORKING_PROFILE)}`;
+    return `forge-${md5(process.env.PROFILE_NAME)}`;
   }
 
-  return `forge-${name}-${md5(process.env.CURRENT_WORKING_PROFILE)}`;
+  return `forge-${name}-${md5(process.env.PROFILE_NAME)}`;
 };
 
 async function findServicePid(n) {

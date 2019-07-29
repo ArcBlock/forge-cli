@@ -19,10 +19,12 @@ const TOML = require('@iarna/toml');
 
 const { findServicePid, isForgeStarted, getProcessTag } = require('core/forge-process');
 const {
-  getForgeConfigDirectory,
+  ensureProfileDirectory,
   getCliDirectory,
   getReleaseDirectory,
-  getForgeRelaseFilePath,
+  getCurrentReleaseFilePath,
+  isDirectory,
+  getOriginForgeReleaseFilePath,
 } = require('core/forge-fs');
 
 const { version, engines } = require('../../package.json');
@@ -30,28 +32,12 @@ const { version, engines } = require('../../package.json');
 const { symbols, hr } = require('./ui');
 const debug = require('./debug')('env');
 
-const CURRENT_WORKING_PROFILE = getForgeConfigDirectory();
+process.env.PROFILE_NAME = 'default';
+
+const CURRENT_WORKING_PROFILE = ensureProfileDirectory(process.env.PROFILE_NAME);
 process.env.CURRENT_WORKING_PROFILE = CURRENT_WORKING_PROFILE;
 
-let baseDir = path.join(os.homedir(), '.forge_cli');
-
-if (process.env.FORGE_CLI_DIR) {
-  try {
-    shell.echo(
-      `${symbols.info} ${chalk.yellow(`Using custom forge_cli dir: ${process.env.FORGE_CLI_DIR}`)}`
-    );
-    const dir = path.resolve(process.env.FORGE_CLI_DIR);
-    if (!fs.existsSync(dir)) {
-      shell.mkdir(dir, { silent: true });
-    }
-    baseDir = dir;
-    debug(`${symbols.info} use custom baseDir: ${baseDir}`);
-  } catch (err) {
-    shell.echo(
-      `${symbols.warning} invalid or cannot create custom baseDir: ${process.env.FORGE_CLI_DIR}`
-    );
-  }
-}
+const baseDir = path.join(os.homedir(), '.forge_cli');
 
 const requiredDirs = {
   tmp: path.join(baseDir, 'tmp'),
@@ -106,10 +92,6 @@ async function setupEnv(args, requirements) {
   if (requirements.wallet) {
     await ensureWallet(args);
   }
-}
-
-function isDirectory(x) {
-  return fs.existsSync(x) && fs.statSync(x).isDirectory();
 }
 
 function isFile(x) {
@@ -235,6 +217,7 @@ async function ensureForgeRelease(args, exitOn404 = true) {
         await copyReleaseConfig(currentVersion, false);
         return releaseDir;
       }
+
       if (exitOn404) {
         shell.echo(
           `${symbols.error} forge-cli@${version} requires forge@${
@@ -305,17 +288,15 @@ async function writeCurrentProfileToReleaseConfig(releaseConfigPath) {
 }
 
 async function copyReleaseConfig(currentVersion, overwrite = true) {
-  const targetPath = getForgeRelaseFilePath();
+  const targetPath = getCurrentReleaseFilePath();
   if (fs.existsSync(targetPath) && !overwrite) {
     return;
   }
 
-  const sourcePath =
-    findReleaseConfig(requiredDirs.release, currentVersion) ||
-    findReleaseConfigOld(requiredDirs.release, currentVersion);
+  const sourcePath = getOriginForgeReleaseFilePath('forge', currentVersion);
+
   if (sourcePath) {
     shell.echo(`${symbols.success} Extract forge config from ${sourcePath}`);
-    console.log(targetPath);
     fs.writeFileSync(targetPath, await writeCurrentProfileToReleaseConfig(sourcePath));
     shell.echo(`${symbols.success} Forge config written to ${targetPath}`);
   } else {
@@ -341,7 +322,7 @@ async function ensureRunningNode() {
  * @param {*} args
  */
 function ensureRpcClient(args) {
-  const releaseConfig = getForgeRelaseFilePath();
+  const releaseConfig = path.join(path.dirname(requiredDirs.release), 'forge_release.toml');
   const configPath = args.configPath || process.env.FORGE_CONFIG || releaseConfig;
 
   if (configPath && fs.existsSync(configPath)) {
@@ -372,10 +353,8 @@ function ensureRpcClient(args) {
 
   if (!configPath && !socketGrpc) {
     shell.echo(`${symbols.error} this command requires a valid forge config file to start
-
 If you have not setup any forge core release on this machine, run this first:
 > ${chalk.cyan('forge install')}
-
 Or you can run forge-cli with custom config path
 > ${chalk.cyan('forge start --config-path ~/Downloads/forge/forge_release.toml')}
 > ${chalk.cyan('FORGE_CONFIG=~/Downloads/forge/forge_release.toml forge start')}
@@ -460,39 +439,6 @@ function ensureSetupScript(args) {
     require(path.resolve(setupScript));
   }
 }
-
-/**
- * Search forge release config under forge_sdk/prev folder
- *
- * @returns String
- */
-function createFileFinder(keyword, filePath) {
-  return function fileFinder(releaseDir, ver) {
-    if (!releaseDir) {
-      return '';
-    }
-
-    const libDir = path.join(releaseDir, 'forge', ver, 'lib');
-    debug('createFileFinder', { keyword, filePath, libDir });
-    if (!isDirectory(libDir)) {
-      return '';
-    }
-
-    const pattern = new RegExp(`^${keyword}`, 'i');
-    const sdkDir = fs.readdirSync(libDir).find(x => pattern.test(x));
-    debug('createFileFinder', { keyword, filePath, sdkDir });
-    if (sdkDir) {
-      const releaseFile = path.join(libDir, sdkDir, filePath);
-      if (fs.existsSync(releaseFile) && fs.statSync(releaseFile).isFile()) {
-        return releaseFile;
-      }
-    }
-
-    return '';
-  };
-}
-const findReleaseConfig = createFileFinder('forge', 'priv/forge_release.toml');
-const findReleaseConfigOld = createFileFinder('forge_sdk', 'priv/forge_release.toml');
 
 /**
  * Find version of current forge release
@@ -733,11 +679,8 @@ module.exports = {
   sleep,
   setupEnv,
   requiredDirs,
-  findReleaseConfig,
-  findReleaseConfigOld,
   copyReleaseConfig,
   findReleaseVersion,
-  createFileFinder,
   ensureRequiredDirs,
   ensureForgeRelease,
   ensureRpcClient,

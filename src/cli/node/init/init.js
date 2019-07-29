@@ -1,33 +1,23 @@
-const fs = require('fs');
-const shell = require('shelljs');
-const path = require('path');
-const { printError } = require('../../../common');
-
-const { CONFIG_FILE_NAME } = require('../../../constant');
+const { config } = require('core/env');
 const Common = require('../../../common');
+const { askUserConfigs, writeConfigs } = require('../config/lib');
+const {
+  createNewProfile,
+  getOriginForgeReleaseFilePath,
+  getProfileReleaseFilePath,
+} = require('../../../core/forge-fs');
 
-function generateCurrentProfile() {
-  if (fs.existsSync(CONFIG_FILE_NAME)) {
-    Common.printError(
-      `The config file ${CONFIG_FILE_NAME} has already exists in your current directory.`
-    );
-    process.exit(1);
-  }
-
-  fs.mkdirSync(path.join(CONFIG_FILE_NAME, '.forge_release'), { recursive: true });
-  fs.mkdirSync(path.join(CONFIG_FILE_NAME, '.forge_cli'), { recursive: true });
-  Common.print(
-    `Initialized an empty storage space in ${path.join(process.cwd(), CONFIG_FILE_NAME)}`
-  );
-}
-
-function main() {
+async function main() {
   try {
-    generateCurrentProfile();
+    const configs = await askUserConfigs(
+      getOriginForgeReleaseFilePath('forge', config.get('cli').currentVersion)
+    );
+
+    createNewProfile(configs.app.name);
+    await writeConfigs(getProfileReleaseFilePath(configs.app.name), configs);
   } catch (error) {
-    shell.exec(`rm -rf ${CONFIG_FILE_NAME}`);
-    printError('Initialize failed:');
-    printError(error);
+    Common.printError('Initialize failed:');
+    Common.printError(error);
   }
 }
 

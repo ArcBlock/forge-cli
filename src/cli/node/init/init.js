@@ -176,7 +176,7 @@ function updateReleaseYaml(asset, version) {
   }
 }
 
-async function main({ args: [userVersion], opts: { mirror } }) {
+async function main({ args: [userVersion], opts: { mirror, silent } }) {
   try {
     printLogo();
 
@@ -236,23 +236,29 @@ async function main({ args: [userVersion], opts: { mirror } }) {
         default: true,
       },
     ];
-    const { customizeConfig } = await inquirer.prompt(questions);
-    if (customizeConfig) {
-      const childProcess = spawn('forge', ['config', 'set'], {
-        stdio: 'inherit',
-        env: process.env,
-        cwd: process.cwd(),
-      });
+    if (!silent) {
+      const { customizeConfig } = await inquirer.prompt(questions);
+      if (customizeConfig) {
+        const childProcess = spawn('forge', ['config', 'set'], {
+          stdio: 'inherit',
+          env: process.env,
+          cwd: process.cwd(),
+        });
 
-      childProcess.on('close', () => {
-        shell.echo('');
-        shell.echo(`Configured! Now you can start a forge node with ${chalk.cyan('forge start')}`);
-        shell.echo('');
-      });
-    } else {
-      shell.echo(`Now you can start a forge node with ${chalk.cyan('forge start')}`);
-      shell.echo('');
+        childProcess.on('close', () => {
+          shell.echo('');
+          shell.echo(
+            `Configured! Now you can start a forge node with ${chalk.cyan('forge start')}`
+          );
+          shell.echo('');
+          process.exit(0);
+        });
+
+        return;
+      }
     }
+    shell.echo(`Now you can start a forge node with ${chalk.cyan('forge start')}`);
+    shell.echo('');
   } catch (err) {
     debug.error(err);
     shell.echo(`${symbols.error} Forge initialize failed, please try again later`);

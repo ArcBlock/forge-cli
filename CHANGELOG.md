@@ -1,3 +1,7 @@
+## 0.34.3 (July 30, 2019)
+
+- support silent mode when install forge #118
+
 ## 0.34.2 (July 25, 2019)
 
 - chore: wording improvement (#113)

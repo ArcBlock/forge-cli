@@ -8,10 +8,6 @@ const debug = require('core/debug')('forge-fs');
 const { CONFIG_FILE_NAME } = require('../constant');
 const Common = require('../common');
 
-function isDirectory(x) {
-  return fs.existsSync(x) && fs.statSync(x).isDirectory();
-}
-
 function clearDataDirectories() {
   Common.printWarning('Clearing data profiles');
 
@@ -23,6 +19,10 @@ function clearDataDirectories() {
   Common.printSuccess('Data profiles cleared!');
 }
 
+function isDirectory(x) {
+  return fs.existsSync(x) && fs.statSync(x).isDirectory();
+}
+
 function getCurrentWorkingDirectory() {
   return process.env.CURRENT_WORKING_PROFILE;
 }
@@ -31,8 +31,8 @@ function getForgeDirectory() {
   return path.join(getCurrentWorkingDirectory(), '.forge');
 }
 
-function getReleaseDirectory() {
-  return path.join(getCurrentWorkingDirectory(), '.forge_release');
+function getReleaseDirectory(appName = process.env.PROFILE_NAME) {
+  return path.join(getProfileDirectory(appName), '.forge_release');
 }
 
 function getCurrentReleaseFilePath() {
@@ -69,8 +69,8 @@ function getDataPath() {
   ];
 }
 
-function getTendermintHomeDir() {
-  return path.join(getCurrentWorkingDirectory(), '.forge_release', 'tendermint');
+function getTendermintHomeDir(appName) {
+  return path.join(getProfileDirectory(appName), '.forge_release', 'tendermint');
 }
 
 function getRootConfigDirectory() {
@@ -108,6 +108,7 @@ function createNewProfile(chainName = process.env.PROFILE_NAME) {
   }
 
   fs.mkdirSync(path.join(profileDirectory, '.forge_release'), { recursive: true });
+  fs.mkdirSync(path.join(profileDirectory, 'keys'), { recursive: true });
   Common.print(`Initialized an empty storage space in ${profileDirectory}`);
 }
 
@@ -118,6 +119,7 @@ function ensureProfileDirectory(chainName = process.env.PROFILE_NAME) {
   if (!fs.existsSync(forgeProfileDir)) {
     fs.mkdirSync(forgeProfileDir, { recursive: true });
     fs.mkdirSync(path.join(forgeProfileDir, '.forge_release'), { recursive: true });
+    fs.mkdirSync(path.join(forgeProfileDir, 'keys'), { recursive: true });
     Common.print(`Initialized an empty storage space in ${forgeProfileDir}`);
   }
 
@@ -130,6 +132,7 @@ const getLogfile = filename => (filename ? path.join(FORGE_LOG, filename) : FORG
 
 module.exports = {
   clearDataDirectories,
+  createNewProfile,
   ensureProfileDirectory,
   getCliDirectory,
   getCurrentReleaseFilePath,
@@ -143,5 +146,4 @@ module.exports = {
   getTendermintHomeDir,
   getOriginForgeReleaseFilePath,
   isDirectory,
-  createNewProfile,
 };

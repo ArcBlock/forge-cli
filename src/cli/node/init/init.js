@@ -1,4 +1,4 @@
-const { config } = require('core/env');
+const { config, setConfigToProfile } = require('core/env');
 const Common = require('../../../common');
 const { askUserConfigs, writeConfigs } = require('../config/lib');
 const {
@@ -9,14 +9,15 @@ const {
 
 async function main() {
   try {
-    const configs = await askUserConfigs(
+    let configs = await askUserConfigs(
       getOriginForgeReleaseFilePath('forge', config.get('cli').currentVersion)
     );
-
+    configs = await setConfigToProfile(configs, configs.app.name);
     createNewProfile(configs.app.name);
     await writeConfigs(getProfileReleaseFilePath(configs.app.name), configs);
   } catch (error) {
     Common.printError('Initialize failed:');
+    console.log(error);
     Common.printError(error);
   }
 }

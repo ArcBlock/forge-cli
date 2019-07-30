@@ -30,8 +30,10 @@ async function getTendermintProcess(homeDir = getTendermintHomeDir()) {
   return { name: 'tendermint', pid: tmp ? tmp.pid : 0 };
 }
 
-async function isForgeStarted() {
-  const { pid } = await getTendermintProcess();
+async function isForgeStarted(appName = process.env.PROFILE_NAME) {
+  const homeDir = getTendermintHomeDir(appName);
+  console.log(homeDir);
+  const { pid } = await getTendermintProcess(homeDir);
 
   return !!pid;
 }

@@ -16,10 +16,10 @@ const {
   ensureForgeRelease,
   copyReleaseConfig,
   getPlatform,
-  printLogo,
   RELEASE_ASSETS,
   DEFAULT_MIRROR,
 } = require('core/env');
+const { printLogo } = require('core/util');
 const { findServicePid } = require('core/forge-process');
 
 async function isForgeStopped() {

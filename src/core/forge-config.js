@@ -11,6 +11,7 @@ function getAllAppDirectories() {
 
   return fs
     .readdirSync(rootConfigDirectory)
+    .filter(tmp => tmp.startsWith('forge'))
     .map(tmp => path.join(rootConfigDirectory, tmp))
     .filter(isDirectory);
 }

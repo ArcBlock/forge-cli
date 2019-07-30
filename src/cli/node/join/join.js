@@ -11,7 +11,7 @@ const GraphQLClient = require('@arcblock/graphql-client');
 const { config, findServicePid, ensureConfigComment } = require('core/env');
 const { symbols } = require('core/ui');
 
-async function main({ args: [endpoint = ''] }) {
+async function main({ args: [endpoint = ''], opts: { yes } }) {
   if (!endpoint) {
     shell.echo(`${symbols.error} forge web graphql endpoint must be provided!`);
     shell.echo(
@@ -71,29 +71,30 @@ async function main({ args: [endpoint = ''] }) {
       }
 
       // Confirm operation
-      const questions = [
-        {
-          type: 'confirm',
-          name: 'confirm',
-          default: false,
-          message: chalk.red(
-            'Join a new network means completely sync data from another peer.\n All local data will be erased, are you sure to continue?'
-          ),
-        },
-      ];
-      const { confirm } = await inquirer.prompt(questions);
       const localConfig = toml.parse(fs.readFileSync(forgeConfigPath).toString());
-      if (confirm) {
-        const oldDir = path.dirname(localConfig.forge.path);
-        const bakDir = `${oldDir}_backup_${Date.now()}`;
-        shell.echo(`${symbols.info} all state backup to ${bakDir}`);
-        shell.exec(`mv ${oldDir} ${bakDir}`);
-        shell.echo(`${symbols.info} rm -rf ~/.forge_cli/keys`);
-        shell.exec('rm -rf ~/.forge_cli/keys');
-      } else {
-        shell.echo(`${symbols.info} User abort, nothing changed!`);
-        process.exit();
-        return;
+      if (!yes) {
+        const { confirm } = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'confirm',
+            default: false,
+            message: chalk.red(
+              'Join a new network means completely sync data from another peer.\n All local data will be erased, are you sure to continue?'
+            ),
+          },
+        ]);
+        if (confirm) {
+          const oldDir = path.dirname(localConfig.forge.path);
+          const bakDir = `${oldDir}_backup_${Date.now()}`;
+          shell.echo(`${symbols.info} all state backup to ${bakDir}`);
+          shell.exec(`mv ${oldDir} ${bakDir}`);
+          shell.echo(`${symbols.info} rm -rf ~/.forge_cli/keys`);
+          shell.exec('rm -rf ~/.forge_cli/keys');
+        } else {
+          shell.echo(`${symbols.info} User abort, nothing changed!`);
+          process.exit();
+          return;
+        }
       }
 
       const remoteConfig = toml.parse(res.config);

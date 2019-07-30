@@ -1,4 +1,5 @@
-// eslint-disable-next-line import/no-unresolved
+const shell = require('shelljs');
+const chalk = require('chalk');
 const { cli, action } = require('core/cli');
 const { execute, run } = require('./join');
 
@@ -13,6 +14,17 @@ cli(
       rpcClient: true,
       wallet: false,
     },
-    options: [],
+    options: [['-y, --yes', 'Join a network without interactive confirm']],
+    handlers: {
+      '--help': () => {
+        shell.echo(`
+Examples:
+  - ${chalk.cyan('forge join https://zinc.abtnetwork.io/api')}          Join a network
+  - ${chalk.cyan(
+    'forge join https://zinc.abtnetwork.io/api --yes'
+  )}    Join a network without safety prompt
+        `);
+      },
+    },
   }
 );

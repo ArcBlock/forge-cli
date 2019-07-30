@@ -5,11 +5,13 @@ const semver = require('semver');
 const shell = require('shelljs');
 const chalk = require('chalk');
 const inquirer = require('inquirer');
+const get = require('lodash/get');
+const set = require('lodash/set');
 const GraphQLClient = require('@arcblock/graphql-client');
 const { config, findServicePid, ensureConfigComment } = require('core/env');
 const { symbols } = require('core/ui');
 
-async function main({ args: [endpoint = ''] }) {
+async function main({ args: [endpoint = ''], opts: { yes } }) {
   if (!endpoint) {
     shell.echo(`${symbols.error} forge web graphql endpoint must be provided!`);
     shell.echo(
@@ -69,32 +71,34 @@ async function main({ args: [endpoint = ''] }) {
       }
 
       // Confirm operation
-      const questions = [
-        {
-          type: 'confirm',
-          name: 'confirm',
-          default: false,
-          message: chalk.red(
-            'Join a new network means completely sync data from another peer.\n All local data will be erased, are you sure to continue?'
-          ),
-        },
-      ];
-      const { confirm } = await inquirer.prompt(questions);
-      const myConfig = toml.parse(fs.readFileSync(forgeConfigPath).toString());
-      if (confirm) {
-        const oldDir = path.dirname(myConfig.forge.path);
-        const bakDir = `${oldDir}_backup_${Date.now()}`;
-        shell.echo(`${symbols.info} all state backup to ${bakDir}`);
-        shell.exec(`mv ${oldDir} ${bakDir}`);
-        shell.echo(`${symbols.info} rm -rf ~/.forge_cli/keys`);
-        shell.exec('rm -rf ~/.forge_cli/keys');
-      } else {
-        shell.echo(`${symbols.info} User abort, nothing changed!`);
-        process.exit();
-        return;
+      const localConfig = toml.parse(fs.readFileSync(forgeConfigPath).toString());
+      if (!yes) {
+        const { confirm } = await inquirer.prompt([
+          {
+            type: 'confirm',
+            name: 'confirm',
+            default: false,
+            message: chalk.red(
+              'Join a new network means completely sync data from another peer.\n All local data will be erased, are you sure to continue?'
+            ),
+          },
+        ]);
+        if (confirm) {
+          const oldDir = path.dirname(localConfig.forge.path);
+          const bakDir = `${oldDir}_backup_${Date.now()}`;
+          shell.echo(`${symbols.info} all state backup to ${bakDir}`);
+          shell.exec(`mv ${oldDir} ${bakDir}`);
+          shell.echo(`${symbols.info} rm -rf ~/.forge_cli/keys`);
+          shell.exec('rm -rf ~/.forge_cli/keys');
+        } else {
+          shell.echo(`${symbols.info} User abort, nothing changed!`);
+          process.exit();
+          return;
+        }
       }
 
       const remoteConfig = toml.parse(res.config);
+      fs.writeFileSync(`${forgeConfigPath}.backup`, toml.stringify(remoteConfig));
 
       // Backup old file
       const backupFile = `${forgeConfigPath}.${Date.now()}`;
@@ -102,30 +106,35 @@ async function main({ args: [endpoint = ''] }) {
       shell.echo(`${symbols.success} Forge config was backup to ${chalk.cyan(backupFile)}`);
 
       // Merge remote config into local config
-      myConfig.forge.pub_sub_key = remoteConfig.forge.pub_sub_key;
-      myConfig.forge.token = remoteConfig.forge.token;
-      myConfig.forge.stake = remoteConfig.forge.stake;
-      myConfig.forge.moderator = remoteConfig.forge.moderator;
-      myConfig.forge.accounts = remoteConfig.forge.accounts;
-      myConfig.forge.poke = remoteConfig.forge.poke;
-      myConfig.tendermint.moniker = remoteConfig.tendermint.moniker;
-      myConfig.tendermint.persistent_peers = remoteConfig.tendermint.persistent_peers;
-      myConfig.tendermint.genesis = remoteConfig.tendermint.genesis;
+      const keysToMerge = [
+        'forge.pub_sub_key',
+        'forge.token',
+        'forge.stake',
+        'forge.moderator',
+        'forge.accounts',
+        'forge.poke',
+        'forge.rpc',
+        'forge.release',
+        'forge.transaction',
+        'tendermint.persistent_peers',
+        'tendermint.seed_peers',
+        'tendermint.timeout_propose',
+        'tendermint.timeout_approve',
+        'tendermint.timeout_precommit',
+        'tendermint.timeout_commit',
+        'tendermint.genesis',
+      ];
 
-      shell.echo(`${symbols.info} set network name: ${remoteConfig.tendermint.moniker}`);
-      shell.echo(
-        `${symbols.info} set persistent peers: ${remoteConfig.tendermint.persistent_peers}`
-      );
-      shell.echo(
-        `${symbols.info} set genesis config: ${JSON.stringify(
-          remoteConfig.tendermint.genesis,
-          true,
-          '  '
-        )}`
-      );
+      keysToMerge.forEach(x => {
+        const remoteValue = get(remoteConfig, x);
+        if (typeof remoteValue !== 'undefined') {
+          shell.echo(`${symbols.info} merge config ${x}:`, remoteValue);
+          set(localConfig, x, remoteValue);
+        }
+      });
 
       // Write new config
-      fs.writeFileSync(forgeConfigPath, ensureConfigComment(toml.stringify(myConfig)));
+      fs.writeFileSync(forgeConfigPath, ensureConfigComment(toml.stringify(localConfig)));
 
       shell.echo(
         `${symbols.success} Forge config was updated! Inspect by running ${chalk.cyan(
@@ -136,6 +145,7 @@ async function main({ args: [endpoint = ''] }) {
     }
   } catch (err) {
     shell.echo(`${symbols.error} Cannot fetch forge config from endpoint ${endpoint}`);
+    process.exit(1);
   }
 }
 

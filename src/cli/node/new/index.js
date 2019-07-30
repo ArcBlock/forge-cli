@@ -2,7 +2,7 @@ const shell = require('shelljs');
 const { cli, action } = require('core/cli');
 const { execute, run } = require('./new');
 
-cli('new', 'Create a new chain instance', input => action(execute, run, input), {
+cli('new [action]', 'Create a new chain instance', input => action(execute, run, input), {
   requirements: {
     forgeRelease: true,
     rpcClient: false,

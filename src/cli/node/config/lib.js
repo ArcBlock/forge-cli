@@ -54,29 +54,7 @@ function getModerator() {
   return undefined;
 }
 
-async function askUserConfigs(forgeConfigPath) {
-  // TODO: zhangzhenqiang check if forge is running
-
-  // const pid = await findServicePid('forge_starter');
-  // if (pid) {
-  //   shell.echo(
-  //     `${symbols.warning} ${chalk.yellow(
-  //       'You are trying to modify the configuration of a running forge chain/node.'
-  //     )}`
-  //   );
-  //   shell.echo(
-  //     `${symbols.warning} ${chalk.yellow(
-  //       'token and chainId configuration cannot be changed once the chain is started'
-  //     )}`
-  //   );
-  //   shell.echo(
-  //     `${symbols.warning} ${chalk.yellow(
-  //       'If you really need to do so, please stop and reset the chain first'
-  //     )}`
-  //   );
-  //   process.exit(1);
-  // }
-
+async function askUserConfigs(forgeConfigPath, appName = '') {
   const defaults = toml.parse(fs.readFileSync(forgeConfigPath).toString());
   const tokenDefaults = Object.assign(
     {
@@ -110,24 +88,6 @@ async function askUserConfigs(forgeConfigPath) {
   const moderator = getModerator();
 
   const questions = [
-    {
-      type: 'text',
-      name: 'chainName',
-      message: 'Please input chain name:',
-      default: defaults.tendermint.moniker,
-      validate: v => {
-        if (!v) return 'The chain name should not be empty';
-        if (!/^[a-zA-Z][a-zA-Z0-9_\-\s]{3,23}$/.test(v)) {
-          return 'The chain name should start with a letter, only contain 0-9,a-z,A-Z, and length between 4~24';
-        }
-
-        if (fs.existsSync(getProfileDirectory(v))) {
-          return 'The chain name is exists, please use another one';
-        }
-
-        return true;
-      },
-    },
     {
       type: 'number',
       name: 'blockTime',
@@ -328,8 +288,29 @@ async function askUserConfigs(forgeConfigPath) {
     },
   ];
 
+  if (!appName) {
+    questions.unshift({
+      type: 'text',
+      name: 'chainName',
+      message: 'Please input chain name:',
+      default: defaults.tendermint.moniker,
+      validate: v => {
+        if (!v) return 'The chain name should not be empty';
+        if (!/^[a-zA-Z][a-zA-Z0-9_\-\s]{3,23}$/.test(v)) {
+          return 'The chain name should start with a letter, only contain 0-9,a-z,A-Z, and length between 4~24';
+        }
+
+        if (fs.existsSync(getProfileDirectory(v))) {
+          return 'The chain name is exists, please use another one';
+        }
+
+        return true;
+      },
+    });
+  }
+
   const {
-    chainName,
+    chainName = appName,
     blockTime,
     customizeToken,
     tokenName,

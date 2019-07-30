@@ -8,7 +8,6 @@ const program = require('commander');
 const fs = require('fs');
 const { getProfileDirectory } = require('core/forge-fs');
 const { printError } = require('./common');
-
 const { version } = require('../package.json');
 
 program
@@ -46,12 +45,12 @@ Examples:
   })
   .parse(process.argv);
 
-process.env.PROFILE_NAME = program.appName || 'default';
+process.env.PROFILE_NAME = process.env.PROFILE_NAME || program.appName || 'default';
 
 if (
   process.env.PROFILE_NAME !== 'default' &&
   !fs.existsSync(getProfileDirectory(process.env.PROFILE_NAME)) &&
-  program.args[0] !== 'init'
+  program.args[0] !== 'new'
 ) {
   printError(`App ${process.env.PROFILE_NAME} is not exists`);
   process.exit(-1);

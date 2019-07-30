@@ -1,6 +1,7 @@
 /* eslint-disable consistent-return */
 const shell = require('shelljs');
 const chalk = require('chalk');
+const { printWarning } = require('core/util');
 const { symbols, getSpinner } = require('core/ui');
 const debug = require('core/debug')('stop');
 
@@ -34,13 +35,16 @@ async function main({ opts: { force } }) {
       return;
     }
 
-    shell.echo(`${symbols.success} Stoping forge...`);
-
-    const spinner = getSpinner('Waiting for forge to stop...');
+    shell.echo(`${symbols.success} Stoping ${process.env.PROFILE_NAME} chain...`);
 
     const runningProcesses = await getRunningProcesses();
+    if (!runningProcesses || !runningProcesses.length) {
+      printWarning('No running processes');
+    }
+
     debug(`running processes ${runningProcesses.map(x => x.pid)}`);
 
+    const spinner = getSpinner('Waiting for forge to stop...');
     spinner.start();
     await stopServices(runningProcesses);
     await waitUntilStopped();

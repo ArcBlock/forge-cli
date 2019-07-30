@@ -1,17 +1,15 @@
 const shell = require('shelljs');
 const chalk = require('chalk');
 const Table = require('cli-table-redemption');
-const { symbols } = require('core/ui');
+const { printInfo } = require('core/util');
 
 const { getAllRunningProcesses } = require('core/forge-process');
 
 async function main() {
   const processes = await getAllRunningProcesses();
 
-  if (!Object.keys(processes)) {
-    shell.echo(
-      `${symbols.warning} forge daemon not started yet, start with ${chalk.cyan('forge start')}`
-    );
+  if (!processes || !processes.length) {
+    printInfo(`forge daemon not started yet, start with ${chalk.cyan('forge start')}`);
     shell.echo('');
     process.exit(0);
   }
@@ -24,7 +22,7 @@ async function main() {
     });
 
     processes[appName].forEach(x => table.push(Object.values(x)));
-    shell.echo(`App: ${appName}`);
+    shell.echo(`Chain: ${appName}`);
     shell.echo(table.toString());
   });
 

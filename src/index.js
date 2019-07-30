@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+/* eslint no-console:"off" */
+
 // Add the root project directory to the app module search path:
 require('app-module-path').addPath(__dirname);
 const chalk = require('chalk');
@@ -7,8 +9,19 @@ const shell = require('shelljs');
 const program = require('commander');
 const fs = require('fs');
 const { getProfileDirectory } = require('core/forge-fs');
-const { printError, printInfo } = require('./common');
+const { printError, printInfo } = require('./core/util');
+const debug = require('./core/debug')('main');
 const { version } = require('../package.json');
+
+const onError = error => {
+  debug(error);
+
+  printError(`Exception: ${error.message}`);
+  printInfo(`run ${chalk.cyan('DEBUG=@arcblock/cli:* command')} to get details infomations`);
+};
+
+process.on('unhandledRejection', onError);
+process.on('uncaughtException', onError);
 
 program
   .version(version)

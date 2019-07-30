@@ -7,16 +7,15 @@ const shell = require('shelljs');
 
 const debug = require('./debug')('forge-process');
 const { getAllAppNames } = require('./forge-config');
-const { prettyTime } = require('../common');
 const { getTendermintHomeDir } = require('./forge-fs');
-const { md5, sleep } = require('./util');
+const { prettyTime, md5, sleep } = require('./util');
 
-const getProcessTag = (name, appName) => {
+const getProcessTag = (name, appName = process.env.PROFILE_NAME) => {
   if (!name) {
-    return `forge-${md5(appName || process.env.PROFILE_NAME)}`;
+    return `forge-${md5(appName)}`;
   }
 
-  return `forge-${name}-${md5(appName || process.env.PROFILE_NAME)}`;
+  return `forge-${name}-${md5(appName)}`;
 };
 
 async function findServicePid(n) {

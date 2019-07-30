@@ -3,7 +3,8 @@ const path = require('path');
 const yaml = require('yaml');
 const chalk = require('chalk');
 const shell = require('shelljs');
-const { config, debug, isDirectory, isEmptyDirectory, RELEASE_ASSETS } = require('core/env');
+const { config, debug, isEmptyDirectory, RELEASE_ASSETS } = require('core/env');
+const { isDirectory } = require('core/forge-fs');
 const { symbols } = require('core/ui');
 
 function printList(title, list, current) {

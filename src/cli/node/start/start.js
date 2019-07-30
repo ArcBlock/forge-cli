@@ -132,7 +132,7 @@ function waitUntilStarted(timeout = 30000) {
     let timeElapsed = 0;
     const interval = 800;
     const timer = setInterval(async () => {
-      if (await isForgeStarted(true)) {
+      if (await isForgeStarted()) {
         clearInterval(timer);
         return resolve();
       }

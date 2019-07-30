@@ -9,32 +9,28 @@ const shell = require('shelljs');
 const semver = require('semver');
 const inquirer = require('inquirer');
 const isElevated = require('is-elevated');
-const figlet = require('figlet');
 const { get, set } = require('lodash');
-const getPort = require('get-port');
 
 const GRpcClient = require('@arcblock/grpc-client');
 const { parse } = require('@arcblock/forge-config');
 const TOML = require('@iarna/toml');
 
-const { findServicePid, isForgeStarted, getProcessTag } = require('core/forge-process');
 const {
-  ensureProfileDirectory,
-  getCliDirectory,
-  getReleaseDirectory,
+  getProfileDirectory,
   getCurrentReleaseFilePath,
   isDirectory,
   getOriginForgeReleaseFilePath,
 } = require('core/forge-fs');
+const { findServicePid, isForgeStarted, getProcessTag } = require('./forge-process');
+const { printLogo } = require('./util');
+const { setConfigToProfile } = require('./forge-config');
 
 const { version, engines } = require('../../package.json');
 
 const { symbols, hr } = require('./ui');
 const debug = require('./debug')('env');
 
-process.env.PROFILE_NAME = 'default';
-
-const CURRENT_WORKING_PROFILE = ensureProfileDirectory(process.env.PROFILE_NAME);
+const CURRENT_WORKING_PROFILE = getProfileDirectory(process.env.PROFILE_NAME);
 process.env.CURRENT_WORKING_PROFILE = CURRENT_WORKING_PROFILE;
 
 const baseDir = path.join(os.homedir(), '.forge_cli');
@@ -214,7 +210,10 @@ async function ensureForgeRelease(args, exitOn404 = true) {
       debug(`${symbols.success} Using forge executable: ${forgeBinPath}`);
 
       if (semver.satisfies(currentVersion, engines.forge)) {
-        await copyReleaseConfig(currentVersion, false);
+        if (process.env.PROFILE_NAME === 'default') {
+          await copyReleaseConfig(currentVersion, false);
+        }
+
         return releaseDir;
       }
 
@@ -261,29 +260,8 @@ async function ensureForgeRelease(args, exitOn404 = true) {
 
 async function writeCurrentProfileToReleaseConfig(releaseConfigPath) {
   let content = fs.readFileSync(releaseConfigPath);
-  content = TOML.parse(content.toString());
 
-  const forgeWebPort = await getPort({ port: getPort.makeRange(28001, 30000) });
-
-  const forgeGrpcPort = await getPort({ port: getPort.makeRange(20000, 22000) });
-  const tendminRpcPort = await getPort({ port: getPort.makeRange(22001, 24000) });
-  const tendmintGrpcPort = await getPort({ port: getPort.makeRange(26001, 27000) });
-  const tendmintP2pPort = await getPort({ port: getPort.makeRange(27001, 28000) });
-
-  set(content, 'forge.web.port', forgeWebPort);
-
-  set(content, 'forge.path', path.join(getReleaseDirectory(), 'core'));
-  set(content, 'forge.sock_grpc', `tcp://127.0.0.1:${forgeGrpcPort}`);
-
-  set(content, 'tendermint.keypath', path.join(getCliDirectory(), 'keys'));
-  set(content, 'tendermint.path', path.join(getReleaseDirectory(), 'tendermint'));
-  set(content, 'tendermint.sock_rpc', `tcp://127.0.0.1:${tendminRpcPort}`);
-  set(content, 'tendermint.sock_grpc', `tcp://127.0.0.1:${tendmintGrpcPort}`);
-  set(content, 'tendermint.sock_p2p', `tcp://0.0.0.0:${tendmintP2pPort}`);
-
-  set(content, 'ipfs.path', path.join(getReleaseDirectory(), 'ipfs'));
-  set(content, 'cache.path', path.join(getReleaseDirectory(), 'cache', 'mnesia_data_dir'));
-
+  content = await setConfigToProfile(TOML.parse(content.toString()));
   return TOML.stringify(content);
 }
 
@@ -607,11 +585,6 @@ function sleep(timeout = 1000) {
   return new Promise(resolve => setTimeout(resolve, timeout));
 }
 
-function printLogo() {
-  shell.echo('');
-  shell.echo(chalk.cyan(figlet.textSync('By ArcBlock', { font: 'ANSI Shadow' })));
-}
-
 function checkUpdate() {
   const lastCheck = readCache('check-update');
   const now = Math.floor(Date.now() / 1000);
@@ -684,6 +657,7 @@ module.exports = {
   ensureRequiredDirs,
   ensureForgeRelease,
   ensureRpcClient,
+  setConfigToProfile,
   runNativeForgeCommand: makeNativeCommandRunner('forgeBinPath'),
   runNativeWebCommand: makeNativeCommandRunner('webBinPath', 'web'),
   runNativeWorkshopCommand: makeNativeCommandRunner('workshopBinPath', 'workshop'),

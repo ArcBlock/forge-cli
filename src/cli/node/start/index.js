@@ -4,7 +4,7 @@ const { cli, action } = require('core/cli');
 const { execute, run } = require('./start');
 
 cli(
-  'start [action]',
+  'start [chainName]',
   'Start forge as a daemon in the background',
   input => action(execute, run, input),
   {

@@ -8,13 +8,12 @@ const { print, printWarning, printInfo, printSuccess, printError } = require('co
 
 const { CONFIG_FILE_NAME } = require('../constant');
 
-function clearDataDirectories() {
+function clearDataDirectories(appName = process.env.PROFILE_NAME) {
   printWarning('Clearing data profiles');
 
-  getDataPath().forEach(filePath => {
-    shell.exec(`rm -rf ${filePath}`);
-    printInfo(`rm -f ${filePath}`);
-  });
+  const dir = getProfileDirectory(appName);
+  shell.exec(`rm -rf ${dir}`);
+  printInfo(`rm -f ${dir}`);
 
   printSuccess('Data profiles cleared!');
 }
@@ -59,14 +58,6 @@ function getOriginForgeReleaseFilePath(name, version) {
     'priv',
     'forge_release.toml'
   );
-}
-
-function getDataPath() {
-  return [
-    getReleaseDirectory(),
-    path.join(getCliDirectory(), 'keys'),
-    path.join(getCliDirectory(), 'forge_release.toml'),
-  ];
 }
 
 function getTendermintHomeDir(appName) {
@@ -134,7 +125,6 @@ module.exports = {
   ensureProfileDirectory,
   getCliDirectory,
   getCurrentReleaseFilePath,
-  getDataPath,
   getForgeDirectory,
   getProfileDirectory,
   getProfileReleaseFilePath,

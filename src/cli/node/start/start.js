@@ -4,13 +4,9 @@ const fs = require('fs');
 const shell = require('shelljs');
 
 const { symbols, hr, getSpinner } = require('core/ui');
-<<<<<<< HEAD
-const { config, debug, sleep } = require('core/env');
-const { getLogfile } = require('core/forge-fs');
-=======
-const { sleep } = require('core/util');
 const { config, debug } = require('core/env');
->>>>>>> 46fdb2e... [multi forge] forge stop
+const { getLogfile } = require('core/forge-fs');
+const { sleep } = require('core/util');
 const { isForgeStarted, getProcessTag } = require('core/forge-process');
 
 const { start: startWeb } = require('../web/web');

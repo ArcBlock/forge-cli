@@ -1,3 +1,8 @@
+## 0.34.4 (July 30, 2019)
+
+- feat: support join without safety prompt
+- fix: forge join failure with some missing config #119
+
 ## 0.34.3 (July 30, 2019)
 
 - support silent mode when install forge #118

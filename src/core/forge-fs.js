@@ -4,19 +4,19 @@ const os = require('os');
 const shell = require('shelljs');
 
 const debug = require('core/debug')('forge-fs');
+const { print, printWarning, printInfo, printSuccess, printError } = require('core/util');
 
 const { CONFIG_FILE_NAME } = require('../constant');
-const Common = require('../common');
 
 function clearDataDirectories() {
-  Common.printWarning('Clearing data profiles');
+  printWarning('Clearing data profiles');
 
   getDataPath().forEach(filePath => {
     shell.exec(`rm -rf ${filePath}`);
-    Common.printInfo(`rm -f ${filePath}`);
+    printInfo(`rm -f ${filePath}`);
   });
 
-  Common.printSuccess('Data profiles cleared!');
+  printSuccess('Data profiles cleared!');
 }
 
 function isDirectory(x) {
@@ -100,16 +100,14 @@ function getProfileReleaseFilePath(chainName = process.env.PROFILE_NAME) {
 function createNewProfile(chainName = process.env.PROFILE_NAME) {
   const profileDirectory = getProfileDirectory(chainName);
   if (fs.existsSync(profileDirectory)) {
-    Common.printError(
-      `The config file ${profileDirectory} has already exists in your current directory.`
-    );
+    printError(`The config file ${profileDirectory} has already exists in your current directory.`);
 
     process.exit(1);
   }
 
   fs.mkdirSync(path.join(profileDirectory, '.forge_release'), { recursive: true });
   fs.mkdirSync(path.join(profileDirectory, 'keys'), { recursive: true });
-  Common.print(`Initialized an empty storage space in ${profileDirectory}`);
+  print(`Initialized an empty storage space in ${profileDirectory}`);
 }
 
 function ensureProfileDirectory(chainName = process.env.PROFILE_NAME) {
@@ -120,7 +118,7 @@ function ensureProfileDirectory(chainName = process.env.PROFILE_NAME) {
     fs.mkdirSync(forgeProfileDir, { recursive: true });
     fs.mkdirSync(path.join(forgeProfileDir, '.forge_release'), { recursive: true });
     fs.mkdirSync(path.join(forgeProfileDir, 'keys'), { recursive: true });
-    Common.print(`Initialized an empty storage space in ${forgeProfileDir}`);
+    print(`Initialized an empty storage space in ${forgeProfileDir}`);
   }
 
   return forgeProfileDir;

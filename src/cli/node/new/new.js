@@ -1,5 +1,5 @@
 const { config, setConfigToProfile } = require('core/env');
-const Common = require('../../../common');
+const { printError } = require('core/util');
 const { askUserConfigs, writeConfigs } = require('../config/lib');
 const {
   createNewProfile,
@@ -19,8 +19,8 @@ async function main({ args: [action = ''] }) {
     createNewProfile(appName);
     await writeConfigs(getProfileReleaseFilePath(appName), configs);
   } catch (error) {
-    Common.printError('Create new chain failed:');
-    Common.printError(error);
+    printError('Create new chain failed:');
+    printError(error);
   }
 }
 

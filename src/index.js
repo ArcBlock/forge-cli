@@ -7,14 +7,14 @@ const shell = require('shelljs');
 const program = require('commander');
 const fs = require('fs');
 const { getProfileDirectory } = require('core/forge-fs');
-const { printError } = require('./common');
+const { printError, printInfo } = require('./common');
 const { version } = require('../package.json');
 
 program
   .version(version)
   .option('-v, --verbose', 'Output runtime info when execute subcommand, useful for debug')
   .option(
-    '-a, --app-name <appName>',
+    '-c, --chain-name <chainName>',
     'Forge release directory path (unzipped), use your own copy forge release'
   )
   .option(
@@ -45,14 +45,15 @@ Examples:
   })
   .parse(process.argv);
 
-process.env.PROFILE_NAME = process.env.PROFILE_NAME || program.appName || 'default';
+process.env.PROFILE_NAME = process.env.PROFILE_NAME || program.chainName || 'default';
 
 if (
   process.env.PROFILE_NAME !== 'default' &&
   !fs.existsSync(getProfileDirectory(process.env.PROFILE_NAME)) &&
   program.args[0] !== 'new'
 ) {
-  printError(`App ${process.env.PROFILE_NAME} is not exists`);
+  printError(`Chain ${process.env.PROFILE_NAME} is not exists`);
+  printInfo(`You can create by run ${chalk.cyan(`forge new ${process.env.PROFILE_NAME}`)}`);
   process.exit(-1);
 }
 

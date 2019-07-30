@@ -9,9 +9,11 @@ const shell = require('shelljs');
 const program = require('commander');
 const fs = require('fs');
 const { getProfileDirectory } = require('core/forge-fs');
-const { printError, printInfo } = require('./core/util');
+const { printError, printInfo, printLogo } = require('./core/util');
 const debug = require('./core/debug')('main');
 const { version } = require('../package.json');
+const { symbols, hr } = require('./core/ui');
+const checkCompatibility = require('./core/compatibility');
 
 const onError = error => {
   debug(error);
@@ -23,29 +25,30 @@ const onError = error => {
 process.on('unhandledRejection', onError);
 process.on('uncaughtException', onError);
 
-program
-  .version(version)
-  .option('-v, --verbose', 'Output runtime info when execute subcommand, useful for debug')
-  .option(
-    '-c, --chain-name <chainName>',
-    'Forge release directory path (unzipped), use your own copy forge release'
-  )
-  .option(
-    '-r, --release-dir <dir>',
-    'Forge release directory path (unzipped), use your own copy forge release'
-  )
-  .option(
-    '-c, --config-path <path>',
-    'Forge config used when starting forge node and initializing gRPC clients'
-  )
-  .option(
-    '-g, --socket-grpc <endpoint>',
-    'Socket gRPC endpoint to connect, with this you can use forge-cli with a remote node'
-  );
+const run = () => {
+  program
+    .version(version)
+    .option('-v, --verbose', 'Output runtime info when execute subcommand, useful for debug')
+    .option(
+      '-c, --chain-name <chainName>',
+      'Forge release directory path (unzipped), use your own copy forge release'
+    )
+    .option(
+      '-r, --release-dir <dir>',
+      'Forge release directory path (unzipped), use your own copy forge release'
+    )
+    .option(
+      '-c, --config-path <path>',
+      'Forge config used when starting forge node and initializing gRPC clients'
+    )
+    .option(
+      '-g, --socket-grpc <endpoint>',
+      'Socket gRPC endpoint to connect, with this you can use forge-cli with a remote node'
+    );
 
-program
-  .on('--help', () => {
-    shell.echo(`
+  program
+    .on('--help', () => {
+      shell.echo(`
 Examples:
 
   Please install a forge-release before running any other commands
@@ -55,38 +58,39 @@ Examples:
   Curious about how to use a subcommand?
   > ${chalk.cyan('forge help install')}
   `);
-  })
-  .parse(process.argv);
+    })
+    .parse(process.argv);
 
-process.env.PROFILE_NAME = process.env.PROFILE_NAME || program.chainName || 'default';
+  process.env.PROFILE_NAME = process.env.PROFILE_NAME || program.chainName || 'default';
 
-if (
-  process.env.PROFILE_NAME !== 'default' &&
-  !fs.existsSync(getProfileDirectory(process.env.PROFILE_NAME)) &&
-  program.args[0] !== 'new'
-) {
-  printError(`Chain ${process.env.PROFILE_NAME} is not exists`);
-  printInfo(`You can create by run ${chalk.cyan(`forge new ${process.env.PROFILE_NAME}`)}`);
-  process.exit(-1);
-}
+  if (
+    process.env.PROFILE_NAME !== 'default' &&
+    !fs.existsSync(getProfileDirectory(process.env.PROFILE_NAME)) &&
+    program.args[0] !== 'new'
+  ) {
+    printError(`Chain ${process.env.PROFILE_NAME} is not exists`);
+    printInfo(`You can create by run ${chalk.cyan(`forge new ${process.env.PROFILE_NAME}`)}`);
+    process.exit(-1);
+  }
 
-const { initCli } = require('./core/cli');
-const { symbols, hr } = require('./core/ui');
-const { printLogo } = require('./core/util');
+  const { initCli } = require('./core/cli'); // eslint-disable-line
 
-initCli(program);
-program.on('command:*', () => {
-  shell.echo(hr);
-  shell.echo(`${symbols.error} Unsupported command: ${chalk.cyan(program.args.join(' '))}`);
-  shell.echo(hr);
-  program.help();
-  process.exit(1);
-});
+  initCli(program);
+  program.on('command:*', () => {
+    shell.echo(hr);
+    shell.echo(`${symbols.error} Unsupported command: ${chalk.cyan(program.args.join(' '))}`);
+    shell.echo(hr);
+    program.help();
+    process.exit(1);
+  });
 
-program.parse(process.argv);
+  program.parse(process.argv);
 
-if (program.args.length === 0) {
-  printLogo();
-  program.help();
-  process.exit(0);
-}
+  if (program.args.length === 0) {
+    printLogo();
+    program.help();
+    process.exit(0);
+  }
+};
+
+checkCompatibility().then(run);

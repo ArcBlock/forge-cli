@@ -10,7 +10,6 @@ async function main() {
 
   if (!processes || !processes.length) {
     printInfo(`forge daemon not started yet, start with ${chalk.cyan('forge start')}`);
-    shell.echo('');
     process.exit(0);
   }
 

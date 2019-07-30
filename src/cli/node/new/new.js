@@ -20,7 +20,6 @@ async function main({ args: [action = ''] }) {
     await writeConfigs(getProfileReleaseFilePath(appName), configs);
   } catch (error) {
     printError('Create new chain failed:');
-    console.log(error);
     printError(error);
   }
 }

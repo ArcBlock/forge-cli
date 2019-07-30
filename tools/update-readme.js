@@ -45,7 +45,7 @@ const readmeContent = `![forge-cli](https://www.arcblock.io/.netlify/functions/b
 
 ## QuickStart
 
-[![asciicast](https://asciinema.org/a/253439.svg)](https://asciinema.org/a/253439){target="_blank"}
+[![asciicast](https://asciinema.org/a/253439.svg)](https://asciinema.org/a/253439)
 
 ## Install
 

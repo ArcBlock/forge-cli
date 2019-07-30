@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 const fs = require('fs');
 const os = require('os');
 const util = require('util');
@@ -43,7 +45,7 @@ const requiredDirs = {
 };
 
 shell.echo(hr);
-shell.echo(`${symbols.success} Current profile: ${chalk.cyan(CURRENT_WORKING_PROFILE)}`);
+shell.echo(`${symbols.success} Current Chain: ${chalk.cyan(process.env.PROFILE_NAME)}`);
 shell.echo(hr);
 
 const config = { cli: { requiredDirs } }; // global shared forge-cli run time config
@@ -581,10 +583,6 @@ function readCache(key) {
   }
 }
 
-function sleep(timeout = 1000) {
-  return new Promise(resolve => setTimeout(resolve, timeout));
-}
-
 function checkUpdate() {
   const lastCheck = readCache('check-update');
   const now = Math.floor(Date.now() / 1000);
@@ -649,7 +647,6 @@ module.exports = {
   RELEASE_ASSETS: ['forge', 'forge_starter', 'simulator', 'forge_web', 'forge_workshop'],
 
   debug,
-  sleep,
   setupEnv,
   requiredDirs,
   copyReleaseConfig,

@@ -4,8 +4,13 @@ const fs = require('fs');
 const shell = require('shelljs');
 
 const { symbols, hr, getSpinner } = require('core/ui');
+<<<<<<< HEAD
 const { config, debug, sleep } = require('core/env');
 const { getLogfile } = require('core/forge-fs');
+=======
+const { sleep } = require('core/util');
+const { config, debug } = require('core/env');
+>>>>>>> 46fdb2e... [multi forge] forge stop
 const { isForgeStarted, getProcessTag } = require('core/forge-process');
 
 const { start: startWeb } = require('../web/web');
@@ -41,7 +46,9 @@ async function main({ opts: { dryRun } }) {
   }
 
   // add `-sname` parameter to enable start multiple forge processes
-  const command = `ERL_AFLAGS="-sname ${getProcessTag()}" FORGE_CONFIG=${forgeConfigPath} ${forgeBinPath} daemon`;
+  const command = `ERL_AFLAGS="-sname ${getProcessTag(
+    'main'
+  )}" FORGE_CONFIG=${forgeConfigPath} ${forgeBinPath} daemon`;
 
   debug('start command', command);
 

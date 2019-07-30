@@ -3,12 +3,13 @@
 const pidUsage = require('pidusage');
 const prettyBytes = require('pretty-bytes');
 const findProcess = require('find-process');
-const debug = require('./debug')('forge-process');
+const shell = require('shelljs');
 
+const debug = require('./debug')('forge-process');
 const { getAllAppNames } = require('./forge-config');
 const { prettyTime } = require('../common');
 const { getTendermintHomeDir } = require('./forge-fs');
-const { md5 } = require('./util');
+const { md5, sleep } = require('./util');
 
 const getProcessTag = (name, appName) => {
   if (!name) {
@@ -28,7 +29,7 @@ async function getTendermintProcess(appName) {
   const homeDir = getTendermintHomeDir(appName);
   const tendermintProcess = await findProcess('name', 'tendermint');
 
-  const tmp = tendermintProcess.find(({ cmd }) => cmd.includes(homeDir, appName));
+  const tmp = tendermintProcess.find(({ cmd }) => cmd.includes(homeDir));
   return { name: 'tendermint', pid: tmp ? tmp.pid : 0 };
 }
 
@@ -38,11 +39,11 @@ async function isForgeStarted(appName = process.env.PROFILE_NAME) {
   return !!pid;
 }
 
-async function getForgeProcess(appName) {
+async function getForgeProcess(appName = process.env.PROFILE_NAME) {
   const forgeProcesses = await findProcess('name', 'forge');
 
   const forgeProcess = forgeProcesses.find(
-    ({ cmd }) => cmd.includes('/bin/beam.smp') && cmd.includes(getProcessTag('', appName))
+    ({ cmd }) => cmd.includes('/bin/beam.smp') && cmd.includes(getProcessTag('main', appName))
   );
 
   return { name: 'forge', pid: forgeProcess ? forgeProcess.pid : 0 };
@@ -67,14 +68,18 @@ async function getRunningProcesses(appName) {
     getSimulatorProcess(appName),
   ]);
 
-  const processesUsage = await Promise.all(
-    processes
-      .filter(({ pid }) => pid > 0)
-      .map(async item => {
-        item.usage = await pidUsage(item.pid);
+  return processes.filter(({ pid }) => pid > 0);
+}
 
-        return item;
-      })
+async function getRunningProcessesStats(appName = process.env.PROFILE_NAME) {
+  const processes = await getRunningProcesses(appName);
+
+  const processesUsage = await Promise.all(
+    processes.map(async item => {
+      item.usage = await pidUsage(item.pid);
+
+      return item;
+    })
   );
 
   const processesStats = processesUsage
@@ -116,7 +121,7 @@ async function getAllRunningProcesses() {
   // eslint-disable-next-line
   for (const appName of allAppNames) {
     // eslint-disable-next-line
-    const tmp = await getRunningProcesses(appName);
+    const tmp = await getRunningProcessesStats(appName);
     if (tmp.length) {
       processes[appName] = tmp;
     }
@@ -125,13 +130,28 @@ async function getAllRunningProcesses() {
   return processes;
 }
 
+/* eslint-disable*/
+async function stopServices(runningProcesses = []) {
+  if (!runningProcesses || !runningProcesses.length) {
+    return;
+  }
+
+  const processIds = runningProcesses.map(tmp => tmp.pid);
+  const killCommand = `kill ${processIds.join(' ')}`;
+  debug(`kill command: "${killCommand}"`);
+  shell.exec(killCommand, { silent: true });
+  await sleep(5000);
+}
+
 module.exports = {
   getAllRunningProcesses,
-  getRunningProcesses,
+  getRunningProcessesStats,
   findServicePid,
   isForgeStarted,
   getForgeProcess,
   getForgeWebProcess,
   getProcessTag,
+  getRunningProcesses,
   getSimulatorProcess,
+  stopServices,
 };

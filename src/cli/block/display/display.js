@@ -2,7 +2,8 @@ const shell = require('shelljs');
 const chalk = require('chalk');
 const onExit = require('death');
 const { range, uniq } = require('lodash');
-const { createRpcClient, debug, sleep } = require('core/env');
+const { sleep } = require('core/util');
+const { createRpcClient, debug } = require('core/env');
 const { symbols, hr, pretty } = require('core/ui');
 
 function parseBlockHeight(input, latest) {

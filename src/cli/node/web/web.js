@@ -4,8 +4,9 @@ const shell = require('shelljs');
 const GraphQLClient = require('@arcblock/graphql-client');
 
 const debug = require('core/debug')('web');
-const { runNativeWebCommand, webUrl, sleep } = require('core/env');
 const { symbols } = require('core/ui');
+const { sleep } = require('core/util');
+const { runNativeWebCommand, webUrl } = require('core/env');
 const { getForgeWebProcess } = require('core/forge-process');
 
 const startWebUI = runNativeWebCommand('daemon', { silent: true });

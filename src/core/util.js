@@ -14,4 +14,8 @@ const md5 = data =>
     .update(data)
     .digest('hex');
 
-module.exports = { md5, printLogo };
+function sleep(timeout = 1000) {
+  return new Promise(resolve => setTimeout(resolve, timeout));
+}
+
+module.exports = { md5, printLogo, sleep };

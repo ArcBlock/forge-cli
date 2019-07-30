@@ -1,6 +1,7 @@
 /* eslint no-case-declarations:"off" */
 const shell = require('shelljs');
-const { runNativeWorkshopCommand, sleep } = require('core/env');
+const { sleep } = require('core/util');
+const { runNativeWorkshopCommand } = require('core/env');
 const { findServicePid } = require('core/forge-process');
 const { symbols } = require('core/ui');
 

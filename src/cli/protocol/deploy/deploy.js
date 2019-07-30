@@ -6,7 +6,8 @@ const { toItxAddress } = require('@arcblock/did-util');
 const { fromSecretKey } = require('@arcblock/forge-wallet');
 const { bytesToHex, hexToBytes, isHexStrict } = require('@arcblock/forge-util');
 const { symbols } = require('core/ui');
-const { isFile, debug, config, sleep, createRpcClient } = require('core/env');
+const { sleep } = require('core/util');
+const { isFile, debug, config, createRpcClient } = require('core/env');
 
 function ensureModeratorSecretKey() {
   const sk = process.env.FORGE_MODERATOR_SK;

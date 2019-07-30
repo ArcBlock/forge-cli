@@ -2,24 +2,18 @@
 const shell = require('shelljs');
 const chalk = require('chalk');
 const { symbols, getSpinner } = require('core/ui');
-const { sleep } = require('core/env');
-const debug = require('debug')('@arcblock/forge-cli:stop');
+const debug = require('core/debug')('stop');
 
-const { findServicePid, isForgeStarted, getForgeProcess } = require('core/forge-process');
-
-async function isStopped() {
-  const pid = await findServicePid('forge_starter');
-  return !pid;
-}
+const { isForgeStarted, stopServices, getRunningProcesses } = require('core/forge-process');
 
 function waitUntilStopped() {
   return new Promise(async resolve => {
-    if (await isStopped(true)) {
+    if (!(await isForgeStarted())) {
       return resolve();
     }
 
     const timer = setInterval(async () => {
-      if (await isStopped(true)) {
+      if (!(await isForgeStarted())) {
         clearInterval(timer);
         return resolve();
       }
@@ -40,48 +34,17 @@ async function main({ opts: { force } }) {
       return;
     }
 
-    const { id: forgeProcessId } = await getForgeProcess();
-    const isStarted = await isForgeStarted();
+    shell.echo(`${symbols.success} Stoping forge...`);
 
-    debug(`forge started status: ${isStarted}, processId: ${isStarted}`);
+    const spinner = getSpinner('Waiting for forge to stop...');
 
-    if (!isStarted || !forgeProcessId) {
-      shell.echo(`${symbols.error} forge is not started yet!`);
-      shell.echo(`${symbols.info} start with ${chalk.cyan('forge start')}!`);
-      process.exit(1);
-      return;
-    }
+    const runningProcesses = await getRunningProcesses();
+    debug(`running processes ${runningProcesses.map(x => x.pid)}`);
 
-    shell.echo(`${symbols.success} Sending stop signal to forge daemon...`);
-    const spinner = getSpinner('Waiting for forge daemon to stop...');
     spinner.start();
-
-    const { code, stderr } = shell.exec(`kill ${forgeProcessId}`, { silent: true });
-    if (code !== 0) {
-      spinner.fail(`Forge daemon stop failed ${stderr}!`);
-      return;
-    }
-
-    try {
-      const simulatorPid = await findServicePid('simulator');
-      if (simulatorPid) {
-        shell.exec(`kill ${simulatorPid}`, { silent: true });
-      }
-
-      const workshopPid = await findServicePid('forge_workshop');
-      if (workshopPid) {
-        shell.exec(`kill ${workshopPid}`, { silent: true });
-      }
-
-      const webPid = await findServicePid('forge_web');
-      if (webPid) {
-        shell.exec(`kill ${webPid}`, { silent: true });
-      }
-    } catch (err) {
-      // do nothing
-    }
+    await stopServices(runningProcesses);
     await waitUntilStopped();
-    await sleep(5000);
+
     spinner.succeed('Forge daemon stopped!');
 
     process.exit(0);

@@ -8,6 +8,7 @@ function makeInfoReporter(method, title, key) {
     if (typeof client[method] !== 'function') {
       return;
     }
+
     try {
       const res = await client[method]();
       shell.echo(hr);

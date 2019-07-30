@@ -61,15 +61,18 @@ Examples:
     })
     .parse(process.argv);
 
-  process.env.PROFILE_NAME = process.env.PROFILE_NAME || program.chainName || 'default';
+  let chainName = process.env.PROFILE_NAME || program.chainName || 'default';
 
-  if (
-    process.env.PROFILE_NAME !== 'default' &&
-    !fs.existsSync(getProfileDirectory(process.env.PROFILE_NAME)) &&
-    program.args[0] !== 'new'
-  ) {
+  const [op, action] = program.args;
+  if (['start', 'stop', 'reset'].includes(op) && action) {
+    chainName = action;
+  }
+
+  process.env.PROFILE_NAME = chainName;
+
+  if (chainName !== 'default' && !fs.existsSync(getProfileDirectory(chainName)) && op !== 'new') {
     printError(`Chain ${process.env.PROFILE_NAME} is not exists`);
-    printInfo(`You can create by run ${chalk.cyan(`forge new ${process.env.PROFILE_NAME}`)}`);
+    printInfo(`You can create by run ${chalk.cyan(`forge new ${chainName}`)}`);
     process.exit(-1);
   }
 

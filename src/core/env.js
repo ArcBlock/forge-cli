@@ -44,9 +44,11 @@ const requiredDirs = {
   release: path.join(baseDir, 'release'),
 };
 
-shell.echo(hr);
-shell.echo(`${symbols.success} Current Chain: ${chalk.cyan(process.env.PROFILE_NAME)}`);
-shell.echo(hr);
+if (process.env.PROFILE_NAME !== 'default') {
+  shell.echo(hr);
+  shell.echo(`${symbols.success} Current Chain: ${chalk.cyan(process.env.PROFILE_NAME)}`);
+  shell.echo(hr);
+}
 
 const config = { cli: { requiredDirs } }; // global shared forge-cli run time config
 

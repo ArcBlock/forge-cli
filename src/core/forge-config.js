@@ -6,6 +6,22 @@ const TOML = require('@iarna/toml');
 
 const { getReleaseDirectory, getRootConfigDirectory, isDirectory } = require('./forge-fs');
 
+function getAllAppDirectories() {
+  const rootConfigDirectory = getRootConfigDirectory();
+
+  return fs
+    .readdirSync(rootConfigDirectory)
+    .map(tmp => path.join(rootConfigDirectory, tmp))
+    .filter(isDirectory);
+}
+
+function getAllAppNames() {
+  return getAllAppDirectories().map(tmp => {
+    const name = path.basename(tmp);
+    return name.slice(name.indexOf('_') + 1);
+  });
+}
+
 function getPortFromUri(uri) {
   if (!uri || typeof uri !== 'string') {
     return 0;
@@ -16,11 +32,7 @@ function getPortFromUri(uri) {
 }
 
 async function getAllUsedPorts() {
-  const rootConfigDirectory = getRootConfigDirectory();
-  const configDirectories = fs
-    .readdirSync(rootConfigDirectory)
-    .map(tmp => path.join(rootConfigDirectory, tmp))
-    .filter(isDirectory);
+  const configDirectories = getAllAppDirectories();
 
   const maxPortPerField = {
     forgeWebPort: 0,
@@ -118,4 +130,4 @@ async function setConfigToProfile(configs, appName) {
   return content;
 }
 
-module.exports = { setConfigToProfile, getAvailablePort };
+module.exports = { setConfigToProfile, getAllAppNames };

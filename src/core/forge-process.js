@@ -114,15 +114,15 @@ async function getSimulatorProcess(appName) {
 }
 
 async function getAllRunningProcesses() {
-  const processes = {};
+  const processes = [];
   const allAppNames = getAllAppNames();
 
   // eslint-disable-next-line
   for (const appName of allAppNames) {
     // eslint-disable-next-line
     const tmp = await getRunningProcessesStats(appName);
-    if (tmp.length) {
-      processes[appName] = tmp;
+    if (tmp && tmp.length) {
+      processes.push({ name: appName, stats: tmp });
     }
   }
 

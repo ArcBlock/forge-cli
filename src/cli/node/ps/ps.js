@@ -14,15 +14,15 @@ async function main() {
     process.exit(0);
   }
 
-  Object.keys(processes).forEach(appName => {
+  processes.forEach(({ name, stats }) => {
     const table = new Table({
       head: ['Name', 'PID', 'Uptime', 'Memory', 'CPU'],
       style: { 'padding-left': 1, head: ['cyan', 'bold'], compact: true },
       colWidths: [15, 10, 10, 15, 20],
     });
 
-    processes[appName].forEach(x => table.push(Object.values(x)));
-    shell.echo(`Chain: ${appName}`);
+    stats.forEach(x => table.push(Object.values(x)));
+    shell.echo(`Chain: ${name}`);
     shell.echo(table.toString());
   });
 

@@ -119,6 +119,7 @@ async function setConfigToProfile(configs, appName) {
   set(content, 'forge.path', path.join(getReleaseDirectory(appName), 'core'));
   set(content, 'tendermint.keypath', path.join(getReleaseDirectory(appName), 'keys'));
   set(content, 'tendermint.path', path.join(getReleaseDirectory(appName), 'tendermint'));
+
   set(content, 'forge.sock_grpc', `tcp://127.0.0.1:${forgeGrpcPort}`);
   set(content, 'tendermint.sock_rpc', `tcp://127.0.0.1:${tendminRpcPort}`);
   set(content, 'tendermint.sock_grpc', `tcp://127.0.0.1:${tendmintGrpcPort}`);

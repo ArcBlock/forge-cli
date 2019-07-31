@@ -1,3 +1,7 @@
+## 0.34.5 (July 30, 2019)
+
+- fix: remove target blank in readme that github cannot recognize
+
 ## 0.34.4 (July 30, 2019)
 
 - feat: support join without safety prompt

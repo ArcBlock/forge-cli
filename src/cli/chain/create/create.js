@@ -1,12 +1,12 @@
 const { config } = require('core/env');
 const { setConfigToProfile } = require('core/forge-config');
 const { printError } = require('core/util');
-const { askUserConfigs, writeConfigs } = require('../config/lib');
 const {
   createNewProfile,
   getOriginForgeReleaseFilePath,
   getProfileReleaseFilePath,
-} = require('../../../core/forge-fs');
+} = require('core/forge-fs');
+const { askUserConfigs, writeConfigs } = require('../../node/config/lib');
 
 async function main({ args: [chainName = ''] }) {
   try {

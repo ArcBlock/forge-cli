@@ -27,6 +27,12 @@ const onError = error => {
 process.on('unhandledRejection', onError);
 process.on('uncaughtException', onError);
 
+const printCurrentChain = currentChainName => {
+  shell.echo(hr);
+  shell.echo(`${symbols.success} Current Chain: ${chalk.cyan(currentChainName)}`);
+  shell.echo(hr);
+};
+
 const run = () => {
   ensureProfileDirectory(DEFAULT_CHAIN_NAME);
 
@@ -74,13 +80,17 @@ Examples:
 
   process.env.PROFILE_NAME = chainName;
 
+  if (process.env.PROFILE_NAME !== DEFAULT_CHAIN_NAME) {
+    printCurrentChain(process.env.PROFILE_NAME);
+  }
+
   if (
     chainName !== DEFAULT_CHAIN_NAME &&
     !fs.existsSync(getProfileDirectory(chainName)) &&
-    op !== 'new'
+    op !== 'create-chain'
   ) {
     printError(`Chain ${process.env.PROFILE_NAME} is not exists`);
-    printInfo(`You can create by run ${chalk.cyan(`forge new ${chainName}`)}`);
+    printInfo(`You can create by run ${chalk.cyan(`forge create-chain ${chainName}`)}`);
     process.exit(-1);
   }
 

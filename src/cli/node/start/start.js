@@ -9,8 +9,9 @@ const { getLogfile } = require('core/forge-fs');
 const { sleep } = require('core/util');
 const { isForgeStarted, getProcessTag } = require('core/forge-process');
 
-const { start: startWeb } = require('../web/web');
+const { printAllProcesses } = require('../ps/ps');
 const { run: stop } = require('../stop/stop');
+const { start: startWeb } = require('../web/web');
 
 function checkError(startAtMs) {
   return new Promise(resolve => {
@@ -80,8 +81,9 @@ async function main({ opts: { dryRun } }) {
     }
 
     spinner.succeed('Forge daemon successfully started');
-    shell.exec('forge ps');
-    shell.echo('');
+
+    await printAllProcesses();
+
     shell.echo(
       `${symbols.info} If you want to access interactive console, please run ${chalk.cyan(
         `${forgeBinPath} remote`
@@ -123,6 +125,8 @@ async function main({ opts: { dryRun } }) {
     shell.echo('2. Report bug to our engineer');
     shell.echo('It is very likely that forge cannot be started on your environment');
     shell.echo(`Please run: ${chalk.cyan('forge start --dry-run')}`);
+  } finally {
+    process.exit(0);
   }
 }
 

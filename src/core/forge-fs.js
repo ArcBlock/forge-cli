@@ -6,7 +6,7 @@ const shell = require('shelljs');
 const debug = require('core/debug')('forge-fs');
 const { print, printWarning, printInfo, printSuccess, printError } = require('core/util');
 
-const { CONFIG_FILE_NAME } = require('../constant');
+const { CONFIG_FILE_NAME, CHAIN_DATA_PATH_NAME } = require('../constant');
 
 function clearDataDirectories(appName = process.env.PROFILE_NAME) {
   printWarning('Clearing data profiles');
@@ -31,7 +31,7 @@ function getForgeDirectory() {
 }
 
 function getReleaseDirectory(appName = process.env.PROFILE_NAME) {
-  return path.join(getProfileDirectory(appName), '.forge_release');
+  return path.join(getProfileDirectory(appName), CHAIN_DATA_PATH_NAME);
 }
 
 function getCurrentReleaseFilePath() {
@@ -61,7 +61,7 @@ function getOriginForgeReleaseFilePath(name, version) {
 }
 
 function getTendermintHomeDir(appName) {
-  return path.join(getProfileDirectory(appName), '.forge_release', 'tendermint');
+  return path.join(getReleaseDirectory(appName), 'tendermint');
 }
 
 function getRootConfigDirectory() {
@@ -96,18 +96,17 @@ function createNewProfile(chainName = process.env.PROFILE_NAME) {
     process.exit(1);
   }
 
-  fs.mkdirSync(path.join(profileDirectory, '.forge_release'), { recursive: true });
+  fs.mkdirSync(getReleaseDirectory(chainName), { recursive: true });
   fs.mkdirSync(path.join(profileDirectory, 'keys'), { recursive: true });
   print(`Initialized an empty storage space in ${profileDirectory}`);
 }
 
 function ensureProfileDirectory(chainName = process.env.PROFILE_NAME) {
-  const forgeRootDir = ensureRootConfigDirectory();
-  const forgeProfileDir = path.join(forgeRootDir, `forge_${chainName}`);
+  const forgeProfileDir = getProfileDirectory(chainName);
 
   if (!fs.existsSync(forgeProfileDir)) {
     fs.mkdirSync(forgeProfileDir, { recursive: true });
-    fs.mkdirSync(path.join(forgeProfileDir, '.forge_release'), { recursive: true });
+    fs.mkdirSync(getReleaseDirectory(chainName), { recursive: true });
     fs.mkdirSync(path.join(forgeProfileDir, 'keys'), { recursive: true });
     print(`Initialized an empty storage space in ${forgeProfileDir}`);
   }

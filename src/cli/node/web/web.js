@@ -41,9 +41,9 @@ async function checkGraphQLServerStarted(client, maxRetry = 6) {
           return resolve(true);
         }
 
-        debug('check.graphql response', code);
+        debug('check.graphql response:', code);
       } catch (error) {
-        debug.error('check.graphql error', error.message);
+        debug('check.graphql error', error.message);
       }
     }, 1000);
   });

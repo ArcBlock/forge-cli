@@ -1,4 +1,5 @@
-const { config, setConfigToProfile } = require('core/env');
+const { config } = require('core/env');
+const { setConfigToProfile } = require('core/forge-config');
 const { printError } = require('core/util');
 const { askUserConfigs, writeConfigs } = require('../config/lib');
 const {
@@ -7,17 +8,16 @@ const {
   getProfileReleaseFilePath,
 } = require('../../../core/forge-fs');
 
-async function main({ args: [action = ''] }) {
+async function main({ args: [chainName = ''] }) {
   try {
-    const appName = action || configs.app.name;
     let configs = await askUserConfigs(
       getOriginForgeReleaseFilePath('forge', config.get('cli').currentVersion),
-      appName
+      chainName
     );
 
-    configs = await setConfigToProfile(configs, appName);
-    createNewProfile(appName);
-    await writeConfigs(getProfileReleaseFilePath(appName), configs);
+    configs = await setConfigToProfile(configs, chainName);
+    createNewProfile(chainName);
+    await writeConfigs(getProfileReleaseFilePath(chainName), configs);
   } catch (error) {
     printError('Create new chain failed:');
     printError(error);

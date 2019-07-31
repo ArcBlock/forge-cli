@@ -8,12 +8,14 @@ const chalk = require('chalk');
 const shell = require('shelljs');
 const program = require('commander');
 const fs = require('fs');
-const { getProfileDirectory } = require('core/forge-fs');
+const { getProfileDirectory, ensureProfileDirectory } = require('core/forge-fs');
+
 const { printError, printInfo, printLogo } = require('./core/util');
+const { DEFAULT_CHAIN_NAME } = require('./constant');
 const debug = require('./core/debug')('main');
-const { version } = require('../package.json');
 const { symbols, hr } = require('./core/ui');
 const checkCompatibility = require('./core/compatibility');
+const { version } = require('../package.json');
 
 const onError = error => {
   debug(error);
@@ -26,6 +28,8 @@ process.on('unhandledRejection', onError);
 process.on('uncaughtException', onError);
 
 const run = () => {
+  ensureProfileDirectory(DEFAULT_CHAIN_NAME);
+
   program
     .version(version)
     .option('-v, --verbose', 'Output runtime info when execute subcommand, useful for debug')
@@ -61,7 +65,7 @@ Examples:
     })
     .parse(process.argv);
 
-  let chainName = process.env.PROFILE_NAME || program.chainName || 'default';
+  let chainName = process.env.PROFILE_NAME || program.chainName || DEFAULT_CHAIN_NAME;
 
   const [op, action] = program.args;
   if (['start', 'stop', 'reset'].includes(op) && action) {
@@ -70,7 +74,11 @@ Examples:
 
   process.env.PROFILE_NAME = chainName;
 
-  if (chainName !== 'default' && !fs.existsSync(getProfileDirectory(chainName)) && op !== 'new') {
+  if (
+    chainName !== DEFAULT_CHAIN_NAME &&
+    !fs.existsSync(getProfileDirectory(chainName)) &&
+    op !== 'new'
+  ) {
     printError(`Chain ${process.env.PROFILE_NAME} is not exists`);
     printInfo(`You can create by run ${chalk.cyan(`forge new ${chainName}`)}`);
     process.exit(-1);

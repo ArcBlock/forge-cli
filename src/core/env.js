@@ -15,17 +15,14 @@ const { get, set } = require('lodash');
 
 const GRpcClient = require('@arcblock/grpc-client');
 const { parse } = require('@arcblock/forge-config');
-const TOML = require('@iarna/toml');
 
 const {
   getProfileDirectory,
-  getCurrentReleaseFilePath,
   isDirectory,
-  getOriginForgeReleaseFilePath,
 } = require('core/forge-fs');
 const { findServicePid, isForgeStarted, getProcessTag } = require('./forge-process');
 const { printLogo } = require('./util');
-const { setConfigToProfile } = require('./forge-config');
+const { copyReleaseConfig } = require('./forge-config');
 
 const { version, engines } = require('../../package.json');
 
@@ -260,31 +257,6 @@ async function ensureForgeRelease(args, exitOn404 = true) {
   }
 
   return false;
-}
-
-async function writeCurrentProfileToReleaseConfig(releaseConfigPath) {
-  let content = fs.readFileSync(releaseConfigPath);
-
-  content = await setConfigToProfile(TOML.parse(content.toString()));
-  return TOML.stringify(content);
-}
-
-async function copyReleaseConfig(currentVersion, overwrite = true) {
-  const targetPath = getCurrentReleaseFilePath();
-  if (fs.existsSync(targetPath) && !overwrite) {
-    return;
-  }
-
-  const sourcePath = getOriginForgeReleaseFilePath('forge', currentVersion);
-
-  if (sourcePath) {
-    shell.echo(`${symbols.success} Extract forge config from ${sourcePath}`);
-    fs.writeFileSync(targetPath, await writeCurrentProfileToReleaseConfig(sourcePath));
-    shell.echo(`${symbols.success} Forge config written to ${targetPath}`);
-  } else {
-    shell.echo(`${symbols.error} Forge config not found under release folder`);
-    process.exit(1);
-  }
 }
 
 async function ensureRunningNode() {
@@ -651,12 +623,10 @@ module.exports = {
   debug,
   setupEnv,
   requiredDirs,
-  copyReleaseConfig,
   findReleaseVersion,
   ensureRequiredDirs,
   ensureForgeRelease,
   ensureRpcClient,
-  setConfigToProfile,
   runNativeForgeCommand: makeNativeCommandRunner('forgeBinPath'),
   runNativeWebCommand: makeNativeCommandRunner('webBinPath', 'web'),
   runNativeWorkshopCommand: makeNativeCommandRunner('workshopBinPath', 'workshop'),

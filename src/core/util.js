@@ -2,9 +2,11 @@ const crypto = require('crypto');
 const figlet = require('figlet');
 const shell = require('shelljs');
 const chalk = require('chalk');
+const getPort = require('get-port');
 
 const prettyMilliseconds = require('pretty-ms');
-const { symbols } = require('core/ui');
+const { symbols } = require('./ui');
+const debug = require('./debug')('util');
 
 function prettyTime(ms) {
   let result = prettyMilliseconds(ms, { compact: true });
@@ -47,10 +49,54 @@ function printWarning(content) {
 }
 
 function printError(content) {
+  debug(content);
   shell.echo(`${symbols.error} ${content}`);
 }
 
+/**
+ * Check if the port is a free port, if it's available return it, or return -1
+ * @param {*} port
+ */
+async function checkPort(port) {
+  const tmp = await getPort({ host: '127.0.0.1', port });
+  if (+tmp === +port) {
+    return port;
+  }
+
+  return -1;
+}
+
+/**
+ * Get one of free port from expected ports, if none, will return -1
+ * @param {*} ports An array of expected ports
+ */
+async function getPorts(ports) {
+  // eslint-disable-next-line
+  for (const port of ports) {
+    const tmp = await checkPort(port); // eslint-disable-line
+    if (tmp !== -1) {
+      return tmp;
+    }
+  }
+
+  return -1;
+}
+
+/**
+ * Get one of free port from expected ports, if none, will return -1
+ * @param {array|string|number} port
+ */
+async function getFreePort(port) {
+  if (Array.isArray(port)) {
+    return getPorts(port);
+  }
+
+  return checkPort(port);
+}
+
 module.exports = {
+  getPort,
+  getFreePort,
   md5,
   prettyTime,
   printLogo,

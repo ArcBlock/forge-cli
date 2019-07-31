@@ -32,25 +32,25 @@ function sleep(timeout = 1000) {
   return new Promise(resolve => setTimeout(resolve, timeout));
 }
 
-function print(content) {
+function print(content = '') {
   shell.echo(`${content}`);
 }
 
 function printInfo(content) {
-  shell.echo(`${symbols.info} ${content}`);
+  print(`${symbols.info} ${content}`);
 }
 
 function printSuccess(content) {
-  shell.echo(`${symbols.success} ${content}`);
+  print(`${symbols.success} ${content}`);
 }
 
 function printWarning(content) {
-  shell.echo(`${symbols.warning} ${content}`);
+  print(`${symbols.warning} ${content}`);
 }
 
 function printError(content) {
   debug(content);
-  shell.echo(`${symbols.error} ${content}`);
+  print(`${symbols.error} ${content}`);
 }
 
 /**

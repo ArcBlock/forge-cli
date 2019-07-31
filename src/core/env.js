@@ -24,8 +24,8 @@ const { findServicePid, isForgeStarted, getProcessTag } = require('./forge-proce
 const { printLogo } = require('./util');
 const { copyReleaseConfig } = require('./forge-config');
 
+const { DEFAULT_CHAIN_NAME } = require('../constant');
 const { version, engines } = require('../../package.json');
-
 const { symbols, hr } = require('./ui');
 const debug = require('./debug')('env');
 
@@ -40,12 +40,6 @@ const requiredDirs = {
   cache: path.join(baseDir, 'cache'),
   release: path.join(baseDir, 'release'),
 };
-
-if (process.env.PROFILE_NAME !== 'default') {
-  shell.echo(hr);
-  shell.echo(`${symbols.success} Current Chain: ${chalk.cyan(process.env.PROFILE_NAME)}`);
-  shell.echo(hr);
-}
 
 const config = { cli: { requiredDirs } }; // global shared forge-cli run time config
 
@@ -211,7 +205,7 @@ async function ensureForgeRelease(args, exitOn404 = true) {
       debug(`${symbols.success} Using forge executable: ${forgeBinPath}`);
 
       if (semver.satisfies(currentVersion, engines.forge)) {
-        if (process.env.PROFILE_NAME === 'default') {
+        if (process.env.PROFILE_NAME === DEFAULT_CHAIN_NAME) {
           await copyReleaseConfig(currentVersion, false);
         }
 

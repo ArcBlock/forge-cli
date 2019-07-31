@@ -1,4 +1,3 @@
-exports.new = require('./new');
 exports.config = require('./config');
 exports.declare = require('./declare');
 exports.init = require('./init');

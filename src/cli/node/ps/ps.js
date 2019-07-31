@@ -1,11 +1,10 @@
-const shell = require('shelljs');
 const chalk = require('chalk');
 const Table = require('cli-table-redemption');
-const { printInfo } = require('core/util');
+const { print, printInfo } = require('core/util');
 
 const { getAllRunningProcesses } = require('core/forge-process');
 
-async function main() {
+const printAllProcesses = async () => {
   const processes = await getAllRunningProcesses();
 
   if (!processes || !processes.length) {
@@ -13,6 +12,7 @@ async function main() {
     process.exit(0);
   }
 
+  print();
   processes.forEach(({ name, stats }) => {
     const table = new Table({
       head: ['Name', 'PID', 'Uptime', 'Memory', 'CPU'],
@@ -21,12 +21,18 @@ async function main() {
     });
 
     stats.forEach(x => table.push(Object.values(x)));
-    shell.echo(`Chain: ${name}`);
-    shell.echo(table.toString());
+    print(`Chain: ${name}`);
+    print(table.toString());
   });
+  print();
+};
+
+async function main() {
+  await printAllProcesses();
 
   process.exit(0);
 }
 
 exports.run = main;
 exports.execute = main;
+exports.printAllProcesses = printAllProcesses;

@@ -7,7 +7,7 @@ const TOML = require('@iarna/toml');
 const debug = require('../debug')('update-0350');
 const { ensureProfileDirectory, getProfileReleaseFilePath } = require('../forge-fs');
 
-const { setConfigToProfile } = require('../forge-config');
+const { getDefaultChainConfigs } = require('../forge-config');
 
 const getOldVersionConfigFiles = () => {
   const cliPath = path.join(os.homedir(), '.forge_cli');
@@ -27,16 +27,16 @@ const check = async () => {
   try {
     const appName = 'default';
 
-    const { configPath, keyFilePath, dataPath } = getOldVersionConfigFiles();
-
     const oldConfigFiles = getOldVersionConfigFiles();
     if (!oldConfigFiles) {
       debug('there is no old version configs');
       return;
     }
 
+    const { configPath, keyFilePath, dataPath } = oldConfigFiles;
+
     let oldConfigs = TOML.parse(fs.readFileSync(configPath).toString());
-    oldConfigs = await setConfigToProfile(oldConfigs, appName);
+    oldConfigs = await getDefaultChainConfigs(oldConfigs, appName);
 
     const forgeProfileDir = ensureProfileDirectory(appName);
     shell.exec(`mv ${configPath} ${keyFilePath} ${dataPath} ${forgeProfileDir}`);

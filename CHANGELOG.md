@@ -1,3 +1,15 @@
+## 0.35.0 (August 01, 2019)
+
+- add multi chain feature, mainly includes:
+  - create a new chain by `forge create-chain <chainName>`
+  - enable start/stop/reset the specific chain by `forge <action> <chainName>| [--chain-chain <chainName>] | [-c <chainName>]`
+  - `forge ps` will show all chains running processes
+- remove `-m` param in `start` command
+- refact the file management
+- refact the forge process management
+- deprecated use `forge-starter` to start the chain
+- deprecated the `--force | -f` param of `forge stop` command, and add `--all | -a` to stop all chains
+
 ## 0.34.5 (July 30, 2019)
 
 - fix: remove target blank in readme that github cannot recognize

@@ -24,7 +24,6 @@ const printAllProcesses = async () => {
     print(`Chain: ${name}`);
     print(table.toString());
   });
-  print();
 };
 
 async function main() {

@@ -13,7 +13,10 @@ cli(
       runningNode: false,
       rpcClient: false,
     },
-    options: [['-a, --all', 'Stop all forge related processes']],
+    options: [
+      ['-a, --all', 'Stop all forge related processes'],
+      ['-f, --force', '[Deprecated] Stop all forge related processes'],
+    ],
     handlers: {
       '--help': () => {
         shell.echo(`

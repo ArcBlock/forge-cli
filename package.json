@@ -81,6 +81,7 @@
     "commander": "^2.20.0",
     "death": "^1.1.0",
     "debug": "^4.1.1",
+    "depd": "^2.0.0",
     "figlet": "^1.2.1",
     "find-process": "^1.2.1",
     "fuzzy": "^0.1.3",

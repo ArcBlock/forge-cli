@@ -2,13 +2,19 @@ const fs = require('fs');
 const chalk = require('chalk');
 const shell = require('shelljs');
 const { symbols, hr } = require('core/ui');
-const { config, webUrl } = require('core/env');
+const { webUrl } = require('core/env');
 const { isForgeStarted } = require('core/forge-process');
 const GraphQLClient = require('@arcblock/graphql-client');
+const toml = require('@iarna/toml');
 
-const { askUserConfigs } = require('./lib');
+const { getProfileReleaseFilePath, getProfileDirectory } = require('core/forge-fs');
 
-async function main({ args: [action = 'get'], opts: { peer } }) {
+const { askUserConfigs, writeConfigs } = require('./lib');
+
+async function main({
+  args: [action = 'get'],
+  opts: { peer, chainName = process.env.PROFILE_NAME },
+}) {
   if (action === 'get') {
     if (peer) {
       const client = new GraphQLClient(`${webUrl()}/api`);
@@ -18,7 +24,7 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
       shell.echo(hr);
       shell.echo(config);
     } else {
-      const { forgeConfigPath } = config.get('cli');
+      const forgeConfigPath = getProfileReleaseFilePath(chainName);
       shell.echo(hr);
       shell.echo(`${symbols.info} config file path: ${forgeConfigPath}`);
       shell.echo(hr);
@@ -50,7 +56,17 @@ async function main({ args: [action = 'get'], opts: { peer } }) {
       process.exit(1);
     }
 
-    askUserConfigs(config.get('cli'));
+    const originConfigFilePath = getProfileReleaseFilePath(chainName);
+    const defaults = toml.parse(fs.readFileSync(originConfigFilePath).toString());
+    const configs = await askUserConfigs(defaults, chainName, false);
+
+    if (chainName !== configs.app.name) {
+      fs.unlinkSync(originConfigFilePath);
+      fs.renameSync(getProfileDirectory(chainName), getProfileDirectory(configs.app.name));
+      await writeConfigs(getProfileReleaseFilePath(configs.app.name), configs);
+    } else {
+      await writeConfigs(getProfileReleaseFilePath(chainName), configs, true);
+    }
   }
 }
 

@@ -126,18 +126,26 @@ function seConfig(
   appName,
   { forgeWebPort, forgeGrpcPort, tendminRpcPort, tendmintGrpcPort, tendmintP2pPort }
 ) {
-  const content = JSON.parse(JSON.stringify(configs));
-  const releaseDirectory = getReleaseDirectory(appName);
-
-  set(content, 'forge.path', path.join(releaseDirectory, 'core'));
-  set(content, 'tendermint.keypath', path.join(releaseDirectory, 'keys'));
-  set(content, 'tendermint.path', path.join(releaseDirectory, 'tendermint'));
+  let content = JSON.parse(JSON.stringify(configs));
 
   set(content, 'forge.web.port', forgeWebPort);
   set(content, 'forge.sock_grpc', `tcp://127.0.0.1:${forgeGrpcPort}`);
   set(content, 'tendermint.sock_rpc', `tcp://127.0.0.1:${tendminRpcPort}`);
   set(content, 'tendermint.sock_grpc', `tcp://127.0.0.1:${tendmintGrpcPort}`);
   set(content, 'tendermint.sock_p2p', `tcp://0.0.0.0:${tendmintP2pPort}`);
+
+  content = setFilePathOfConfig(content, appName);
+
+  return content;
+}
+
+function setFilePathOfConfig(configs, appName) {
+  const content = JSON.parse(JSON.stringify(configs));
+  const releaseDirectory = getReleaseDirectory(appName);
+
+  set(content, 'forge.path', path.join(releaseDirectory, 'core'));
+  set(content, 'tendermint.keypath', path.join(releaseDirectory, 'keys'));
+  set(content, 'tendermint.path', path.join(releaseDirectory, 'tendermint'));
 
   set(content, 'ipfs.path', path.join(releaseDirectory, 'ipfs'));
   set(content, 'cache.path', path.join(releaseDirectory, 'cache', 'mnesia_data_dir'));
@@ -223,4 +231,10 @@ async function copyReleaseConfig(currentVersion, overwrite = true) {
   printSuccess(`Forge config written to ${targetPath}`);
 }
 
-module.exports = { setConfigToProfile, getAllAppNames, getDefaultChainConfigs, copyReleaseConfig };
+module.exports = {
+  setConfigToProfile,
+  getAllAppNames,
+  getDefaultChainConfigs,
+  copyReleaseConfig,
+  setFilePathOfConfig,
+};

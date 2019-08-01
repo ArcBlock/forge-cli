@@ -8,10 +8,10 @@ const { print, printWarning, printInfo, printSuccess, printError } = require('co
 
 const { CONFIG_FILE_NAME, CHAIN_DATA_PATH_NAME } = require('../constant');
 
-function clearDataDirectories(appName = process.env.PROFILE_NAME) {
+function clearDataDirectories(chainName = process.env.PROFILE_NAME) {
   printWarning('Clearing data profiles');
 
-  const dir = getProfileDirectory(appName);
+  const dir = getProfileDirectory(chainName);
   shell.exec(`rm -rf ${dir}`);
   printInfo(`rm -f ${dir}`);
 
@@ -30,8 +30,8 @@ function getForgeDirectory() {
   return path.join(getCurrentWorkingDirectory(), '.forge');
 }
 
-function getReleaseDirectory(appName = process.env.PROFILE_NAME) {
-  return path.join(getProfileDirectory(appName), CHAIN_DATA_PATH_NAME);
+function getReleaseDirectory(chainName = process.env.PROFILE_NAME) {
+  return path.join(getProfileDirectory(chainName), CHAIN_DATA_PATH_NAME);
 }
 
 function getCurrentReleaseFilePath() {
@@ -60,8 +60,8 @@ function getOriginForgeReleaseFilePath(name, version) {
   );
 }
 
-function getTendermintHomeDir(appName) {
-  return path.join(getReleaseDirectory(appName), 'tendermint');
+function getTendermintHomeDir(chainName) {
+  return path.join(getReleaseDirectory(chainName), 'tendermint');
 }
 
 function getRootConfigDirectory() {

@@ -6,7 +6,7 @@ const { print, sleep } = require('core/util');
 const { isForgeStarted } = require('core/forge-process');
 const { symbols } = require('core/ui');
 
-async function main({ opts: { yes } }) {
+async function main({ opts: { yes }, args: [chainName = process.env.PROFILE_NAME] }) {
   const isStarted = await isForgeStarted();
   if (isStarted) {
     shell.echo(`${symbols.error} forge is running!`);
@@ -24,7 +24,7 @@ async function main({ opts: { yes } }) {
         name: 'confirm',
         default: false,
         message: `${chalk.red('Are you sure to continue reset the')} ${chalk.cyan(
-          process.env.PROFILE_NAME
+          chainName
         )} ${chalk.red('chain')}?`,
       },
     ];
@@ -37,7 +37,7 @@ async function main({ opts: { yes } }) {
   }
 
   if (confirm) {
-    clearDataDirectories();
+    clearDataDirectories(chainName);
   } else {
     shell.echo(`${symbols.info} User abort, nothing changed!`);
     process.exit();

@@ -145,7 +145,7 @@ function seConfig(
   return content;
 }
 
-async function setConfigToProfile(configs, appName) {
+async function setConfigToProfile(configs, chainName) {
   const {
     forgeWebPort,
     forgeGrpcPort,
@@ -154,7 +154,7 @@ async function setConfigToProfile(configs, appName) {
     tendmintP2pPort,
   } = await getAvailablePort();
 
-  return seConfig(configs, appName, {
+  return seConfig(configs, chainName, {
     forgeWebPort,
     forgeGrpcPort,
     tendminRpcPort,

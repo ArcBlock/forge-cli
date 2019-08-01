@@ -28,7 +28,7 @@ function waitUntilStopped() {
   });
 }
 
-async function main({ opts: { force, all }, args: [chainName = ''] }) {
+async function main({ opts: { force, all }, args: [chainName = process.env.PROFILE_NAME] }) {
   try {
     if (force) {
       deprecated('forge stop --force: Use forge stop --all instead');
@@ -42,15 +42,14 @@ async function main({ opts: { force, all }, args: [chainName = ''] }) {
 
     debug(`all processes ${allProcesses.map(x => x.pid)}`);
 
-    const name = chainName || process.env.PROFILE_NAME;
     let handle = null;
     const spinner = getSpinner('Waiting for forge to stop...');
     if (force || all) {
       printWarning(chalk.yellow('Stopping all chains'));
       handle = stopAllForgeProcesses;
     } else {
-      printWarning(`Stoping ${chalk.yellow(name)} chain...`);
-      handle = stopForgeProcesses.bind(null, name);
+      printWarning(`Stoping ${chalk.yellow(chainName)} chain...`);
+      handle = stopForgeProcesses.bind(null, chainName);
     }
 
     spinner.start();

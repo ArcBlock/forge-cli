@@ -15,8 +15,9 @@ const { fromSecretKey } = require('@arcblock/forge-wallet');
 const { isValid, isFromPublicKey } = require('@arcblock/did');
 const { bytesToHex, hexToBytes, isHexStrict } = require('@arcblock/forge-util');
 
-const { symbols, hr, pretty } = require('core/ui');
 const { requiredDirs, ensureConfigComment } = require('core/env');
+const { symbols, hr, pretty } = require('core/ui');
+const { printError, printSuccess } = require('core/util');
 const debug = require('core/debug')('config:lib');
 const { getProfileDirectory } = require('core/forge-fs');
 
@@ -54,7 +55,7 @@ function getModerator() {
   return undefined;
 }
 
-async function askUserConfigs(forgeConfigPath, appName = '') {
+async function askUserConfigs(forgeConfigPath, chainName = '') {
   const defaults = toml.parse(fs.readFileSync(forgeConfigPath).toString());
   const tokenDefaults = Object.assign(
     {
@@ -87,230 +88,239 @@ async function askUserConfigs(forgeConfigPath, appName = '') {
   // moderator
   const moderator = getModerator();
 
-  const questions = [
-    {
-      type: 'number',
-      name: 'blockTime',
-      message: 'Please input block time (in seconds):',
-      default: parseInt(defaults.tendermint.timeout_commit, 10),
-      validate: getNumberValidator('block time'),
-    },
-    {
-      type: 'confirm',
-      name: 'customizeToken',
-      message: 'Do you want to customize token config for this chain?',
-      default: false,
-    },
-    {
-      type: 'text',
-      name: 'tokenName',
-      // eslint-disable-next-line quotes
-      message: "What's the token name?",
-      default: tokenDefaults.name,
-      when: d => d.customizeToken,
-      validate: v => {
-        if (!v) return 'The token name should not be empty';
-        if (!/^[a-zA-Z][a-zA-Z0-9_\-\s]{5,35}$/.test(v)) {
-          return 'The token name should start with a letter, only contain 0-9,a-z,A-Z, and length between 6~36';
-        }
-        return true;
-      },
-    },
-    {
-      type: 'text',
-      name: 'tokenSymbol',
-      // eslint-disable-next-line quotes
-      message: "What's the token symbol?",
-      default: tokenDefaults.symbol,
-      when: d => d.customizeToken,
-      validate: v => {
-        if (!v) return 'The token symbol should not be empty';
-        if (!/^[a-zA-Z][a-zA-Z0-9]{2,5}$/.test(v)) {
-          return 'The token symbol should start with a letter, only contain 0-9,a-z,A-Z, and length between 3~6';
-        }
-        return true;
-      },
-    },
-    {
-      type: 'text',
-      name: 'tokenIcon',
-      // eslint-disable-next-line quotes
-      message: "What's the token icon?",
-      default: iconFile,
-      when: d => d.customizeToken,
-      validate: v => {
-        if (!v) return 'The token icon should not be empty';
-        if (!fs.existsSync(v)) {
-          return 'The token icon should be a valid file path';
-        }
-        try {
-          base64Img.base64Sync(v);
-        } catch (err) {
-          return 'The token icon should be a valid image file';
-        }
-        return true;
-      },
-    },
-    {
-      type: 'text',
-      name: 'tokenDescription',
-      message: 'Whats the token description?',
-      default: tokenDefaults.description,
-      when: d => d.customizeToken,
-      validate: v => {
-        if (!v) return 'The token description should not be empty';
-        if (!/^[a-zA-Z][a-zA-Z0-9_\-\s]{5,255}$/.test(v)) {
-          return 'The token description should start with a letter, only contain 0-9,a-z,A-Z, and length between 6~256';
-        }
-        return true;
-      },
-    },
-    {
-      type: 'number',
-      name: 'tokenTotalSupply',
-      message: 'Please input token total supply:',
-      default: tokenDefaults.total_supply,
-      when: d => d.customizeToken,
-      validate: getNumberValidator('total supply'),
-      transformer: v => numeral(v).format('0,0'),
-    },
-    {
-      type: 'number',
-      name: 'tokenInitialSupply',
-      message: 'Please input token initial supply:',
-      default: tokenDefaults.initial_supply,
-      when: d => d.customizeToken,
-      validate: getNumberValidator('initial supply'),
-      transformer: v => numeral(v).format('0,0'),
-    },
-    {
-      type: 'number',
-      name: 'tokenDecimal',
-      message: 'Please input token decimal:',
-      default: tokenDefaults.decimal,
-      when: d => d.customizeToken,
-      validate: getNumberValidator('token decimal'),
-    },
-    {
-      type: 'confirm',
-      name: 'enablePoke',
-      message: 'Do you want to enable "feel lucky" (poke) feature for this chain?',
-      default: defaults.forge.poke && defaults.forge.poke.amount,
-    },
-    {
-      type: 'confirm',
-      name: 'customizePoke',
-      message: 'Do you want to customize "feel lucky" (poke) config for this chain?',
-      when: d => d.enablePoke,
-      default: true,
-    },
-    {
-      type: 'number',
-      name: 'pokeAmount',
-      message: 'How much token to give on a successful poke?',
-      default: defaults.forge.poke ? defaults.forge.poke.amount : pokeDefaults.amount,
-      when: d => d.customizePoke,
-      validate: getNumberValidator('poke amount', false),
-      transformer: v => numeral(v).format('0,0.0000'),
-    },
-    {
-      type: 'number',
-      name: 'pokeDailyLimit',
-      message: 'How much token can be poked daily?',
-      default: d => d.pokeAmount * 1000,
-      when: d => d.customizePoke,
-      validate: getNumberValidator('daily poke limit', false),
-      transformer: v => numeral(v).format('0,0'),
-    },
-    {
-      type: 'number',
-      name: 'pokeBalance',
-      message: 'How much token can be poked in total?',
-      default: d =>
-        Math.min(
-          d.pokeDailyLimit * 365 * 4,
-          d.tokenInitialSupply ||
-            get(defaults, 'forge.token.initial_supply') ||
-            tokenDefaults.initial_supply
-        ),
-      when: d => d.customizePoke,
-      validate: getNumberValidator('total poke amount', false),
-      transformer: v => numeral(v).format('0,0'),
-    },
-    {
-      type: 'confirm',
-      name: 'includeModerator',
-      message: 'Do you want to include moderator config in the config?',
-      when: () => moderator,
-      default: true,
-    },
-    {
-      type: 'confirm',
-      name: 'moderatorAsTokenHolder',
-      message: d => {
-        const total = d.customizeToken ? d.tokenInitialSupply : tokenDefaults.initial_supply;
-        // eslint-disable-next-line no-nested-ternary
-        const poked = d.enablePoke ? (d.customizePoke ? d.pokeBalance : pokeDefaults.balance) : 0;
-        const symbol = d.customizeToken ? d.tokenSymbol : tokenDefaults.symbol;
-        return `Set moderator as token owner of (${total - poked} ${symbol}) on chain start?`;
-      },
-      when: () => moderator,
-      default: true,
-    },
-    {
-      type: 'text',
-      name: 'tokenHolderAddress',
-      message:
-        'Please input token holder address (run `forge wallet:create` to generate if do not have one)',
-      validate: v => {
-        if (!v.trim()) return 'Token holder address should not be empty';
-        if (!isValid(v.trim())) return 'Token holder address must be valid did';
-        return true;
-      },
-      when: d => d.moderatorAsTokenHolder === false || !moderator,
-      default: '',
-    },
-    {
-      type: 'text',
-      name: 'tokenHolderPk',
-      message: 'Please input token holder public key in base64_url format',
-      validate: (v, d) => {
-        if (!v.trim()) return 'Token holder public key should not be empty';
-        const pkBuffer = Buffer.from(base64.unescape(v), 'base64');
-        if (!isFromPublicKey(d.tokenHolderAddress, pkBuffer)) {
-          return 'Token holder public key does not match with address';
-        }
+  const questions = [];
 
-        return true;
-      },
-      when: d => d.moderatorAsTokenHolder === false || !moderator,
-      default: '',
-    },
-  ];
+  const chainNameValidateFunc = v => {
+    if (!v) return 'The chain name should not be empty';
+    if (!/^[a-zA-Z][a-zA-Z0-9_\-\s]{3,23}$/.test(v)) {
+      return 'The chain name should start with a letter, only contain 0-9,a-z,A-Z, and length between 4~24';
+    }
 
-  if (!appName) {
-    questions.unshift({
+    if (fs.existsSync(getProfileDirectory(v))) {
+      return 'The chain name is exists, please use another one';
+    }
+
+    return true;
+  };
+
+  const chainNameValidateResult = chainNameValidateFunc(chainName);
+  if (chainNameValidateResult !== true) {
+    printError(chainNameValidateResult);
+    questions.push({
       type: 'text',
-      name: 'chainName',
+      name: 'name',
       message: 'Please input chain name:',
-      default: defaults.tendermint.moniker,
-      validate: v => {
-        if (!v) return 'The chain name should not be empty';
-        if (!/^[a-zA-Z][a-zA-Z0-9_\-\s]{3,23}$/.test(v)) {
-          return 'The chain name should start with a letter, only contain 0-9,a-z,A-Z, and length between 4~24';
-        }
-
-        if (fs.existsSync(getProfileDirectory(v))) {
-          return 'The chain name is exists, please use another one';
-        }
-
-        return true;
-      },
+      validate: chainNameValidateFunc,
     });
+  } else {
+    printSuccess(`chain name: ${chainName}`);
   }
 
+  questions.push(
+    ...[
+      {
+        type: 'number',
+        name: 'blockTime',
+        message: 'Please input block time (in seconds):',
+        default: parseInt(defaults.tendermint.timeout_commit, 10),
+        validate: getNumberValidator('block time'),
+      },
+      {
+        type: 'confirm',
+        name: 'customizeToken',
+        message: 'Do you want to customize token config for this chain?',
+        default: false,
+      },
+      {
+        type: 'text',
+        name: 'tokenName',
+        // eslint-disable-next-line quotes
+        message: "What's the token name?",
+        default: tokenDefaults.name,
+        when: d => d.customizeToken,
+        validate: v => {
+          if (!v) return 'The token name should not be empty';
+          if (!/^[a-zA-Z][a-zA-Z0-9_\-\s]{5,35}$/.test(v)) {
+            return 'The token name should start with a letter, only contain 0-9,a-z,A-Z, and length between 6~36';
+          }
+          return true;
+        },
+      },
+      {
+        type: 'text',
+        name: 'tokenSymbol',
+        // eslint-disable-next-line quotes
+        message: "What's the token symbol?",
+        default: tokenDefaults.symbol,
+        when: d => d.customizeToken,
+        validate: v => {
+          if (!v) return 'The token symbol should not be empty';
+          if (!/^[a-zA-Z][a-zA-Z0-9]{2,5}$/.test(v)) {
+            return 'The token symbol should start with a letter, only contain 0-9,a-z,A-Z, and length between 3~6';
+          }
+          return true;
+        },
+      },
+      {
+        type: 'text',
+        name: 'tokenIcon',
+        // eslint-disable-next-line quotes
+        message: "What's the token icon?",
+        default: iconFile,
+        when: d => d.customizeToken,
+        validate: v => {
+          if (!v) return 'The token icon should not be empty';
+          if (!fs.existsSync(v)) {
+            return 'The token icon should be a valid file path';
+          }
+          try {
+            base64Img.base64Sync(v);
+          } catch (err) {
+            return 'The token icon should be a valid image file';
+          }
+          return true;
+        },
+      },
+      {
+        type: 'text',
+        name: 'tokenDescription',
+        message: 'Whats the token description?',
+        default: tokenDefaults.description,
+        when: d => d.customizeToken,
+        validate: v => {
+          if (!v) return 'The token description should not be empty';
+          if (!/^[a-zA-Z][a-zA-Z0-9_\-\s]{5,255}$/.test(v)) {
+            return 'The token description should start with a letter, only contain 0-9,a-z,A-Z, and length between 6~256';
+          }
+          return true;
+        },
+      },
+      {
+        type: 'number',
+        name: 'tokenTotalSupply',
+        message: 'Please input token total supply:',
+        default: tokenDefaults.total_supply,
+        when: d => d.customizeToken,
+        validate: getNumberValidator('total supply'),
+        transformer: v => numeral(v).format('0,0'),
+      },
+      {
+        type: 'number',
+        name: 'tokenInitialSupply',
+        message: 'Please input token initial supply:',
+        default: tokenDefaults.initial_supply,
+        when: d => d.customizeToken,
+        validate: getNumberValidator('initial supply'),
+        transformer: v => numeral(v).format('0,0'),
+      },
+      {
+        type: 'number',
+        name: 'tokenDecimal',
+        message: 'Please input token decimal:',
+        default: tokenDefaults.decimal,
+        when: d => d.customizeToken,
+        validate: getNumberValidator('token decimal'),
+      },
+      {
+        type: 'confirm',
+        name: 'enablePoke',
+        message: 'Do you want to enable "feel lucky" (poke) feature for this chain?',
+        default: defaults.forge.poke && defaults.forge.poke.amount,
+      },
+      {
+        type: 'confirm',
+        name: 'customizePoke',
+        message: 'Do you want to customize "feel lucky" (poke) config for this chain?',
+        when: d => d.enablePoke,
+        default: true,
+      },
+      {
+        type: 'number',
+        name: 'pokeAmount',
+        message: 'How much token to give on a successful poke?',
+        default: defaults.forge.poke ? defaults.forge.poke.amount : pokeDefaults.amount,
+        when: d => d.customizePoke,
+        validate: getNumberValidator('poke amount', false),
+        transformer: v => numeral(v).format('0,0.0000'),
+      },
+      {
+        type: 'number',
+        name: 'pokeDailyLimit',
+        message: 'How much token can be poked daily?',
+        default: d => d.pokeAmount * 1000,
+        when: d => d.customizePoke,
+        validate: getNumberValidator('daily poke limit', false),
+        transformer: v => numeral(v).format('0,0'),
+      },
+      {
+        type: 'number',
+        name: 'pokeBalance',
+        message: 'How much token can be poked in total?',
+        default: d =>
+          Math.min(
+            d.pokeDailyLimit * 365 * 4,
+            d.tokenInitialSupply ||
+              get(defaults, 'forge.token.initial_supply') ||
+              tokenDefaults.initial_supply
+          ),
+        when: d => d.customizePoke,
+        validate: getNumberValidator('total poke amount', false),
+        transformer: v => numeral(v).format('0,0'),
+      },
+      {
+        type: 'confirm',
+        name: 'includeModerator',
+        message: 'Do you want to include moderator config in the config?',
+        when: () => moderator,
+        default: true,
+      },
+      {
+        type: 'confirm',
+        name: 'moderatorAsTokenHolder',
+        message: d => {
+          const total = d.customizeToken ? d.tokenInitialSupply : tokenDefaults.initial_supply;
+          // eslint-disable-next-line no-nested-ternary
+          const poked = d.enablePoke ? (d.customizePoke ? d.pokeBalance : pokeDefaults.balance) : 0;
+          const symbol = d.customizeToken ? d.tokenSymbol : tokenDefaults.symbol;
+          return `Set moderator as token owner of (${total - poked} ${symbol}) on chain start?`;
+        },
+        when: () => moderator,
+        default: true,
+      },
+      {
+        type: 'text',
+        name: 'tokenHolderAddress',
+        message:
+          'Please input token holder address (run `forge wallet:create` to generate if do not have one)',
+        validate: v => {
+          if (!v.trim()) return 'Token holder address should not be empty';
+          if (!isValid(v.trim())) return 'Token holder address must be valid did';
+          return true;
+        },
+        when: d => d.moderatorAsTokenHolder === false || !moderator,
+        default: '',
+      },
+      {
+        type: 'text',
+        name: 'tokenHolderPk',
+        message: 'Please input token holder public key in base64_url format',
+        validate: (v, d) => {
+          if (!v.trim()) return 'Token holder public key should not be empty';
+          const pkBuffer = Buffer.from(base64.unescape(v), 'base64');
+          if (!isFromPublicKey(d.tokenHolderAddress, pkBuffer)) {
+            return 'Token holder public key does not match with address';
+          }
+
+          return true;
+        },
+        when: d => d.moderatorAsTokenHolder === false || !moderator,
+        default: '',
+      },
+    ]
+  );
+
   const {
-    chainName = appName,
+    name,
     blockTime,
     customizeToken,
     tokenName,
@@ -331,10 +341,10 @@ async function askUserConfigs(forgeConfigPath, appName = '') {
     tokenHolderPk,
   } = await inquirer.prompt(questions);
 
-  defaults.tendermint.moniker = chainName;
-  defaults.app.name = chainName;
+  defaults.tendermint.moniker = name;
+  defaults.app.name = name;
   defaults.tendermint.timeout_commit = `${blockTime}s`;
-  defaults.tendermint.genesis.chain_id = kebabCase(chainName);
+  defaults.tendermint.genesis.chain_id = kebabCase(name);
 
   // token config
   defaults.forge.token = tokenDefaults;

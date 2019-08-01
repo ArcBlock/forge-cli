@@ -123,7 +123,7 @@ async function getAvailablePort() {
 
 function seConfig(
   configs,
-  appName,
+  chainName,
   { forgeWebPort, forgeGrpcPort, tendminRpcPort, tendmintGrpcPort, tendmintP2pPort }
 ) {
   let content = JSON.parse(JSON.stringify(configs));
@@ -134,14 +134,14 @@ function seConfig(
   set(content, 'tendermint.sock_grpc', `tcp://127.0.0.1:${tendmintGrpcPort}`);
   set(content, 'tendermint.sock_p2p', `tcp://0.0.0.0:${tendmintP2pPort}`);
 
-  content = setFilePathOfConfig(content, appName);
+  content = setFilePathOfConfig(content, chainName);
 
   return content;
 }
 
-function setFilePathOfConfig(configs, appName) {
+function setFilePathOfConfig(configs, chainName) {
   const content = JSON.parse(JSON.stringify(configs));
-  const releaseDirectory = getReleaseDirectory(appName);
+  const releaseDirectory = getReleaseDirectory(chainName);
 
   set(content, 'forge.path', path.join(releaseDirectory, 'core'));
   set(content, 'tendermint.keypath', path.join(releaseDirectory, 'keys'));

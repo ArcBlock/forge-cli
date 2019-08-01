@@ -15,9 +15,12 @@ async function main({ args: [chainName = ''] }) {
       chainName
     );
 
-    configs = await setConfigToProfile(configs, chainName);
-    createNewProfile(chainName);
-    await writeConfigs(getProfileReleaseFilePath(chainName), configs);
+    const {
+      app: { name },
+    } = configs;
+    configs = await setConfigToProfile(configs, name);
+    createNewProfile(name);
+    await writeConfigs(getProfileReleaseFilePath(name), configs);
   } catch (error) {
     printError('Create new chain failed:');
     printError(error);

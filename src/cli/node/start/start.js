@@ -28,9 +28,9 @@ function checkError(startAtMs) {
   });
 }
 
-async function main({ opts: { dryRun } }) {
+async function main({ opts: { dryRun }, args: [chainName = process.env.chainName] }) {
   const startAt = Date.now();
-  if (await isForgeStarted()) {
+  if (await isForgeStarted(chainName)) {
     shell.echo(`${symbols.info} forge is already started!`);
     shell.echo(`${symbols.info} Please run ${chalk.cyan('forge stop')} first!`);
     return;

@@ -2,10 +2,10 @@ const chalk = require('chalk');
 const Table = require('cli-table-redemption');
 const { print, printInfo } = require('core/util');
 
-const { getAllRunningProcesses } = require('core/forge-process');
+const { getAllRunningProcessStats } = require('core/forge-process');
 
 const printAllProcesses = async () => {
-  const processes = await getAllRunningProcesses();
+  const processes = await getAllRunningProcessStats();
 
   if (!processes || !processes.length) {
     printInfo(`forge daemon not started yet, start with ${chalk.cyan('forge start')}`);

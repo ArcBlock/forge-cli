@@ -8,7 +8,8 @@ const chalk = require('chalk');
 const shell = require('shelljs');
 const program = require('commander');
 const fs = require('fs');
-const { getProfileDirectory, ensureProfileDirectory } = require('core/forge-fs');
+const { getProfileDirectory, ensureProfileDirectory } = require('./core/forge-fs');
+const { getAllProcesses } = require('./core/forge-process');
 
 const { printError, printInfo, printLogo } = require('./core/util');
 const { DEFAULT_CHAIN_NAME } = require('./constant');
@@ -33,7 +34,21 @@ const printCurrentChain = currentChainName => {
   shell.echo(hr);
 };
 
-const run = () => {
+const getCurrentChainENV = async (command, action) => {
+  let chainName = process.env.PROFILE_NAME || program.chainName || DEFAULT_CHAIN_NAME;
+
+  const allProcesses = await getAllProcesses();
+
+  if (['start', 'stop', 'reset'].includes(command) && action) {
+    chainName = action;
+  } else if (allProcesses.length === 1) {
+    chainName = allProcesses[0].name;
+  }
+
+  return chainName;
+};
+
+const run = async () => {
   ensureProfileDirectory(DEFAULT_CHAIN_NAME);
 
   program
@@ -71,13 +86,8 @@ Examples:
     })
     .parse(process.argv);
 
-  let chainName = process.env.PROFILE_NAME || program.chainName || DEFAULT_CHAIN_NAME;
-
-  const [op, action] = program.args;
-  if (['start', 'stop', 'reset'].includes(op) && action) {
-    chainName = action;
-  }
-
+  const [command, action] = program.args;
+  const chainName = await getCurrentChainENV(command, action);
   process.env.PROFILE_NAME = chainName;
 
   if (process.env.PROFILE_NAME !== DEFAULT_CHAIN_NAME) {
@@ -87,9 +97,9 @@ Examples:
   if (
     chainName !== DEFAULT_CHAIN_NAME &&
     !fs.existsSync(getProfileDirectory(chainName)) &&
-    op !== 'create-chain'
+    command !== 'create-chain'
   ) {
-    printError(`Chain ${process.env.PROFILE_NAME} is not exists`);
+    printError(`Chain ${chainName} is not exists`);
     printInfo(`You can create by run ${chalk.cyan(`forge create-chain ${chainName}`)}`);
     process.exit(-1);
   }

@@ -13,7 +13,7 @@ const printAllProcesses = async () => {
   }
 
   print();
-  processes.forEach(({ name, stats }) => {
+  processes.forEach(({ name, value: stats }) => {
     const table = new Table({
       head: ['Name', 'PID', 'Uptime', 'Memory', 'CPU'],
       style: { 'padding-left': 1, head: ['cyan', 'bold'], compact: true },

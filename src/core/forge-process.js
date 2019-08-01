@@ -140,14 +140,14 @@ async function getAllRunningProcessStats() {
     // eslint-disable-next-line
     const tmp = await getRunningProcessesStats(appName);
     if (tmp && tmp.length) {
-      processes.push({ name: appName, stats: tmp });
+      processes.push({ name: appName, value: tmp });
     }
   }
 
   return processes;
 }
 
-async function getAllRunningProcesses() {
+async function getAllProcesses() {
   const processes = [];
   const allAppNames = getAllAppNames();
 
@@ -156,11 +156,17 @@ async function getAllRunningProcesses() {
     // eslint-disable-next-line
     const tmp = await getRunningProcesses(appName);
     if (tmp && tmp.length) {
-      processes.push(...tmp);
+      processes.push({ name: appName, value: tmp });
     }
   }
 
   return processes;
+}
+
+async function getAllRunningProcesses() {
+  const processes = await getAllProcesses();
+
+  return processes.reduce((acc, { value }) => acc.concat(...value), []);
 }
 
 /* eslint-disable*/
@@ -209,6 +215,7 @@ async function stopForgeProcesses(chainName) {
 }
 
 module.exports = {
+  getAllProcesses,
   getAllRunningProcesses,
   getAllRunningProcessStats,
   getRunningProcesses,

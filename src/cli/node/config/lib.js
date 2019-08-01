@@ -20,6 +20,7 @@ const { symbols, hr, pretty } = require('core/ui');
 const { printError, printSuccess } = require('core/util');
 const debug = require('core/debug')('config:lib');
 const { getProfileDirectory } = require('core/forge-fs');
+const { setFilePathOfConfig } = require('core/forge-config');
 
 function getModeratorSecretKey() {
   const sk = process.env.FORGE_MODERATOR_SK;
@@ -55,8 +56,7 @@ function getModerator() {
   return undefined;
 }
 
-async function askUserConfigs(forgeConfigPath, chainName = '') {
-  const defaults = toml.parse(fs.readFileSync(forgeConfigPath).toString());
+async function askUserConfigs(defaults, chainName = '', isCreate) {
   const tokenDefaults = Object.assign(
     {
       name: 'ArcBlock',
@@ -97,23 +97,36 @@ async function askUserConfigs(forgeConfigPath, chainName = '') {
     }
 
     if (fs.existsSync(getProfileDirectory(v))) {
-      return 'The chain name is exists, please use another one';
+      if (isCreate || (!isCreate && v !== chainName)) {
+        return 'The chain name is exists, please use another one';
+      }
     }
 
     return true;
   };
 
-  const chainNameValidateResult = chainNameValidateFunc(chainName);
-  if (chainNameValidateResult !== true) {
-    printError(chainNameValidateResult);
+  if (isCreate) {
+    const chainNameValidateResult = chainNameValidateFunc(chainName);
+    if (chainNameValidateResult === true) {
+      printSuccess(`chain name: ${chainName}`);
+    } else {
+      printError(chainNameValidateResult);
+
+      questions.push({
+        type: 'text',
+        name: 'name',
+        message: 'Please input chain name:',
+        validate: chainNameValidateFunc,
+      });
+    }
+  } else {
     questions.push({
       type: 'text',
       name: 'name',
+      default: chainName,
       message: 'Please input chain name:',
       validate: chainNameValidateFunc,
     });
-  } else {
-    printSuccess(`chain name: ${chainName}`);
   }
 
   questions.push(
@@ -320,7 +333,7 @@ async function askUserConfigs(forgeConfigPath, chainName = '') {
   );
 
   const {
-    name,
+    name = chainName,
     blockTime,
     customizeToken,
     tokenName,
@@ -413,13 +426,15 @@ async function askUserConfigs(forgeConfigPath, chainName = '') {
     ];
   }
 
+  const result = setFilePathOfConfig(defaults, name);
+
   shell.echo(hr);
   shell.echo('Config Preview');
   shell.echo(hr);
-  shell.echo(pretty(defaults));
+  shell.echo(pretty(result));
   shell.echo(hr);
 
-  return defaults;
+  return result;
 }
 
 async function writeConfigs(targetPath, configs, overwrite = true) {

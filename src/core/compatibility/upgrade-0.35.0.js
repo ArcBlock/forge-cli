@@ -25,7 +25,7 @@ const getOldVersionConfigFiles = () => {
 
 const check = async () => {
   try {
-    const appName = 'default';
+    const chainName = 'default';
 
     const oldConfigFiles = getOldVersionConfigFiles();
     if (!oldConfigFiles) {
@@ -36,11 +36,11 @@ const check = async () => {
     const { configPath, keyFilePath, dataPath } = oldConfigFiles;
 
     let oldConfigs = TOML.parse(fs.readFileSync(configPath).toString());
-    oldConfigs = await getDefaultChainConfigs(oldConfigs, appName);
+    oldConfigs = await getDefaultChainConfigs(oldConfigs, chainName);
 
-    const forgeProfileDir = ensureProfileDirectory(appName);
+    const forgeProfileDir = ensureProfileDirectory(chainName);
     shell.exec(`mv ${configPath} ${keyFilePath} ${dataPath} ${forgeProfileDir}`);
-    fs.writeFileSync(getProfileReleaseFilePath(appName), TOML.stringify(oldConfigs));
+    fs.writeFileSync(getProfileReleaseFilePath(chainName), TOML.stringify(oldConfigs));
   } catch (error) {
     debug('check failed:');
     debug(error);

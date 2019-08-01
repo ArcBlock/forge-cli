@@ -41,7 +41,7 @@ const getCurrentChainENV = async (command, action) => {
 
   if (['start', 'stop', 'reset'].includes(command) && action) {
     chainName = action;
-  } else if (allProcesses.length === 1) {
+  } else if (allProcesses.length === 1 && command !== 'start') {
     chainName = allProcesses[0].name;
   }
 

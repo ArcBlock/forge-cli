@@ -16,10 +16,7 @@ const { get, set } = require('lodash');
 const GRpcClient = require('@arcblock/grpc-client');
 const { parse } = require('@arcblock/forge-config');
 
-const {
-  getProfileDirectory,
-  isDirectory,
-} = require('core/forge-fs');
+const { getProfileDirectory, isDirectory, getProfileReleaseFilePath } = require('core/forge-fs');
 const { findServicePid, isForgeStarted, getProcessTag } = require('./forge-process');
 const { printLogo } = require('./util');
 const { copyReleaseConfig } = require('./forge-config');
@@ -214,9 +211,7 @@ async function ensureForgeRelease(args, exitOn404 = true) {
 
       if (exitOn404) {
         shell.echo(
-          `${symbols.error} forge-cli@${version} requires forge@${
-            engines.forge
-          } to work, but got ${currentVersion}!`
+          `${symbols.error} forge-cli@${version} requires forge@${engines.forge} to work, but got ${currentVersion}!`
         );
         shell.echo(
           `${symbols.info} if you want to use forge-cli@${version}, please following below steps:`
@@ -270,10 +265,27 @@ async function ensureRunningNode() {
  * @param {*} args
  */
 function ensureRpcClient(args) {
-  const releaseConfig = path.join(path.dirname(requiredDirs.release), 'forge_release.toml');
-  const configPath = args.configPath || process.env.FORGE_CONFIG || releaseConfig;
+  const socketGrpc = args.socketGrpc || process.env.FORGE_SOCK_GRPC;
+  const configPath = getProfileReleaseFilePath();
 
-  if (configPath && fs.existsSync(configPath)) {
+  if (socketGrpc) {
+    shell.echo(
+      `${symbols.info} ${chalk.yellow(
+        `Using custom grpc socket endpoint: ${process.env.FORGE_SOCK_GRPC}`
+      )}`
+    );
+    const forgeConfig = {
+      forge: {
+        sockGrpc: socketGrpc,
+        unlockTtl: 300,
+        web: {
+          port: 8210,
+        },
+      },
+    };
+    debug(`${symbols.info} using forge-cli with remote node ${socketGrpc}`);
+    Object.assign(config, forgeConfig);
+  } else if (fs.existsSync(configPath)) {
     if (process.env.FORGE_CONFIG) {
       shell.echo(
         `${symbols.info} ${chalk.yellow(`Using custom forge config: ${process.env.FORGE_CONFIG}`)}`
@@ -286,28 +298,15 @@ function ensureRpcClient(args) {
     debug(
       `${symbols.success} Using forge config: ${util.inspect(config, { depth: 5, colors: true })}`
     );
-  }
-
-  const socketGrpc = args.socketGrpc || process.env.FORGE_SOCK_GRPC;
-  if (socketGrpc) {
-    shell.echo(
-      `${symbols.info} ${chalk.yellow(
-        `Using custom grpc socket endpoint: ${process.env.FORGE_SOCK_GRPC}`
-      )}`
-    );
-    debug(`${symbols.info} using forge-cli with remote node ${socketGrpc}`);
-    set(config, 'forge.sockGrpc', socketGrpc);
-  }
-
-  if (!configPath && !socketGrpc) {
-    shell.echo(`${symbols.error} this command requires a valid forge config file to start
+  } else {
+    shell.echo(`${symbols.error} forge-cli requires a valid forge config file to start
 If you have not setup any forge core release on this machine, run this first:
 > ${chalk.cyan('forge install')}
 Or you can run forge-cli with custom config path
 > ${chalk.cyan('forge start --config-path ~/Downloads/forge/forge_release.toml')}
 > ${chalk.cyan('FORGE_CONFIG=~/Downloads/forge/forge_release.toml forge start')}
     `);
-    process.exit(1);
+    process.exit();
   }
 }
 

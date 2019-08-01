@@ -78,7 +78,10 @@ function initCli(program) {
         }
 
         await setupEnv(globalArgs, x.requirements);
-        await x.handler({ args: params.filter(p => typeof p === 'string'), opts: command.opts() });
+        await x.handler({
+          args: params.filter(p => typeof p === 'string'),
+          opts: Object.assign(globalArgs.opts(), command.opts()),
+        });
       });
     });
 }

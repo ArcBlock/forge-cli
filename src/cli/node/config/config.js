@@ -7,7 +7,7 @@ const { isForgeStarted } = require('core/forge-process');
 const GraphQLClient = require('@arcblock/graphql-client');
 const toml = require('@iarna/toml');
 
-const { getProfileReleaseFilePath, getProfileDirectory } = require('core/forge-fs');
+const { getProfileReleaseFilePath } = require('core/forge-fs');
 
 const { askUserConfigs, writeConfigs } = require('./lib');
 
@@ -35,7 +35,7 @@ async function main({
   }
 
   if (action === 'set') {
-    const isStarted = await isForgeStarted();
+    const isStarted = await isForgeStarted(chainName);
     if (isStarted) {
       shell.echo(
         `${symbols.warning} ${chalk.yellow(
@@ -60,13 +60,7 @@ async function main({
     const defaults = toml.parse(fs.readFileSync(originConfigFilePath).toString());
     const configs = await askUserConfigs(defaults, chainName, false);
 
-    if (chainName !== configs.app.name) {
-      fs.unlinkSync(originConfigFilePath);
-      fs.renameSync(getProfileDirectory(chainName), getProfileDirectory(configs.app.name));
-      await writeConfigs(getProfileReleaseFilePath(configs.app.name), configs);
-    } else {
-      await writeConfigs(getProfileReleaseFilePath(chainName), configs, true);
-    }
+    await writeConfigs(getProfileReleaseFilePath(chainName), configs, true);
   }
 }
 

@@ -28,7 +28,7 @@ function checkError(startAtMs) {
   });
 }
 
-async function main({ opts: { dryRun }, args: [chainName = process.env.chainName] }) {
+async function main({ opts: { dryRun }, args: [chainName = process.env.PROFILE_NAME] }) {
   const startAt = Date.now();
   if (await isForgeStarted(chainName)) {
     shell.echo(`${symbols.info} forge is already started!`);
@@ -67,7 +67,7 @@ async function main({ opts: { dryRun }, args: [chainName = process.env.chainName
   spinner.start();
   try {
     shell.exec(command);
-    await waitUntilStarted(40000);
+    await waitUntilStarted(chainName, 40000);
     await sleep(6000);
     const errMessage = await checkError(startAt);
     if (errMessage) {
@@ -130,16 +130,16 @@ async function main({ opts: { dryRun }, args: [chainName = process.env.chainName
   }
 }
 
-function waitUntilStarted(timeout = 30000) {
+function waitUntilStarted(chainName, timeout = 30000) {
   return new Promise(async (resolve, reject) => {
-    if (await isForgeStarted()) {
+    if (await isForgeStarted(chainName)) {
       return resolve();
     }
 
     let timeElapsed = 0;
     const interval = 800;
     const timer = setInterval(async () => {
-      if (await isForgeStarted()) {
+      if (await isForgeStarted(chainName)) {
         clearInterval(timer);
         return resolve();
       }

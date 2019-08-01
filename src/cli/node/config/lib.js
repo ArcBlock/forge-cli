@@ -120,13 +120,7 @@ async function askUserConfigs(defaults, chainName = '', isCreate) {
       });
     }
   } else {
-    questions.push({
-      type: 'text',
-      name: 'name',
-      default: chainName,
-      message: 'Please input chain name:',
-      validate: chainNameValidateFunc,
-    });
+    printSuccess(`chain name: ${chainName}`);
   }
 
   questions.push(

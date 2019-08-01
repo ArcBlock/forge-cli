@@ -2,7 +2,7 @@
 const chalk = require('chalk');
 const deprecated = require('depd')('@arcblock/cli');
 const shell = require('shelljs');
-const { printWarning } = require('core/util');
+const { printSuccess, printWarning } = require('core/util');
 const { symbols, getSpinner } = require('core/ui');
 const debug = require('core/debug')('stop');
 
@@ -48,7 +48,7 @@ async function main({ opts: { force, all }, args: [chainName = process.env.PROFI
       printWarning(chalk.yellow('Stopping all chains'));
       handle = stopAllForgeProcesses;
     } else {
-      printWarning(`Stoping ${chalk.yellow(chainName)} chain...`);
+      printSuccess(`Stoping ${chalk.yellow(chainName)} chain...`);
       handle = stopForgeProcesses.bind(null, chainName);
     }
 

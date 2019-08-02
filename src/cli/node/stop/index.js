@@ -4,8 +4,8 @@ const { cli, action } = require('core/cli');
 const { execute, run } = require('./stop');
 
 cli(
-  'stop',
-  'Stop the forge daemon and all forge components',
+  'stop [<chainName>]',
+  'Stop the forge daemon and all forge components, if does not specify a chain name, it will start a default chain',
   input => action(execute, run, input),
   {
     requirements: {

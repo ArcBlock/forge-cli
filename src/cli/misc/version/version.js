@@ -1,7 +1,6 @@
 const shell = require('shelljs');
 const {
   config,
-  debug,
   createFileFinder,
   getPlatform,
   runNativeWebCommand,
@@ -9,6 +8,7 @@ const {
   runNativeSimulatorCommand,
   runNativeWorkshopCommand,
 } = require('core/env');
+const debug = require('core/debug')('version');
 const { symbols } = require('core/ui');
 const { version: forgeCliVersion } = require('../../../../package.json');
 

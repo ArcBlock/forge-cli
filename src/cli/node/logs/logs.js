@@ -2,7 +2,8 @@ const os = require('os');
 const fs = require('fs');
 const path = require('path');
 const shell = require('shelljs');
-const { config, debug } = require('core/env');
+const { config } = require('core/env');
+const debug = require('core/debug')('logs');
 const { symbols } = require('core/ui');
 
 function resolveLogPath(folder, file) {

@@ -2,7 +2,8 @@ const chalk = require('chalk');
 const shell = require('shelljs');
 const semver = require('semver');
 const { symbols } = require('core/ui');
-const { config, debug } = require('core/env');
+const { config } = require('core/env');
+const debug = require('core/debug')('release:use');
 const { isForgeStopped, updateReleaseYaml } = require('cli/node/install/install');
 const { listReleases } = require('cli/release/list/list');
 

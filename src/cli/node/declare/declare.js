@@ -1,5 +1,6 @@
 const shell = require('shelljs');
-const { createRpcClient, debug } = require('core/env');
+const { createRpcClient } = require('core/env');
+const debug = require('core/debug')('declare');
 const { symbols, pretty } = require('core/ui');
 
 async function main() {
@@ -12,9 +13,7 @@ async function main() {
     debug.error(err);
     shell.echo(`${symbols.error} declare node as validator candidate failed!`);
     shell.echo(
-      `${
-        symbols.warning
-      } If you are running forge in standalone mode, it is declared on init, you do not need to declare!`
+      `${symbols.warning} If you are running forge in standalone mode,it is declared on init, you do not need to declare!` // eslint-disable-line
     );
   }
 }

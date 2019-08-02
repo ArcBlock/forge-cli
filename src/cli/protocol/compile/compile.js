@@ -4,7 +4,8 @@ const shell = require('shelljs');
 const chalk = require('chalk');
 const yaml = require('yaml');
 const { symbols, getSpinner } = require('core/ui');
-const { debug, requiredDirs, isFile, DEFAULT_MIRROR } = require('core/env');
+const { requiredDirs, isFile, DEFAULT_MIRROR } = require('core/env');
+const debug = require('core/debug')('compile');
 const { isDirectory } = require('core/forge-fs');
 const { downloadAsset } = require('../../node/install/install');
 

@@ -3,7 +3,12 @@
 /* eslint no-console:"off" */
 
 // Add the root project directory to the app module search path:
+if (process.argv.some(x => x.includes('verbose'))) {
+  process.env.FORGE_DEBUG = '@arcblock/cli*';
+}
+
 require('app-module-path').addPath(__dirname);
+
 const chalk = require('chalk');
 const shell = require('shelljs');
 const program = require('commander');

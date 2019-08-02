@@ -3,7 +3,8 @@ const shell = require('shelljs');
 const chalk = require('chalk');
 const semver = require('semver');
 const { symbols } = require('core/ui');
-const { config, debug, getPlatform, RELEASE_ASSETS } = require('core/env');
+const { config, getPlatform, RELEASE_ASSETS } = require('core/env');
+const debug = require('core/debug')('download');
 const {
   releaseDirExists,
   fetchAssetInfo,

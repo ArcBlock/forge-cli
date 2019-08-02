@@ -11,7 +11,6 @@ const { spawn } = require('child_process');
 const { symbols, hr, getSpinner, getProgress } = require('core/ui');
 const {
   config,
-  debug,
   requiredDirs,
   ensureForgeRelease,
   getPlatform,
@@ -19,6 +18,7 @@ const {
   RELEASE_ASSETS,
   DEFAULT_MIRROR,
 } = require('core/env');
+const debug = require('core/debug')('init');
 const { copyReleaseConfig } = require('core/forge-config');
 const { printLogo } = require('core/util');
 

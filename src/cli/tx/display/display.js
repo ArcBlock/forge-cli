@@ -1,5 +1,6 @@
 const shell = require('shelljs');
-const { createRpcClient, debug } = require('core/env');
+const { createRpcClient } = require('core/env');
+const debug = require('core/debug')('tx:display');
 const { symbols, pretty } = require('core/ui');
 
 async function execute({ args: [hash] }) {

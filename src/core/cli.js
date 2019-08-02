@@ -1,7 +1,7 @@
 /* eslint no-console:"off" */
 const path = require('path');
-const debug = require('debug');
 const last = require('lodash/last');
+
 const { setupEnv } = require('./env');
 
 const allCommands = [];
@@ -72,10 +72,6 @@ function initCli(program) {
 
       command.action(async (...params) => {
         const globalArgs = last(program.args).parent;
-
-        if (globalArgs.verbose) {
-          debug.enable('@arcblock/forge-cli');
-        }
 
         await setupEnv(globalArgs, x.requirements);
         await x.handler({

@@ -4,7 +4,8 @@ const fs = require('fs');
 const shell = require('shelljs');
 
 const { symbols, hr, getSpinner } = require('core/ui');
-const { config, debug } = require('core/env');
+const { config } = require('core/env');
+const debug = require('core/debug')('start');
 const { getLogfile } = require('core/forge-fs');
 const { sleep } = require('core/util');
 const { isForgeStarted, getProcessTag } = require('core/forge-process');

@@ -2,7 +2,7 @@ const shell = require('shelljs');
 const chalk = require('chalk');
 const inquirer = require('inquirer');
 const { clearDataDirectories } = require('core/forge-fs');
-const { print, sleep } = require('core/util');
+const { print } = require('core/util');
 const { isForgeStarted } = require('core/forge-process');
 const { symbols } = require('core/ui');
 
@@ -30,7 +30,6 @@ async function main({ opts: { yes }, args: [chainName = process.env.PROFILE_NAME
     ];
 
     print(chalk.red('Reset chain state will erase chain state, logs and configuration!'));
-    await sleep(5000); // wait to dev read the alert
     const answers = await inquirer.prompt(questions);
     // eslint-disable-next-line prefer-destructuring
     confirm = answers.confirm;

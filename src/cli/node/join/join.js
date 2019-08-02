@@ -9,10 +9,12 @@ const get = require('lodash/get');
 const set = require('lodash/set');
 const GraphQLClient = require('@arcblock/graphql-client');
 const { config, ensureConfigComment } = require('core/env');
-const { findServicePid } = require('core/forge-process');
+const { getProfileKeyFilePath } = require('core/forge-fs');
+const { isForgeStarted } = require('core/forge-process');
 const { symbols } = require('core/ui');
+const debug = require('core/debug');
 
-async function main({ args: [endpoint = ''], opts: { yes } }) {
+async function main({ args: [endpoint = ''], opts: { yes, chainName } }) {
   if (!endpoint) {
     shell.echo(`${symbols.error} forge web graphql endpoint must be provided!`);
     shell.echo(
@@ -20,13 +22,13 @@ async function main({ args: [endpoint = ''], opts: { yes } }) {
     );
   }
 
-  // Confirm stopped
-  const pid = await findServicePid('forge_starter');
-  if (pid) {
+  const isStarted = await isForgeStarted(chainName);
+  if (isStarted) {
     shell.echo(`${symbols.error} forge is running!`);
     shell.echo(
       `${symbols.info} Please run ${chalk.cyan('forge stop')} first, then join another network!`
     );
+
     process.exit(0);
     return;
   }
@@ -38,6 +40,7 @@ async function main({ args: [endpoint = ''], opts: { yes } }) {
     if (info && res.config) {
       // Detect version match
       const { forgeConfigPath, currentVersion } = config.get('cli');
+
       const localVersion = {
         major: semver.major(currentVersion),
         minor: semver.minor(currentVersion),
@@ -46,21 +49,16 @@ async function main({ args: [endpoint = ''], opts: { yes } }) {
         major: semver.major(info.version),
         minor: semver.minor(info.version),
       };
+
       if (
         localVersion.major !== remoteVersion.major ||
         localVersion.minor !== remoteVersion.minor
       ) {
         shell.echo(
-          `${
-            symbols.error
-          } forge join requires version match: { local: ${currentVersion}, remote: ${
-            info.version
-          } }!`
+          `${symbols.error} forge join requires version match: { local: ${currentVersion}, remote: ${info.version} }!`
         );
         shell.echo(
-          `${
-            symbols.info
-          } You can only join the remote chain if you are using the same forge version!`
+          `${symbols.info} You can only join the remote chain if you are using the same forge version!`
         );
         shell.echo(
           `${symbols.info} Run ${chalk.cyan(
@@ -84,16 +82,20 @@ async function main({ args: [endpoint = ''], opts: { yes } }) {
             ),
           },
         ]);
+
         if (confirm) {
           const oldDir = path.dirname(localConfig.forge.path);
           const bakDir = `${oldDir}_backup_${Date.now()}`;
+
           shell.echo(`${symbols.info} all state backup to ${bakDir}`);
           shell.exec(`mv ${oldDir} ${bakDir}`);
-          shell.echo(`${symbols.info} rm -rf ~/.forge_cli/keys`);
-          shell.exec('rm -rf ~/.forge_cli/keys');
+
+          const keyDataPath = getProfileKeyFilePath(chainName);
+          debug(` rm -rf ${getProfileKeyFilePath(chainName)}`);
+          shell.exec(`rm -rf ${keyDataPath}`);
         } else {
           shell.echo(`${symbols.info} User abort, nothing changed!`);
-          process.exit();
+          process.exit(0);
           return;
         }
       }

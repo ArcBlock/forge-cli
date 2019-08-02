@@ -16,7 +16,7 @@ const fs = require('fs');
 const { getProfileDirectory, ensureProfileDirectory } = require('./core/forge-fs');
 const { getAllProcesses } = require('./core/forge-process');
 
-const { printError, printInfo, printLogo } = require('./core/util');
+const { printError, printInfo, printLogo, printCurrentChain } = require('./core/util');
 const { DEFAULT_CHAIN_NAME } = require('./constant');
 const debug = require('./core/debug')('main');
 const { symbols, hr } = require('./core/ui');
@@ -39,12 +39,6 @@ const onError = error => {
 process.on('unhandledRejection', onError);
 process.on('uncaughtException', onError);
 
-const printCurrentChain = currentChainName => {
-  shell.echo(hr);
-  shell.echo(`${symbols.success} Current Chain: ${chalk.cyan(currentChainName)}`);
-  shell.echo(hr);
-};
-
 const getCurrentChainENV = async (command, action) => {
   let chainName = process.env.PROFILE_NAME || program.chainName || DEFAULT_CHAIN_NAME;
 
@@ -52,7 +46,11 @@ const getCurrentChainENV = async (command, action) => {
 
   if (['start', 'stop', 'reset'].includes(command) && action) {
     chainName = action;
-  } else if (allProcesses.length === 1 && command !== 'start') {
+  } else if (
+    allProcesses.length === 1 &&
+    !['start', 'join'].includes(command) &&
+    !program.chainName
+  ) {
     chainName = allProcesses[0].name;
   }
 

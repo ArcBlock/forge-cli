@@ -9,13 +9,13 @@ const { print, printWarning, printInfo, printSuccess, printError } = require('co
 const { CONFIG_FILE_NAME, CHAIN_DATA_PATH_NAME } = require('../constant');
 
 function clearDataDirectories(chainName = process.env.PROFILE_NAME) {
-  printWarning('Clearing data profiles');
+  printWarning('Cleaning up chain data!');
 
   const dir = getProfileDirectory(chainName);
   shell.exec(`rm -rf ${dir}`);
   printInfo(`rm -f ${dir}`);
 
-  printSuccess('Data profiles cleared!');
+  printSuccess('Data profiles cleaned!');
 }
 
 function isDirectory(x) {

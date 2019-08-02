@@ -3,7 +3,7 @@
 /* eslint no-console:"off" */
 
 // Add the root project directory to the app module search path:
-if (process.argv.some(x => x.includes('verbose'))) {
+if (process.argv.some(x => x.includes('--verbose') || x.includes('-v'))) {
   process.env.FORGE_DEBUG = '@arcblock/cli*';
 }
 
@@ -27,7 +27,13 @@ const onError = error => {
   debug(error);
 
   printError(`Exception: ${error.message}`);
-  printInfo(`run ${chalk.cyan('DEBUG=@arcblock/cli:* command')} to get details infomations`);
+
+  let command = process.argv.length > 2 ? process.argv.slice(2).join(' ') : 'command';
+  if (command.indexOf('-v') === -1 && command.indexOf('--verbose')) {
+    command += ' -v';
+  }
+
+  printInfo(`run ${chalk.cyan(`forge ${command}`)} to get detail infomation`);
 };
 
 process.on('unhandledRejection', onError);

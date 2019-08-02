@@ -5,7 +5,7 @@ const chalk = require('chalk');
 const getPort = require('get-port');
 
 const prettyMilliseconds = require('pretty-ms');
-const { symbols } = require('./ui');
+const { symbols, hr } = require('./ui');
 const debug = require('./debug')('util');
 
 function prettyTime(ms) {
@@ -94,13 +94,20 @@ async function getFreePort(port) {
   return checkPort(port);
 }
 
+const printCurrentChain = currentChainName => {
+  print(hr);
+  print(`${symbols.success} Current Chain: ${chalk.cyan(currentChainName)}`);
+  print(hr);
+};
+
 module.exports = {
   getPort,
   getFreePort,
   md5,
   prettyTime,
-  printLogo,
   print,
+  printLogo,
+  printCurrentChain,
   printError,
   printInfo,
   printSuccess,

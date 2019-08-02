@@ -88,6 +88,10 @@ function getProfileReleaseFilePath(chainName = process.env.PROFILE_NAME) {
   return path.join(getProfileDirectory(chainName), 'forge_release.toml');
 }
 
+function getProfileKeyFilePath(chainName = process.env.PROFILE_NAME) {
+  return path.join(getProfileDirectory(chainName), 'key');
+}
+
 function createNewProfile(chainName = process.env.PROFILE_NAME) {
   const profileDirectory = getProfileDirectory(chainName);
   if (fs.existsSync(profileDirectory)) {
@@ -132,5 +136,6 @@ module.exports = {
   getRootConfigDirectory,
   getTendermintHomeDir,
   getOriginForgeReleaseFilePath,
+  getProfileKeyFilePath,
   isDirectory,
 };

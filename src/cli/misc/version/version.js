@@ -1,7 +1,7 @@
+const fs = require('fs');
 const shell = require('shelljs');
 const {
   config,
-  createFileFinder,
   getPlatform,
   runNativeWebCommand,
   runNativeStarterCommand,
@@ -10,19 +10,15 @@ const {
 } = require('core/env');
 const debug = require('core/debug')('version');
 const { symbols } = require('core/ui');
+
+const { getConsensusEnginBinPath, getStorageEnginePath } = require('core/forge-fs');
 const { version: forgeCliVersion } = require('../../../../package.json');
 
 async function main() {
-  const { releaseDir, currentVersion } = config.get('cli');
+  const { currentVersion } = config.get('cli');
   const { storageEngine = 'ipfs', consensusEngine = 'tendermint' } = config.get('forge');
-  const storageEnginePath = createFileFinder('storage', `priv/${storageEngine}/${storageEngine}`)(
-    releaseDir,
-    currentVersion
-  );
-  const consensusEnginePath = createFileFinder(
-    'consensus',
-    `priv/${consensusEngine}/${consensusEngine}`
-  )(releaseDir, currentVersion);
+  const storageEnginePath = getStorageEnginePath(currentVersion);
+  const consensusEnginePath = getConsensusEnginBinPath(currentVersion);
 
   // core
   shell.echo(`forge-core version ${currentVersion} on ${await getPlatform()}`);
@@ -35,7 +31,7 @@ async function main() {
   runNativeWorkshopCommand('version')();
 
   // ipfs
-  if (storageEnginePath) {
+  if (fs.e) {
     debug(`storage engine path: ${storageEnginePath}`);
     const { code, stdout, stderr } = shell.exec(`${storageEnginePath} version`, { silent: true });
     if (code === 0) {

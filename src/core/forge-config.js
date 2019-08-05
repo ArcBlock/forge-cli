@@ -1,7 +1,10 @@
+const chalk = require('chalk');
 const fs = require('fs');
+const semver = require('semver');
 const path = require('path');
 const { get, set } = require('lodash');
 const TOML = require('@iarna/toml');
+const yaml = require('yaml');
 
 const {
   DEFAULT_CHAIN_NAME,
@@ -13,9 +16,14 @@ const {
   getRootConfigDirectory,
   getCurrentReleaseFilePath,
   getOriginForgeReleaseFilePath,
+  getForgeVersionFromYaml,
   isDirectory,
+  requiredDirs,
 } = require('./forge-fs');
-const { getPort, getFreePort, printSuccess, printError } = require('./util');
+const { getPort, getFreePort, print, printError, printInfo, printSuccess } = require('./util');
+const { hr, symbols } = require('./ui');
+const debug = require('./debug')('forge-config');
+const { version, engines } = require('../../package.json');
 
 function getAllAppDirectories() {
   const rootConfigDirectory = getRootConfigDirectory();
@@ -216,7 +224,7 @@ async function copyReleaseConfig(currentVersion, overwrite = true) {
     return;
   }
 
-  const sourcePath = getOriginForgeReleaseFilePath('forge', currentVersion);
+  const sourcePath = getOriginForgeReleaseFilePath(currentVersion);
 
   if (!sourcePath) {
     printError('Forge config not found under release folder');
@@ -231,10 +239,145 @@ async function copyReleaseConfig(currentVersion, overwrite = true) {
   printSuccess(`Forge config written to ${targetPath}`);
 }
 
+/**
+ * Ensure we have a forge release to work with, in which we find forge bin
+ *
+ * @param {*} args
+ * @param {boolean} [exitOn404=true]
+ * @returns
+ */
+async function ensureForgeRelease(args, exitOn404 = true) {
+  const cliConfig = {};
+  const cliReleaseDir = requiredDirs.release;
+
+  const envReleaseDir = process.env.FORGE_RELEASE_DIR; // deprecated?
+  const argReleaseDir = args.releaseDir; // deprecated?
+  if (envReleaseDir || argReleaseDir) {
+    printInfo(`${chalk.yellow(`Using custom release dir: ${envReleaseDir || argReleaseDir}`)}`);
+  }
+
+  const releaseDir = argReleaseDir || envReleaseDir || cliReleaseDir;
+  const releaseYamlPath = path.join(releaseDir, './forge/release.yml');
+  if (fs.existsSync(releaseDir)) {
+    try {
+      const currentVersion = getForgeVersionFromYaml(releaseYamlPath);
+      const releaseYamlObj = yaml.parse(fs.readFileSync(releaseYamlPath).toString());
+      if (!releaseYamlObj || !releaseYamlObj.current) {
+        throw new Error('no current forge release selected');
+      }
+
+      cliConfig.currentVersion = currentVersion;
+    } catch (err) {
+      debug.error(err);
+      if (exitOn404) {
+        printError(`config file ${releaseYamlPath} invalid`);
+        process.exit(1);
+      }
+
+      return false;
+    }
+
+    // simulator
+    // eslint-disable-next-line prefer-destructuring
+    const currentVersion = cliConfig.currentVersion;
+    const simulatorBinPath = path.join(releaseDir, 'simulator', currentVersion, './bin/simulator');
+    if (fs.existsSync(simulatorBinPath) && fs.statSync(simulatorBinPath).isFile()) {
+      debug(`${symbols.success} Using simulator executable: ${simulatorBinPath}`);
+      cliConfig.simulatorBinPath = simulatorBinPath;
+    }
+
+    // forge_starter
+    const starterBinPath = path.join(
+      releaseDir,
+      'forge_starter',
+      currentVersion,
+      './bin/forge_starter'
+    );
+    if (fs.existsSync(starterBinPath) && fs.statSync(starterBinPath).isFile()) {
+      debug(`${symbols.success} Using forge_starter executable: ${starterBinPath}`);
+      cliConfig.starterBinPath = starterBinPath;
+    } else {
+      if (exitOn404) {
+        printError(
+          `forge_starter binary not found, please run ${chalk.cyan('forge install')} first`
+        );
+        process.exit(1);
+      }
+      return false;
+    }
+
+    // forge_web
+    const webBinPath = path.join(releaseDir, 'forge_web', currentVersion, './bin/forge_web');
+    if (fs.existsSync(webBinPath) && fs.statSync(webBinPath).isFile()) {
+      debug(`${symbols.success} Using forge_web executable: ${webBinPath}`);
+      cliConfig.webBinPath = webBinPath;
+    }
+
+    // forge_workshop
+    const workshopBinPath = path.join(
+      releaseDir,
+      'forge_workshop',
+      currentVersion,
+      './bin/forge_workshop'
+    );
+    if (fs.existsSync(workshopBinPath) && fs.statSync(workshopBinPath).isFile()) {
+      debug(`${symbols.success} Using forge_web executable: ${workshopBinPath}`);
+      cliConfig.workshopBinPath = workshopBinPath;
+    }
+
+    // forge_kernel
+    const forgeBinPath = path.join(releaseDir, 'forge', currentVersion, './bin/forge');
+    if (fs.existsSync(forgeBinPath) && fs.statSync(forgeBinPath).isFile()) {
+      cliConfig.releaseDir = releaseDir;
+      cliConfig.forgeBinPath = forgeBinPath;
+      cliConfig.forgeReleaseDir = path.join(releaseDir, 'forge');
+      debug(`${symbols.success} Using forge release dir: ${releaseDir}`);
+      debug(`${symbols.success} Using forge executable: ${forgeBinPath}`);
+
+      if (semver.satisfies(currentVersion, engines.forge)) {
+        if (process.env.PROFILE_NAME === DEFAULT_CHAIN_NAME) {
+          await copyReleaseConfig(currentVersion, false);
+        }
+
+        return cliConfig;
+      }
+
+      if (exitOn404) {
+        printError(
+          `forge-cli@${version} requires forge@${engines.forge} to work, but got ${currentVersion}!`
+        );
+        printInfo(`if you want to use forge-cli@${version}, please following below steps:`);
+        print(hr);
+        print(`1. run ${chalk.cyan('ps aux | grep forge')}, and kill all forge related processes`);
+        print(`2. cleanup forge release dir: ${chalk.cyan('rm -rf ~/.forge_release')}`);
+        print(`3. cleanup forge cli dir: ${chalk.cyan('rm -rf ~/.forge_cli')}`);
+        print(`4. install latest forge: ${chalk.cyan('forge install')}`);
+        print(`5. start latest forge: ${chalk.cyan('forge start')}`);
+        process.exit(1);
+      }
+    } else if (exitOn404) {
+      printError(`forge release binary not found, please run ${chalk.cyan('forge install')} first`);
+      process.exit(1);
+    }
+  } else if (exitOn404) {
+    printError(`forge release dir does not exist
+
+  You can either run ${chalk.cyan('forge install')} to get the latest forge release.
+  Or start node with custom forge release folder
+  > ${chalk.cyan('forge start --release-dir ~/Downloads/forge/')}
+  > ${chalk.cyan('FORGE_RELEASE_DIR=~/Downloads/forge/ forge start')}
+      `);
+    process.exit(1);
+  }
+
+  return cliConfig;
+}
+
 module.exports = {
-  setConfigToProfile,
+  copyReleaseConfig,
+  ensureForgeRelease,
   getAllAppNames,
   getDefaultChainConfigs,
-  copyReleaseConfig,
+  setConfigToProfile,
   setFilePathOfConfig,
 };

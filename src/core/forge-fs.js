@@ -2,11 +2,22 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const shell = require('shelljs');
+const yaml = require('yaml');
 
 const debug = require('core/debug')('forge-fs');
 const { print, printWarning, printInfo, printSuccess, printError } = require('core/util');
 
 const { CONFIG_FILE_NAME, CHAIN_DATA_PATH_NAME } = require('../constant');
+
+const CLI_BASE_DIRECTORY = path.join(os.homedir(), '.forge_cli');
+const FORGE_LOG = path.join(os.homedir(), '.forge_release', 'core', 'logs');
+
+const requiredDirs = {
+  tmp: path.join(CLI_BASE_DIRECTORY, 'tmp'),
+  bin: path.join(CLI_BASE_DIRECTORY, 'bin'),
+  cache: path.join(CLI_BASE_DIRECTORY, 'cache'),
+  release: path.join(CLI_BASE_DIRECTORY, 'release'),
+};
 
 function clearDataDirectories(chainName = process.env.PROFILE_NAME) {
   printWarning('Cleaning up chain data!');
@@ -43,21 +54,53 @@ function getCliDirectory() {
 }
 
 function getForgeReleaseDirectory() {
-  return path.join(getCliDirectory(), 'release');
+  return path.join(getCliDirectory(), 'release', 'forge');
 }
 
-function getOriginForgeReleaseFilePath(name, version) {
+function getOriginForgeReleaseFilePath(version) {
   debug('getOriginForgeReleaseFilePath');
 
   return path.join(
     getForgeReleaseDirectory(),
-    name,
     version,
     'lib',
     `forge-${version}`,
     'priv',
     'forge_release.toml'
   );
+}
+
+function getConsensusEnginBinPath(version) {
+  return path.join(
+    getForgeReleaseDirectory(),
+    version,
+    'lib',
+    `consensus-${version}`,
+    'priv',
+    'tendermint'
+  );
+}
+
+function getStorageEnginePath(version) {
+  return path.join(
+    getForgeReleaseDirectory(),
+    version,
+    'lib',
+    `storage-${version}`,
+    'priv',
+    'ipfs'
+  );
+}
+
+function getForgeBinPath(version) {
+  debug('getForgeBinPath');
+
+  return path.join(getForgeReleaseDirectory(), version, 'bin', 'forge');
+}
+
+function isForgeBinExists(version) {
+  const tmp = getForgeBinPath(version);
+  return fs.existsSync(tmp);
 }
 
 function getTendermintHomeDir(chainName) {
@@ -118,16 +161,41 @@ function ensureProfileDirectory(chainName = process.env.PROFILE_NAME) {
   return forgeProfileDir;
 }
 
-const FORGE_LOG = path.join(os.homedir(), '.forge_release', 'core', 'logs');
-
 const getLogfile = filename => (filename ? path.join(FORGE_LOG, filename) : FORGE_LOG);
+
+function getForgeVersionFromYaml(yamlPath) {
+  try {
+    if (!fs.existsSync(yamlPath)) {
+      return '';
+    }
+
+    const releaseYamlObj = yaml.parse(fs.readFileSync(yamlPath).toString());
+    if (!releaseYamlObj || !releaseYamlObj.current) {
+      throw new Error('no current forge release selected');
+    }
+
+    return releaseYamlObj.current;
+  } catch (err) {
+    debug.error(err);
+    return '';
+  }
+}
+
+function getCurrentForgeVersion() {
+  const filePath = path.join(getForgeReleaseDirectory(), 'release.yml');
+
+  return getForgeVersionFromYaml(filePath);
+}
 
 module.exports = {
   clearDataDirectories,
   createNewProfile,
   ensureProfileDirectory,
   getCliDirectory,
+  getConsensusEnginBinPath,
   getCurrentReleaseFilePath,
+  getCurrentForgeVersion,
+  getForgeBinPath,
   getForgeDirectory,
   getProfileDirectory,
   getProfileReleaseFilePath,
@@ -135,7 +203,11 @@ module.exports = {
   getLogfile,
   getRootConfigDirectory,
   getTendermintHomeDir,
+  getForgeVersionFromYaml,
   getOriginForgeReleaseFilePath,
+  getStorageEnginePath,
   getProfileKeyFilePath,
+  isForgeBinExists,
   isDirectory,
+  requiredDirs,
 };

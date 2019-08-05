@@ -15,11 +15,11 @@ const { fromSecretKey } = require('@arcblock/forge-wallet');
 const { isValid, isFromPublicKey } = require('@arcblock/did');
 const { bytesToHex, hexToBytes, isHexStrict } = require('@arcblock/forge-util');
 
-const { requiredDirs, ensureConfigComment } = require('core/env');
+const { ensureConfigComment } = require('core/env');
 const { symbols, hr, pretty } = require('core/ui');
 const { printError, printSuccess } = require('core/util');
 const debug = require('core/debug')('config:lib');
-const { getProfileDirectory } = require('core/forge-fs');
+const { getProfileDirectory, requiredDirs } = require('core/forge-fs');
 const { setFilePathOfConfig } = require('core/forge-config');
 
 function getModeratorSecretKey() {

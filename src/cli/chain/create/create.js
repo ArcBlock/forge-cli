@@ -13,9 +13,7 @@ const { askUserConfigs, writeConfigs } = require('../../node/config/lib');
 async function main({ args: [chainName = ''] }) {
   try {
     let configs = toml.parse(
-      fs
-        .readFileSync(getOriginForgeReleaseFilePath('forge', config.get('cli').currentVersion))
-        .toString()
+      fs.readFileSync(getOriginForgeReleaseFilePath(config.get('cli').currentVersion)).toString()
     );
     configs = await askUserConfigs(configs, chainName, true);
 

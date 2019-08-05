@@ -9,17 +9,10 @@ const semver = require('semver');
 const inquirer = require('inquirer');
 const { spawn } = require('child_process');
 const { symbols, hr, getSpinner, getProgress } = require('core/ui');
-const {
-  config,
-  debug,
-  requiredDirs,
-  ensureForgeRelease,
-  getPlatform,
-  RELEASE_ASSETS,
-  DEFAULT_MIRROR,
-} = require('core/env');
+const { config, debug, getPlatform, RELEASE_ASSETS, DEFAULT_MIRROR } = require('core/env');
 const { printLogo } = require('core/util');
 const { copyReleaseConfig } = require('core/forge-config');
+const { requiredDirs, isForgeBinExists, getCurrentForgeVersion } = require('core/forge-fs');
 const { findServicePid } = require('core/forge-process');
 
 async function isForgeStopped() {
@@ -32,17 +25,6 @@ async function isForgeStopped() {
   }
 
   return true;
-}
-
-async function releaseDirExists() {
-  const releaseDir = await ensureForgeRelease({}, false);
-  if (releaseDir) {
-    const version = config.get('cli.currentVersion');
-    shell.echo(`${symbols.warning} forge version ${version} already initialized: ${releaseDir}`);
-    return true;
-  }
-
-  return false;
 }
 
 function fetchReleaseVersion(mirror = DEFAULT_MIRROR) {
@@ -186,12 +168,12 @@ async function main({ args: [userVersion], opts: { mirror, silent } }) {
       shell.echo(`${symbols.info} ${chalk.yellow(`Using custom mirror: ${mirror}`)}`);
     }
 
-    const userVer =
-      userVersion && semver.coerce(userVersion) ? semver.coerce(userVersion).version : '';
+    const userVer = semver.coerce(userVersion) ? semver.coerce(userVersion).version : '';
     const version = userVer || fetchReleaseVersion(mirror);
 
-    if (releaseDirExists()) {
-      if (version === config.get('cli.currentVersion')) {
+    const currentVersion = getCurrentForgeVersion();
+    if (isForgeBinExists(currentVersion)) {
+      if (version === currentVersion) {
         shell.echo(`${symbols.info} already initialized latest version: ${version}`);
         shell.echo(hr);
         shell.echo(chalk.cyan('Current forge release'));
@@ -199,7 +181,7 @@ async function main({ args: [userVersion], opts: { mirror, silent } }) {
         if (config.get('cli.forgeBinPath')) {
           shell.exec('forge version');
         }
-        return process.exit(1);
+        return process.exit(0);
       }
     }
 
@@ -268,7 +250,6 @@ async function main({ args: [userVersion], opts: { mirror, silent } }) {
 exports.run = main;
 exports.execute = main;
 exports.isForgeStopped = isForgeStopped;
-exports.releaseDirExists = releaseDirExists;
 exports.fetchReleaseVersion = fetchReleaseVersion;
 exports.fetchAssetInfo = fetchAssetInfo;
 exports.downloadAsset = downloadAsset;

@@ -59,7 +59,7 @@ function main() {
   } catch (err) {
     shell.echo(
       `${symbols.error} cannot list installed forge releases, ensure you have run ${chalk.cyan(
-        'forge init'
+        'forge install'
       )} first`
     );
     process.exit(1);

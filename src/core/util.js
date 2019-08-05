@@ -100,9 +100,19 @@ const printCurrentChain = currentChainName => {
   print(hr);
 };
 
+const makeRange = (start = 0, end = 0) => {
+  const result = [];
+  for (let i = start; i <= end; i++) {
+    result.push(i);
+  }
+
+  return result;
+};
+
 module.exports = {
   getPort,
   getFreePort,
+  makeRange,
   md5,
   prettyTime,
   print,

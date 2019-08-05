@@ -66,7 +66,18 @@ async function isForgeStarted(appName = process.env.FORGE_CURRENT_CHAIN) {
   return !!pid;
 }
 
-async function getForgeProcess(chainName = process.env.FORGE_CURRENT_CHAIN) {
+async function getForgeProcessByTag(processName, chainName = process.env.FORGE_CURRENT_CHAIN) {
+  const forgeProcesses = await findProcess('name', processName);
+
+  const forgeProcess = forgeProcesses.find(
+    ({ cmd }) =>
+      cmd.includes('/bin/beam.smp') && cmd.includes(getProcessTag(processName, chainName))
+  );
+
+  return { name: processName, pid: forgeProcess ? forgeProcess.pid : 0 };
+}
+
+async function getForgeProcess(chainName = process.env.PROFILE_NAME) {
   const forgeProcesses = await findProcess('name', 'forge');
 
   const forgeProcess = forgeProcesses.find(
@@ -77,12 +88,15 @@ async function getForgeProcess(chainName = process.env.FORGE_CURRENT_CHAIN) {
 }
 
 async function getForgeWebProcess(chainName) {
-  const list = await findProcess('name', 'forge-web');
-  const match = list.find(
-    ({ name, cmd }) => name === 'beam.smp' && cmd.includes(getProcessTag('web', chainName))
-  );
+  return getForgeProcessByTag('web', chainName);
+}
 
-  return { name: 'forge web', pid: match ? match.pid : 0 };
+async function getForgeWorkshopProcess(chainName) {
+  return getForgeProcessByTag('workshop', chainName);
+}
+
+async function getSimulatorProcess(chainName) {
+  return getForgeProcessByTag('simulator', chainName);
 }
 
 async function getRunningProcesses(chainName) {
@@ -117,16 +131,6 @@ async function getRunningProcessesStats(chainName = process.env.FORGE_CURRENT_CH
   }));
 
   return processesStats;
-}
-
-async function getSimulatorProcess(appName) {
-  const processes = await findProcess('name', 'simulator');
-
-  const tmp = processes.find(
-    ({ cmd }) => cmd.includes('/bin/beam.smp') && cmd.includes(getProcessTag('simulator', appName))
-  );
-
-  return { name: 'simulator', pid: tmp ? tmp.pid : 0 };
 }
 
 async function getAllRunningProcessStats() {
@@ -226,6 +230,7 @@ module.exports = {
   isForgeStarted,
   getForgeProcess,
   getForgeWebProcess,
+  getForgeWorkshopProcess,
   getProcessTag,
   getSimulatorProcess,
   stopAllForgeProcesses,

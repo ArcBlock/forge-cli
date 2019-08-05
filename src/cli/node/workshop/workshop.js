@@ -1,60 +1,63 @@
 /* eslint no-case-declarations:"off" */
 const shell = require('shelljs');
-const { sleep } = require('core/util');
-const { runNativeWorkshopCommand } = require('core/env');
-const { findServicePid } = require('core/forge-process');
+const { print, printError, printInfo, printSuccess, printWarning, sleep } = require('core/util');
+const { config, runNativeWorkshopCommand } = require('core/env');
+const { getForgeWorkshopProcess } = require('core/forge-process');
 const { symbols } = require('core/ui');
+const { DEFAULT_WORKSHOP_PORT } = require('../../../constant');
 
 const startWorkshop = runNativeWorkshopCommand('daemon', { silent: true });
-const workshopUrl = 'http://127.0.0.1:8807';
 
 function processOutput(output, action) {
   if (/:error/.test(output)) {
     if (/:already_started/.test(output)) {
-      shell.echo(`${symbols.warning} forge workshop already started`);
+      printWarning('forge workshop already started');
     } else {
-      shell.echo(`${symbols.error} forge workshop ${action} failed: ${output.trim()}`);
+      printError(`${symbols.error} forge workshop ${action} failed: ${output.trim()}`);
     }
   } else {
-    shell.echo(`${symbols.success} forge workshop ${action} success!`);
+    printSuccess(`forge workshop ${action} success!`);
   }
 }
 
 async function main({ args: [action = 'none'] }) {
-  const pid = await findServicePid('forge_workshop');
+  const { pid } = await getForgeWorkshopProcess();
+
+  const port = config.get('workshop.port') || DEFAULT_WORKSHOP_PORT;
+  const workshopUrl = `http://127.0.0.1:${port}`;
 
   /* eslint-disable indent */
   switch (action) {
     case 'none':
-      shell.exec('forge workshop -h --color always');
+      print('forge workshop -h --color always');
       break;
     case 'start':
       if (pid) {
-        shell.echo(`${symbols.info} forge workshop already started`);
+        printInfo('forge workshop already started');
         process.exit(0);
         return;
       }
 
       const { stdout, stderr } = startWorkshop();
       processOutput(stdout || stderr, action);
-      shell.echo(`${symbols.info} forge workshop running at: ${workshopUrl}`);
+      printInfo(`forge workshop running at: ${workshopUrl}`);
       break;
     case 'stop':
       if (!pid) {
-        shell.echo(`${symbols.info} forge web not started yet`);
+        printInfo('forge web not started yet');
         process.exit(1);
         return;
       }
-      shell.echo('Stopping forge workshop...');
+      print('Stopping forge workshop...');
       shell.exec(`kill ${pid}`);
       break;
     case 'open':
       if (!pid) {
-        shell.echo(`${symbols.info} forge workshop not started yet`);
+        printInfo('forge workshop not started yet');
         await main({ args: ['start'] });
         await sleep(2000);
       }
-      shell.echo(`Opening ${workshopUrl}...`);
+      print(`Opening ${workshopUrl}...`);
       shell.exec(`open ${workshopUrl}`);
       break;
     default:

@@ -4,7 +4,6 @@ const {
   config,
   getPlatform,
   runNativeWebCommand,
-  runNativeStarterCommand,
   runNativeSimulatorCommand,
   runNativeWorkshopCommand,
 } = require('core/env');
@@ -26,7 +25,6 @@ async function main() {
 
   // components
   runNativeWebCommand('version')();
-  runNativeStarterCommand('version')();
   runNativeSimulatorCommand('version')();
   runNativeWorkshopCommand('version')();
 

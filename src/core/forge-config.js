@@ -9,6 +9,7 @@ const yaml = require('yaml');
 const {
   DEFAULT_CHAIN_NAME,
   DEFAULT_FORGE_WEB_PORT,
+  DEFAULT_WORKSHOP_PORT,
   DEFAULT_FORGE_GRPC_PORT,
 } = require('../constant');
 const {
@@ -20,7 +21,15 @@ const {
   isDirectory,
   requiredDirs,
 } = require('./forge-fs');
-const { getPort, getFreePort, print, printError, printInfo, printSuccess } = require('./util');
+const {
+  makeRange,
+  getPort,
+  getFreePort,
+  print,
+  printError,
+  printInfo,
+  printSuccess,
+} = require('./util');
 const { hr, symbols } = require('./ui');
 const debug = require('./debug')('forge-config');
 const { version, engines } = require('../../package.json');
@@ -60,6 +69,7 @@ async function getUsedPortsByForge() {
     tendminRpcPort: 0,
     tendmintGrpcPort: 0,
     tendmintP2pPort: 0,
+    workshopPort: 0,
   };
 
   configDirectories.forEach(dir => {
@@ -71,6 +81,7 @@ async function getUsedPortsByForge() {
     const cfg = TOML.parse(fs.readFileSync(forgeReleasePath).toString());
 
     const forgeWebPort = Number(get(cfg, 'forge.web.port'));
+    const workshopPort = Number(get(cfg, 'workshop.port'));
     const forgeGrpcPort = getPortFromUri(get(cfg, 'forge.sock_grpc'));
     const tendminRpcPort = getPortFromUri(get(cfg, 'tendermint.sock_rpc'));
     const tendmintGrpcPort = getPortFromUri(get(cfg, 'tendermint.sock_grpc'));
@@ -78,6 +89,10 @@ async function getUsedPortsByForge() {
 
     if (forgeWebPort > maxPortPerField.forgeWebPort) {
       maxPortPerField.forgeWebPort = forgeWebPort;
+    }
+
+    if (workshopPort > maxPortPerField.workshopPort) {
+      maxPortPerField.workshopPort = workshopPort;
     }
 
     if (forgeGrpcPort > maxPortPerField.forgeGrpcPort) {
@@ -106,6 +121,7 @@ async function getAvailablePort() {
     tendminRpcPort,
     tendmintGrpcPort,
     tendmintP2pPort,
+    workshopPort,
   } = await getUsedPortsByForge();
 
   const res = {
@@ -124,6 +140,9 @@ async function getAvailablePort() {
     forgeGrpcPort: forgeGrpcPort
       ? forgeGrpcPort + 1
       : await getPort({ port: getPort.makeRange(28210, 28300) }),
+    workshopPort: workshopPort
+      ? workshopPort + 1
+      : await getPort({ port: getPort.makeRange(8807, 8900) }),
   };
 
   return res;
@@ -132,7 +151,7 @@ async function getAvailablePort() {
 function seConfig(
   configs,
   chainName,
-  { forgeWebPort, forgeGrpcPort, tendminRpcPort, tendmintGrpcPort, tendmintP2pPort }
+  { forgeWebPort, forgeGrpcPort, tendminRpcPort, tendmintGrpcPort, tendmintP2pPort, workshopPort }
 ) {
   let content = JSON.parse(JSON.stringify(configs));
 
@@ -141,6 +160,7 @@ function seConfig(
   set(content, 'tendermint.sock_rpc', `tcp://127.0.0.1:${tendminRpcPort}`);
   set(content, 'tendermint.sock_grpc', `tcp://127.0.0.1:${tendmintGrpcPort}`);
   set(content, 'tendermint.sock_p2p', `tcp://0.0.0.0:${tendmintP2pPort}`);
+  set(content, 'workshop.port', workshopPort);
 
   content = setFilePathOfConfig(content, chainName);
 
@@ -168,6 +188,7 @@ async function setConfigToProfile(configs, chainName) {
     tendminRpcPort,
     tendmintGrpcPort,
     tendmintP2pPort,
+    workshopPort,
   } = await getAvailablePort();
 
   return seConfig(configs, chainName, {
@@ -176,6 +197,7 @@ async function setConfigToProfile(configs, chainName) {
     tendminRpcPort,
     tendmintGrpcPort,
     tendmintP2pPort,
+    workshopPort,
   });
 }
 
@@ -185,23 +207,19 @@ async function setConfigToProfile(configs, chainName) {
  * @param {*} configs origin configs
  */
 async function getDefaultChainConfigs(configs) {
-  const forgeWebPort = await getFreePort([
-    DEFAULT_FORGE_WEB_PORT,
-    DEFAULT_FORGE_WEB_PORT + 1,
-    DEFAULT_FORGE_WEB_PORT + 2,
-    DEFAULT_FORGE_WEB_PORT + 3,
-    DEFAULT_FORGE_WEB_PORT + 4,
-  ]);
+  const forgeWebPort = await getFreePort(
+    makeRange(DEFAULT_FORGE_WEB_PORT, DEFAULT_FORGE_WEB_PORT + 30)
+  );
 
-  const forgeGrpcPort = await getFreePort([
-    DEFAULT_FORGE_GRPC_PORT,
-    DEFAULT_FORGE_GRPC_PORT + 1,
-    DEFAULT_FORGE_GRPC_PORT + 2,
-    DEFAULT_FORGE_GRPC_PORT + 3,
-    DEFAULT_FORGE_GRPC_PORT + 4,
-  ]);
+  const forgeGrpcPort = await getFreePort(
+    makeRange(DEFAULT_FORGE_GRPC_PORT, DEFAULT_FORGE_GRPC_PORT + 30)
+  );
 
-  if (forgeWebPort < 0 || forgeGrpcPort < 0) {
+  const workshopPort = await getFreePort(
+    makeRange(DEFAULT_WORKSHOP_PORT, DEFAULT_WORKSHOP_PORT + 30)
+  );
+
+  if (forgeWebPort < 0 || forgeGrpcPort < 0 || workshopPort < 0) {
     throw new Error('Can not find free port');
   }
 
@@ -215,6 +233,7 @@ async function getDefaultChainConfigs(configs) {
     tendminRpcPort,
     tendmintGrpcPort,
     tendmintP2pPort,
+    workshopPort,
   });
 }
 

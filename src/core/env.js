@@ -28,7 +28,7 @@ const { version } = require('../../package.json');
 const { symbols, hr } = require('./ui');
 const debug = require('./debug')('env');
 
-const CURRENT_WORKING_PROFILE = getProfileDirectory(process.env.PROFILE_NAME);
+const CURRENT_WORKING_PROFILE = getProfileDirectory(process.env.FORGE_CURRENT_CHAIN);
 process.env.CURRENT_WORKING_PROFILE = CURRENT_WORKING_PROFILE;
 
 const config = { cli: { requiredDirs } }; // global shared forge-cli run time config

@@ -40,7 +40,7 @@ process.on('unhandledRejection', onError);
 process.on('uncaughtException', onError);
 
 const getCurrentChainENV = async (command, action) => {
-  let chainName = process.env.PROFILE_NAME || program.chainName || DEFAULT_CHAIN_NAME;
+  let chainName = process.env.FORGE_CURRENT_CHAIN || program.chainName || DEFAULT_CHAIN_NAME;
 
   const allProcesses = await getAllProcesses();
 
@@ -97,10 +97,10 @@ Examples:
 
   const [command, action] = program.args;
   const chainName = await getCurrentChainENV(command, action);
-  process.env.PROFILE_NAME = chainName;
+  process.env.FORGE_CURRENT_CHAIN = chainName;
 
-  if (process.env.PROFILE_NAME !== DEFAULT_CHAIN_NAME) {
-    printCurrentChain(process.env.PROFILE_NAME);
+  if (process.env.FORGE_CURRENT_CHAIN !== DEFAULT_CHAIN_NAME) {
+    printCurrentChain(process.env.FORGE_CURRENT_CHAIN);
   }
 
   if (

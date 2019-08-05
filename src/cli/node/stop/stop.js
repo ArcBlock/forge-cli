@@ -28,7 +28,7 @@ function waitUntilStopped() {
   });
 }
 
-async function main({ opts: { force, all }, args: [chainName = process.env.PROFILE_NAME] }) {
+async function main({ opts: { force, all }, args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
   try {
     if (force) {
       deprecated('forge stop --force: Use forge stop --all instead');

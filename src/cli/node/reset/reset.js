@@ -6,7 +6,7 @@ const { print } = require('core/util');
 const { isForgeStarted } = require('core/forge-process');
 const { symbols } = require('core/ui');
 
-async function main({ opts: { yes }, args: [chainName = process.env.PROFILE_NAME] }) {
+async function main({ opts: { yes }, args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
   const isStarted = await isForgeStarted();
   if (isStarted) {
     shell.echo(`${symbols.error} forge is running!`);

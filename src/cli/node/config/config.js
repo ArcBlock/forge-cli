@@ -13,7 +13,7 @@ const { askUserConfigs, writeConfigs } = require('./lib');
 
 async function main({
   args: [action = 'get'],
-  opts: { peer, chainName = process.env.PROFILE_NAME },
+  opts: { peer, chainName = process.env.FORGE_CURRENT_CHAIN },
 }) {
   if (action === 'get') {
     if (peer) {

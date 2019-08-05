@@ -29,7 +29,7 @@ function checkError(startAtMs) {
   });
 }
 
-async function main({ opts: { dryRun }, args: [chainName = process.env.PROFILE_NAME] }) {
+async function main({ opts: { dryRun }, args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
   const startAt = Date.now();
   if (await isForgeStarted(chainName)) {
     shell.echo(`${symbols.info} forge ${chalk.cyan(chainName)} is already started!`);

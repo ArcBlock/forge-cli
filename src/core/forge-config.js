@@ -335,7 +335,7 @@ async function ensureForgeRelease(args, exitOn404 = true) {
       debug(`${symbols.success} Using forge executable: ${forgeBinPath}`);
 
       if (semver.satisfies(currentVersion, engines.forge)) {
-        if (process.env.PROFILE_NAME === DEFAULT_CHAIN_NAME) {
+        if (process.env.FORGE_CURRENT_CHAIN === DEFAULT_CHAIN_NAME) {
           await copyReleaseConfig(currentVersion, false);
         }
 

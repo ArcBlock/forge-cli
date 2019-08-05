@@ -19,7 +19,7 @@ const requiredDirs = {
   release: path.join(CLI_BASE_DIRECTORY, 'release'),
 };
 
-function clearDataDirectories(chainName = process.env.PROFILE_NAME) {
+function clearDataDirectories(chainName = process.env.FORGE_CURRENT_CHAIN) {
   printWarning('Cleaning up chain data!');
 
   const dir = getProfileDirectory(chainName);
@@ -45,7 +45,7 @@ function getForgeDirectory() {
   return path.join(getCurrentWorkingDirectory(), '.forge');
 }
 
-function getReleaseDirectory(chainName = process.env.PROFILE_NAME) {
+function getReleaseDirectory(chainName = process.env.FORGE_CURRENT_CHAIN) {
   return path.join(getProfileDirectory(chainName), CHAIN_DATA_PATH_NAME);
 }
 
@@ -124,22 +124,22 @@ function ensureRootConfigDirectory() {
   return dir;
 }
 
-function getProfileDirectory(chainName = process.env.PROFILE_NAME) {
+function getProfileDirectory(chainName = process.env.FORGE_CURRENT_CHAIN) {
   const forgeRootDir = ensureRootConfigDirectory();
   const forgeProfileDir = path.join(forgeRootDir, `forge_${chainName}`);
 
   return forgeProfileDir;
 }
 
-function getProfileReleaseFilePath(chainName = process.env.PROFILE_NAME) {
+function getProfileReleaseFilePath(chainName = process.env.FORGE_CURRENT_CHAIN) {
   return path.join(getProfileDirectory(chainName), 'forge_release.toml');
 }
 
-function getProfileKeyFilePath(chainName = process.env.PROFILE_NAME) {
+function getProfileKeyFilePath(chainName = process.env.FORGE_CURRENT_CHAIN) {
   return path.join(getProfileDirectory(chainName), 'key');
 }
 
-function createNewProfile(chainName = process.env.PROFILE_NAME) {
+function createNewProfile(chainName = process.env.FORGE_CURRENT_CHAIN) {
   const profileDirectory = getProfileDirectory(chainName);
   if (fs.existsSync(profileDirectory)) {
     printError(`The config file ${profileDirectory} has already exists in your current directory.`);
@@ -152,7 +152,7 @@ function createNewProfile(chainName = process.env.PROFILE_NAME) {
   print(`Initialized an empty storage space in ${profileDirectory}`);
 }
 
-function ensureProfileDirectory(chainName = process.env.PROFILE_NAME) {
+function ensureProfileDirectory(chainName = process.env.FORGE_CURRENT_CHAIN) {
   const forgeProfileDir = getProfileDirectory(chainName);
 
   if (!fs.existsSync(forgeProfileDir)) {

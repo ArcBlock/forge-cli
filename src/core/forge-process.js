@@ -31,7 +31,7 @@ const processSortHandler = (x, y) => {
   return 0;
 };
 
-const getProcessTag = (name, appName = process.env.PROFILE_NAME) => {
+const getProcessTag = (name, appName = process.env.FORGE_CURRENT_CHAIN) => {
   if (!name) {
     return `forge-${md5(appName)}`;
   }
@@ -60,13 +60,13 @@ async function findForgeEpmdDeamon() {
   return { name: 'forge-epmd', pid: tmp ? tmp.pid : 0 };
 }
 
-async function isForgeStarted(appName = process.env.PROFILE_NAME) {
+async function isForgeStarted(appName = process.env.FORGE_CURRENT_CHAIN) {
   const { pid } = await getTendermintProcess(appName);
 
   return !!pid;
 }
 
-async function getForgeProcess(chainName = process.env.PROFILE_NAME) {
+async function getForgeProcess(chainName = process.env.FORGE_CURRENT_CHAIN) {
   const forgeProcesses = await findProcess('name', 'forge');
 
   const forgeProcess = forgeProcesses.find(
@@ -109,7 +109,7 @@ async function getRunningProcesses(chainName) {
   return processes.filter(({ pid }) => pid > 0);
 }
 
-async function getRunningProcessesStats(chainName = process.env.PROFILE_NAME) {
+async function getRunningProcessesStats(chainName = process.env.FORGE_CURRENT_CHAIN) {
   const processes = await getRunningProcesses(chainName);
 
   const processesUsage = await Promise.all(
@@ -222,7 +222,7 @@ async function stopForgeProcesses(chainName) {
     return stopAllForgeProcesses();
   }
 
-  const runningProcesses = await getRunningProcesses(chainName || process.env.PROFILE_NAME);
+  const runningProcesses = await getRunningProcesses(chainName || process.env.FORGE_CURRENT_CHAIN);
   return stopProcesses(runningProcesses);
 }
 

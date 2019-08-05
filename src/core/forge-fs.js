@@ -33,6 +33,10 @@ function isDirectory(x) {
   return fs.existsSync(x) && fs.statSync(x).isDirectory();
 }
 
+function isFile(x) {
+  return fs.existsSync(x) && fs.statSync(x).isFile();
+}
+
 function getCurrentWorkingDirectory() {
   return process.env.CURRENT_WORKING_PROFILE;
 }
@@ -209,5 +213,6 @@ module.exports = {
   getProfileKeyFilePath,
   isForgeBinExists,
   isDirectory,
+  isFile,
   requiredDirs,
 };

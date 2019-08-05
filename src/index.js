@@ -3,7 +3,7 @@
 /* eslint no-console:"off" */
 
 // Add the root project directory to the app module search path:
-if (process.argv.some(x => x.includes('--verbose') || x.includes('-v'))) {
+if (process.argv.some(x => x === '--verbose' || x === '-v')) {
   process.env.FORGE_DEBUG = '@arcblock/cli*';
 }
 

@@ -9,6 +9,27 @@ const debug = require('./debug')('forge-process');
 const { getAllAppNames } = require('./forge-config');
 const { getTendermintHomeDir } = require('./forge-fs');
 const { prettyTime, md5, sleep } = require('./util');
+const { DEFAULT_CHAIN_NAME } = require('../constant');
+
+const processSortHandler = (x, y) => {
+  // make default chain the first in order
+  if (x.name === DEFAULT_CHAIN_NAME) {
+    return -1;
+  }
+
+  if (y.name === DEFAULT_CHAIN_NAME) {
+    return 1;
+  }
+
+  if (x.name > y.name) {
+    return 1;
+  }
+  if (x.name < y.name) {
+    return -1;
+  }
+
+  return 0;
+};
 
 const getProcessTag = (name, appName = process.env.PROFILE_NAME) => {
   if (!name) {
@@ -99,24 +120,13 @@ async function getRunningProcessesStats(chainName = process.env.PROFILE_NAME) {
     })
   );
 
-  const processesStats = processesUsage
-    .map(({ pid, name, usage }) => ({
-      name,
-      pid,
-      uptime: prettyTime(usage.elapsed, { compact: true }),
-      memory: prettyBytes(usage.memory),
-      cpu: `${usage.cpu.toFixed(2)} %`,
-    }))
-    .sort((x, y) => {
-      if (x.name > y.name) {
-        return 1;
-      }
-      if (x.name < y.name) {
-        return -1;
-      }
-
-      return 0;
-    });
+  const processesStats = processesUsage.map(({ pid, name, usage }) => ({
+    name,
+    pid,
+    uptime: prettyTime(usage.elapsed, { compact: true }),
+    memory: prettyBytes(usage.memory),
+    cpu: `${usage.cpu.toFixed(2)} %`,
+  }));
 
   return processesStats;
 }
@@ -144,7 +154,7 @@ async function getAllRunningProcessStats() {
     }
   }
 
-  return processes;
+  return processes.sort(processSortHandler);
 }
 
 async function getAllProcesses() {
@@ -159,6 +169,8 @@ async function getAllProcesses() {
       processes.push({ name: appName, value: tmp });
     }
   }
+
+  processes.sort(processSortHandler);
 
   return processes;
 }
@@ -219,7 +231,6 @@ module.exports = {
   getAllRunningProcesses,
   getAllRunningProcessStats,
   getRunningProcesses,
-  getRunningProcessesStats,
   findServicePid,
   isForgeStarted,
   getForgeProcess,

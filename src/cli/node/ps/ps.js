@@ -16,13 +16,14 @@ const printAllProcesses = async () => {
   processes.forEach(({ name, value: stats }) => {
     const table = new Table({
       head: ['Name', 'PID', 'Uptime', 'Memory', 'CPU'],
-      style: { 'padding-left': 1, head: ['cyan', 'bold'], compact: true },
+      style: { 'padding-left': 1, head: ['cyan', 'bold'] },
       colWidths: [15, 10, 10, 15, 20],
     });
 
     stats.forEach(x => table.push(Object.values(x)));
-    print(`Chain: ${name}`);
+    print(` Chain: ${chalk.cyan(name)}`);
     print(table.toString());
+    print();
   });
 };
 

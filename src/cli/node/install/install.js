@@ -9,23 +9,12 @@ const semver = require('semver');
 const inquirer = require('inquirer');
 const { spawn } = require('child_process');
 const { symbols, hr, getSpinner, getProgress } = require('core/ui');
-const { config, debug, getPlatform, RELEASE_ASSETS, DEFAULT_MIRROR } = require('core/env');
+const { printError, printInfo } = require('core/util');
+const { debug, getPlatform, RELEASE_ASSETS, DEFAULT_MIRROR } = require('core/env');
 const { printLogo } = require('core/util');
 const { copyReleaseConfig } = require('core/forge-config');
 const { requiredDirs, isForgeBinExists, getCurrentForgeVersion } = require('core/forge-fs');
-const { findServicePid } = require('core/forge-process');
-
-async function isForgeStopped() {
-  const pid = await findServicePid('forge_starter');
-  debug('Running forge pid', pid);
-  if (pid) {
-    shell.echo(`${symbols.error} forge is running, reinitialize will break things!`);
-    shell.echo(`${symbols.info} To reinitialize, please run ${chalk.cyan('forge stop')} first!`);
-    return false;
-  }
-
-  return true;
-}
+const { isForgeStarted } = require('core/forge-process');
 
 function fetchReleaseVersion(mirror = DEFAULT_MIRROR) {
   const spinner = getSpinner('Fetching forge release version...');
@@ -160,8 +149,6 @@ function updateReleaseYaml(asset, version) {
 
 async function main({ args: [userVersion], opts: { mirror, silent } }) {
   try {
-    printLogo();
-
     const platform = await getPlatform();
     shell.echo(`${symbols.info} Detected platform is: ${platform}`);
     if (mirror && mirror !== DEFAULT_MIRROR) {
@@ -172,24 +159,28 @@ async function main({ args: [userVersion], opts: { mirror, silent } }) {
     const version = userVer || fetchReleaseVersion(mirror);
 
     const currentVersion = getCurrentForgeVersion();
-    if (isForgeBinExists(currentVersion)) {
-      if (version === currentVersion) {
-        shell.echo(`${symbols.info} already initialized latest version: ${version}`);
+    if (isForgeBinExists(version)) {
+      printInfo(`already initialized version: ${version}`);
+
+      if (semver.eq(version, currentVersion)) {
         shell.echo(hr);
         shell.echo(chalk.cyan('Current forge release'));
         shell.echo(hr);
-        if (config.get('cli.forgeBinPath')) {
-          shell.exec('forge version');
-        }
-        return process.exit(0);
+        shell.exec('forge version');
       }
+
+      return process.exit(1);
     }
 
     // Ensure forge is stopped, because init on an running node may cause some mess
-    const isStopped = await isForgeStopped();
-    if (!isStopped) {
+    const isStarted = await isForgeStarted();
+    if (isStarted) {
+      printError('Forge is running, reinitialize will break things!');
+      printInfo(`To reinitialize, please run ${chalk.cyan('forge stop')} first!`);
       return process.exit(1);
     }
+
+    printLogo();
 
     // Start download and unzip
     for (const asset of RELEASE_ASSETS) {
@@ -249,7 +240,6 @@ async function main({ args: [userVersion], opts: { mirror, silent } }) {
 
 exports.run = main;
 exports.execute = main;
-exports.isForgeStopped = isForgeStopped;
 exports.fetchReleaseVersion = fetchReleaseVersion;
 exports.fetchAssetInfo = fetchAssetInfo;
 exports.downloadAsset = downloadAsset;

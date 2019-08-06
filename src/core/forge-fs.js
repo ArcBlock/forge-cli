@@ -10,7 +10,6 @@ const { print, printWarning, printInfo, printSuccess, printError } = require('co
 const { CONFIG_FILE_NAME, CHAIN_DATA_PATH_NAME } = require('../constant');
 
 const CLI_BASE_DIRECTORY = path.join(os.homedir(), '.forge_cli');
-const FORGE_LOG = path.join(os.homedir(), '.forge_release', 'core', 'logs');
 
 const requiredDirs = {
   tmp: path.join(CLI_BASE_DIRECTORY, 'tmp'),
@@ -139,6 +138,10 @@ function getProfileKeyFilePath(chainName = process.env.FORGE_CURRENT_CHAIN) {
   return path.join(getProfileDirectory(chainName), 'key');
 }
 
+function getProfileReleaseDirectory(chainName = process.env.FORGE_CURRENT_CHAIN) {
+  return path.join(getProfileDirectory(chainName), 'forge_release');
+}
+
 function createNewProfile(chainName = process.env.FORGE_CURRENT_CHAIN) {
   const profileDirectory = getProfileDirectory(chainName);
   if (fs.existsSync(profileDirectory)) {
@@ -165,7 +168,9 @@ function ensureProfileDirectory(chainName = process.env.FORGE_CURRENT_CHAIN) {
   return forgeProfileDir;
 }
 
-const getLogfile = filename => (filename ? path.join(FORGE_LOG, filename) : FORGE_LOG);
+function getLogfile(chainName = process.env.FORGE_CURRENT_CHAIN, fileName) {
+  return path.join(getProfileReleaseDirectory(chainName), 'core', 'logs', fileName);
+}
 
 function getForgeVersionFromYaml(yamlPath) {
   try {

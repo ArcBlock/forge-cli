@@ -21,7 +21,7 @@ const {
   requiredDirs,
 } = require('core/forge-fs');
 const { ensureForgeRelease } = require('core/forge-config');
-const { findServicePid, isForgeStarted, getProcessTag } = require('./forge-process');
+const { isForgeStarted, getProcessTag } = require('./forge-process');
 const { printLogo } = require('./util');
 
 const { version } = require('../../package.json');
@@ -456,7 +456,6 @@ module.exports = {
   runNativeWorkshopCommand: makeNativeCommandRunner('workshopBinPath', 'workshop'),
   runNativeStarterCommand: makeNativeCommandRunner('starterBinPath', 'starter'), // deprecated
   runNativeSimulatorCommand: makeNativeCommandRunner('simulatorBinPath', 'simulator'),
-  findServicePid,
   getPlatform,
   createRpcClient,
   isDirectory,

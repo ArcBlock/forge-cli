@@ -65,8 +65,9 @@ const ensureModerator = async client => {
     printInfo(
       `Please add following content in config file ${chalk.cyan(
         config.get('cli.forgeConfigPath')
-      )}, then restart current forge:`
+      )},`
     );
+    printInfo(`${chalk.red('then restart current forge:')}`);
     shell.echo(`
 [forge.moderator]
 address = "${moderator.toAddress()}"

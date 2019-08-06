@@ -14,10 +14,9 @@ const { printAllProcesses } = require('../ps/ps');
 const { run: stop } = require('../stop/stop');
 const { start: startWeb } = require('../web/web');
 
-function checkError(startAtMs) {
+function checkError(chainName, startAtMs) {
   return new Promise(resolve => {
-    const errorFilePath = getLogfile('exit_status.json');
-
+    const errorFilePath = getLogfile(chainName, 'exit_status.json');
     fs.stat(errorFilePath, (err, stats) => {
       if (!err && stats.ctimeMs > startAtMs) {
         const { status, message } = JSON.parse(fs.readFileSync(errorFilePath).toString());
@@ -70,7 +69,7 @@ async function main({ opts: { dryRun }, args: [chainName = process.env.FORGE_CUR
     shell.exec(command);
     await waitUntilStarted(chainName, 40000);
     await sleep(6000);
-    const errMessage = await checkError(startAt);
+    const errMessage = await checkError(chainName, startAt);
     if (errMessage) {
       throw new Error(errMessage);
     }

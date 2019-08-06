@@ -3,8 +3,9 @@ const shell = require('shelljs');
 const semver = require('semver');
 const { symbols } = require('core/ui');
 const { config } = require('core/env');
+const { isForgeStarted } = require('core/forge-process');
 const debug = require('core/debug')('release:use');
-const { isForgeStopped, updateReleaseYaml } = require('cli/node/install/install');
+const { updateReleaseYaml } = require('cli/node/install/install');
 const { listReleases } = require('cli/release/list/list');
 
 // eslint-disable-next-line consistent-return
@@ -17,7 +18,7 @@ async function main({ args: [userVersion] }) {
       return process.exit(1);
     }
 
-    if (!(await isForgeStopped())) {
+    if (await isForgeStarted()) {
       shell.echo(`${symbols.warning} Please stop forge before activate another version`);
       return process.exit(1);
     }

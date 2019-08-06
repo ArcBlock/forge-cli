@@ -8,6 +8,7 @@ const GraphQLClient = require('@arcblock/graphql-client');
 const toml = require('@iarna/toml');
 
 const { getProfileReleaseFilePath } = require('core/forge-fs');
+const { printInfo } = require('core/util');
 
 const { askUserConfigs, writeConfigs } = require('./lib');
 
@@ -61,6 +62,7 @@ async function main({
     const configs = await askUserConfigs(defaults, chainName, false);
 
     await writeConfigs(getProfileReleaseFilePath(chainName), configs, true);
+    printInfo('you need to restart the chain to load the new config!');
   }
 }
 

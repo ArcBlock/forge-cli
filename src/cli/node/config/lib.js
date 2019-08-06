@@ -442,7 +442,6 @@ async function writeConfigs(targetPath, configs, overwrite = true) {
   shell.echo(`${symbols.success} config file ${chalk.cyan(targetPath)} is updated!`);
   shell.echo(`${symbols.info} full configuration documentation: ${docUrl}`);
   shell.echo(hr);
-  shell.echo(`${symbols.info} you need to restart the chain to load the new config!`);
 }
 
 module.exports = { askUserConfigs, writeConfigs };

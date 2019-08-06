@@ -11,7 +11,7 @@ const { sleep } = require('core/util');
 const { isForgeStarted, getProcessTag } = require('core/forge-process');
 
 const { printAllProcesses } = require('../ps/ps');
-const { run: stop } = require('../stop/stop');
+const { stop } = require('../stop/stop');
 const { start: startWeb } = require('../web/web');
 
 function checkError(chainName, startAtMs) {
@@ -91,7 +91,7 @@ async function main({ opts: { dryRun }, args: [chainName = process.env.FORGE_CUR
     );
     shell.echo(
       `${symbols.info} If you want to access forge web interface, please run ${chalk.cyan(
-        'forge web open'
+        `forge web open -c ${chainName}`
       )}`
     );
     shell.echo(
@@ -99,7 +99,7 @@ async function main({ opts: { dryRun }, args: [chainName = process.env.FORGE_CUR
     );
     shell.echo(
       `${symbols.info} If you want to know forge status detail, please run ${chalk.cyan(
-        'forge status'
+        `forge status -c ${chainName}`
       )}`
     );
   } catch (err) {
@@ -109,7 +109,7 @@ async function main({ opts: { dryRun }, args: [chainName = process.env.FORGE_CUR
 
     spinner.fail('Forge cannot be successfully started, now exiting...');
 
-    await stop({ opts: { force: true } });
+    await stop(chainName, false);
 
     shell.echo();
     shell.echo(`${symbols.info} Possible solutions:`);
@@ -118,13 +118,15 @@ async function main({ opts: { dryRun }, args: [chainName = process.env.FORGE_CUR
     shell.echo('Ensure no running forge process that cannot be detected by forge-cli');
     shell.echo(
       `Run: ${chalk.cyan(
-        'forge stop --force'
-      )}, to kill forge related processes, then try ${chalk.cyan('forge start')} again`
+        `forge stop ${chainName}`
+      )}, to stop forge related processes, then try ${chalk.cyan(`forge start ${chainName}`)} again`
     );
     shell.echo('');
     shell.echo('2. Report bug to our engineer');
     shell.echo('It is very likely that forge cannot be started on your environment');
-    shell.echo(`Please run: ${chalk.cyan('forge start --dry-run')}`);
+    shell.echo(`Please run: ${chalk.cyan(`forge start ${chainName} --dry-run`)}`);
+
+    process.exit(1);
   } finally {
     process.exit(0);
   }

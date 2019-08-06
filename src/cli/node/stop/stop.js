@@ -28,12 +28,8 @@ function waitUntilStopped() {
   });
 }
 
-async function main({ opts: { force, all }, args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
+async function stop(chainName, all) {
   try {
-    if (force) {
-      deprecated('forge stop --force: Use forge stop --all instead');
-    }
-
     const allProcesses = await getAllRunningProcesses();
     if (!allProcesses || !allProcesses.length) {
       printWarning('No running processes');
@@ -44,7 +40,7 @@ async function main({ opts: { force, all }, args: [chainName = process.env.FORGE
 
     let handle = null;
     const spinner = getSpinner('Waiting for forge to stop...');
-    if (force || all) {
+    if (all) {
       printWarning(chalk.yellow('Stopping all chains'));
       handle = stopAllForgeProcesses;
     } else {
@@ -60,14 +56,24 @@ async function main({ opts: { force, all }, args: [chainName = process.env.FORGE
     await waitUntilStopped();
     spinner.succeed('Forge daemon stopped!');
 
-    process.exit(0);
+    return true;
   } catch (err) {
     shell.echo();
     debug(err);
     shell.echo(`${symbols.error} cannot get daemon process info, ensure forge is started!`);
-    process.exit(1);
+    return false;
   }
+}
+
+async function main({ opts: { force, all }, args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
+  if (force) {
+    deprecated('forge stop --force: Use forge stop --all instead');
+  }
+
+  const tmp = await stop(chainName, force || all);
+  process.exit(tmp ? 0 : 1);
 }
 
 exports.run = main;
 exports.execute = main;
+exports.stop = stop;

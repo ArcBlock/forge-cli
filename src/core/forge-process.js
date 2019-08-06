@@ -76,18 +76,6 @@ async function getForgeProcess(chainName = process.env.FORGE_CURRENT_CHAIN) {
   return { name: 'forge', pid: forgeProcess ? forgeProcess.pid : 0 };
 }
 
-async function getAllForgeProcesses(chainNames) {
-  const forgeProcesses = await findProcess('name', 'forge');
-
-  return forgeProcesses
-    .filter(
-      ({ cmd }) =>
-        cmd.includes('/bin/beam.smp') &&
-        chainNames.find(chainName => cmd.includes(getProcessTag('main', chainName)))
-    )
-    .map(tmp => ({ name: 'forge', pid: tmp.pid }));
-}
-
 async function getForgeWebProcess(chainName) {
   const list = await findProcess('name', 'forge-web');
   const match = list.find(
@@ -211,19 +199,22 @@ async function stopAllForgeProcesses() {
 async function stopForgeProcesses(chainName) {
   assert.equal(!!chainName, true, `chainNmae can't be empty`);
 
-  const allChainNames = await getAllAppNames();
-  const forgeProcesses = await getAllForgeProcesses(allChainNames);
+  const runningChains = await getAllRunningProcessStats();
 
-  if (!forgeProcesses.length) {
+  if (!runningChains.length) {
     return [];
   }
 
-  if (forgeProcesses.length === 1) {
+  if (runningChains.length === 1) {
     return stopAllForgeProcesses();
   }
 
-  const runningProcesses = await getRunningProcesses(chainName || process.env.FORGE_CURRENT_CHAIN);
-  return stopProcesses(runningProcesses);
+  const runningProcesses = runningChains.find(x => chainName === x.name);
+  let processes = [];
+  if (runningProcesses) {
+    processes = runningProcesses.value;
+  }
+  return stopProcesses(processes);
 }
 
 module.exports = {

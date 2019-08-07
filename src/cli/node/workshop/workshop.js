@@ -1,12 +1,11 @@
 /* eslint no-case-declarations:"off" */
 const shell = require('shelljs');
 const { print, printError, printInfo, printSuccess, printWarning, sleep } = require('core/util');
-const { config, runNativeWorkshopCommand } = require('core/env');
+const { config, makeNativeCommandRunner } = require('core/env');
+const { getProfileReleaseFilePath } = require('core/forge-fs');
 const { getForgeWorkshopProcess } = require('core/forge-process');
 const { symbols } = require('core/ui');
 const { DEFAULT_WORKSHOP_PORT } = require('../../../constant');
-
-const startWorkshop = runNativeWorkshopCommand('daemon', { silent: true });
 
 function processOutput(output, action) {
   if (/:error/.test(output)) {
@@ -22,6 +21,11 @@ function processOutput(output, action) {
 
 async function main({ args: [action = 'none'] }) {
   const { pid } = await getForgeWorkshopProcess();
+
+  const configPath = getProfileReleaseFilePath(process.env.FORGE_CURRENT_CHAIN);
+  const startWorkshop = makeNativeCommandRunner('workshopBinPath', 'workshop', {
+    env: `WORKSHOP_CONFIG=${configPath}`,
+  })('daemon', { silent: true });
 
   const port = config.get('workshop.port') || DEFAULT_WORKSHOP_PORT;
   const workshopUrl = `http://127.0.0.1:${port}`;

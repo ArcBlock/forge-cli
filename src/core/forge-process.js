@@ -106,6 +106,7 @@ async function getRunningProcesses(chainName) {
     getForgeWebProcess(chainName),
     getTendermintProcess(chainName),
     getSimulatorProcess(chainName),
+    getForgeWorkshopProcess(chainName),
   ]);
 
   return processes.filter(({ pid }) => pid > 0);

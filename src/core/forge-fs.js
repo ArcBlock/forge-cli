@@ -142,6 +142,10 @@ function getProfileReleaseDirectory(chainName = process.env.FORGE_CURRENT_CHAIN)
   return path.join(getProfileDirectory(chainName), 'forge_release');
 }
 
+function getProfileWorkshopDirectory(chainName = process.env.FORGE_CURRENT_CHAIN) {
+  return path.join(getProfileDirectory(chainName), 'workshop');
+}
+
 function createNewProfile(chainName = process.env.FORGE_CURRENT_CHAIN) {
   const profileDirectory = getProfileDirectory(chainName);
   if (fs.existsSync(profileDirectory)) {
@@ -209,6 +213,7 @@ module.exports = {
   getProfileDirectory,
   getProfileReleaseFilePath,
   getReleaseDirectory,
+  getProfileWorkshopDirectory,
   getLogfile,
   getRootConfigDirectory,
   getTendermintHomeDir,

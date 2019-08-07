@@ -29,7 +29,7 @@ Run `forge version`, all forge component versions are listed:
 When `forge start` exits without printing the forge daemon process list, it's very likely that `forge` can not be started on your environment. To get an idea of what's wrong, please run `forge start --dry-run`, then you will get the command to diagnose forge start errors, **similiar to but not the same** as following:
 
 ```shell
-FORGE_CONFIG=/Users/wangshijun/.forge_cli/forge_release.toml FORGE_RELEASE=/Users/wangshijun/.forge_cli/release/forge /Users/wangshijun/.forge_cli/release/forge_starter/0.29.0/bin/forge_starter start
+ERL_AFLAGS="-sname forge-main-22d6998e70d5750c6c014292b648eea5" FORGE_CONFIG=/Users/zhenqiang/.forge_chains/forge_arcblock/forge_release.toml /Users/zhenqiang/.forge_cli/release/forge/0.36.1/bin/forge start
 ```
 
 Run the command, and create an issue for us at [https://github.com/ArcBlock/forge-cli/issues](https://github.com/ArcBlock/forge-cli/issues), we will investigate as soon as possible.

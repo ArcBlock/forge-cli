@@ -7,7 +7,7 @@ const { symbols, hr, getSpinner } = require('core/ui');
 const { config } = require('core/env');
 const debug = require('core/debug')('start');
 const { getLogfile } = require('core/forge-fs');
-const { sleep } = require('core/util');
+const { sleep, print, printInfo } = require('core/util');
 const { isForgeStarted, getProcessTag } = require('core/forge-process');
 
 const { printAllProcesses } = require('../ps/ps');
@@ -36,32 +36,28 @@ async function main({ opts: { dryRun }, args: [chainName = process.env.FORGE_CUR
     return;
   }
 
-  const { starterBinPath, forgeBinPath, forgeConfigPath } = config.get('cli');
-  if (!starterBinPath) {
-    shell.echo(`${symbols.error} starterBinPath not found, abort!`);
-    return;
-  }
+  const { forgeBinPath, forgeConfigPath } = config.get('cli');
 
   // add `-sname` parameter to enable start multiple forge processes
-  const command = `ERL_AFLAGS="-sname ${getProcessTag(
+  const startCommandPrefix = `ERL_AFLAGS="-sname ${getProcessTag(
     'main'
-  )}" FORGE_CONFIG=${forgeConfigPath} ${forgeBinPath} daemon`;
-
-  debug('start command', command);
+  )}" FORGE_CONFIG=${forgeConfigPath} ${forgeBinPath}`;
+  const startType = 'daemon';
 
   if (dryRun) {
-    shell.echo(`${symbols.info} Command to debug forge starting issue: `);
-    shell.echo(hr);
-    shell.echo(chalk.cyan(command));
-    shell.echo(hr);
+    printInfo('Command to debug forge starting issue:');
+    print(hr);
+    print(chalk.cyan(`${startCommandPrefix} start`));
+    print(hr);
     const url = 'https://github.com/ArcBlock/forge-cli/issues';
-    shell.echo(
-      `${symbols.info} Please create an issue on ${chalk.cyan(
-        url
-      )} with output after running above command`
+    printInfo(
+      `Please create an issue on ${chalk.cyan(url)} with output after running above command`
     );
     return;
   }
+
+  const command = `${startCommandPrefix} ${startType}`;
+  debug('start command', command);
 
   const spinner = getSpinner('Waiting for forge daemon to start...');
   spinner.start();

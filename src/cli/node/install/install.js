@@ -43,7 +43,6 @@ function fetchAssetInfo(platform, version, key, mirror = DEFAULT_MIRROR) {
   const defaultSize = {
     forge: 28 * 1024 * 1024,
     forge_web: 28 * 1024 * 1024,
-    forge_starter: 5 * 1024 * 1024,
     forge_workshop: 13 * 1024 * 1024,
     simulator: 9 * 1024 * 1024,
   };

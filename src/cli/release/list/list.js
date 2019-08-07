@@ -48,14 +48,13 @@ function main() {
   }
 
   try {
-    // eslint-disable-next-line camelcase
-    const { forge, forge_starter, simulator, forge_web } = listReleases();
-    debug({ forge, forge_starter, simulator, current });
+    const { forge, simulator, forge_web: forgeWeb, forge_workshop: forgeWorkshop } = listReleases();
+    debug({ forge, simulator, current, forgeWeb, forgeWorkshop });
 
     printList('Forge Kernel', forge, current);
-    printList('Forge Starter', forge_starter, current);
-    printList('Forge Web', forge_web, current);
+    printList('Forge Web', forgeWeb, current);
     printList('Simulator', simulator, current);
+    printList('Workshop', forgeWorkshop, current);
   } catch (err) {
     shell.echo(
       `${symbols.error} cannot list installed forge releases, ensure you have run ${chalk.cyan(

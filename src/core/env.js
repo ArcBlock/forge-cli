@@ -443,7 +443,7 @@ module.exports = {
   },
 
   DEFAULT_MIRROR: 'https://releases.arcblock.io',
-  RELEASE_ASSETS: ['forge', 'forge_starter', 'simulator', 'forge_web', 'forge_workshop'],
+  RELEASE_ASSETS: ['forge', 'simulator', 'forge_web', 'forge_workshop'],
 
   debug,
   setupEnv,
@@ -454,7 +454,6 @@ module.exports = {
   runNativeForgeCommand: makeNativeCommandRunner('forgeBinPath'),
   runNativeWebCommand: makeNativeCommandRunner('webBinPath', 'web'),
   runNativeWorkshopCommand: makeNativeCommandRunner('workshopBinPath', 'workshop'),
-  runNativeStarterCommand: makeNativeCommandRunner('starterBinPath', 'starter'), // deprecated
   runNativeSimulatorCommand: makeNativeCommandRunner('simulatorBinPath', 'simulator'),
   getPlatform,
   createRpcClient,

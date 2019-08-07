@@ -1,4 +1,5 @@
 /* eslint no-case-declarations:"off" */
+const semver = require('semver');
 const shell = require('shelljs');
 const { print, printError, printInfo, printSuccess, printWarning, sleep } = require('core/util');
 const { config, makeNativeCommandRunner } = require('core/env');
@@ -6,6 +7,8 @@ const { getProfileReleaseFilePath } = require('core/forge-fs');
 const { getForgeWorkshopProcess } = require('core/forge-process');
 const { symbols } = require('core/ui');
 const { DEFAULT_WORKSHOP_PORT } = require('../../../constant');
+
+const MULTI_WORKSHOP_VERSION = '0.36.2';
 
 function processOutput(output, action) {
   if (/:error/.test(output)) {
@@ -16,6 +19,14 @@ function processOutput(output, action) {
     }
   } else {
     printSuccess(`forge workshop ${action} success!`);
+  }
+}
+
+function checkForgeVersion(version) {
+  if (semver.lt(version, MULTI_WORKSHOP_VERSION)) {
+    printWarning(
+      `Start multi workshop was supported in the version of v${version}, before that, workshop can be only start once.`
+    );
   }
 }
 
@@ -42,6 +53,7 @@ async function main({ args: [action = 'none'] }) {
         return;
       }
 
+      checkForgeVersion(config.get('cli.currentVersion'));
       const { stdout, stderr } = startWorkshop();
       processOutput(stdout || stderr, action);
       printInfo(`forge workshop running at: ${workshopUrl}`);

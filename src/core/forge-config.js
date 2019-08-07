@@ -18,6 +18,7 @@ const {
   getCurrentReleaseFilePath,
   getOriginForgeReleaseFilePath,
   getForgeVersionFromYaml,
+  getProfileWorkshopDirectory,
   isDirectory,
   requiredDirs,
 } = require('./forge-fs');
@@ -161,6 +162,7 @@ function seConfig(
   set(content, 'tendermint.sock_grpc', `tcp://127.0.0.1:${tendmintGrpcPort}`);
   set(content, 'tendermint.sock_p2p', `tcp://0.0.0.0:${tendmintP2pPort}`);
   set(content, 'workshop.port', workshopPort);
+  set(content, 'workshop.local_forge', `tcp://127.0.0.1:${forgeGrpcPort}`);
 
   content = setFilePathOfConfig(content, chainName);
 
@@ -177,6 +179,9 @@ function setFilePathOfConfig(configs, chainName) {
 
   set(content, 'ipfs.path', path.join(releaseDirectory, 'ipfs'));
   set(content, 'cache.path', path.join(releaseDirectory, 'cache', 'mnesia_data_dir'));
+
+  set(content, 'workshop.path', getProfileWorkshopDirectory(chainName));
+  set(content, 'workshop.db', 'sqlite://workshop.sqlite3');
 
   return content;
 }

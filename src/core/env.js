@@ -292,7 +292,7 @@ function createRpcClient() {
 }
 
 // TODO: need to refact to on name parameter
-function makeNativeCommandRunner(executable, name) {
+function makeNativeCommandRunner(executable, name, { env } = {}) {
   return function runNativeForgeCommand(subCommand, options = {}) {
     return function rumCommand() {
       // eslint-disable-next-line prefer-destructuring
@@ -317,11 +317,17 @@ function makeNativeCommandRunner(executable, name) {
 
       const erlAflagsParam = `ERL_AFLAGS="-sname ${getProcessTag(name)}"`;
       let command = `${erlAflagsParam} FORGE_CONFIG=${forgeConfigPath} ${binPath} ${subCommand}`;
+
       if (['webBinPath', 'simulatorBinPath'].includes(executable)) {
         command = `${erlAflagsParam} FORGE_CONFIG=${forgeConfigPath} FORGE_SOCK_GRPC=${sockGrpc} ${binPath} ${subCommand}`; // eslint-disable-line
       }
 
-      debug(`runNativeCommand.${executable}`, command);
+      if (env) {
+        debug('makeNativeCommandRunner env:', env);
+        command = `${env} ${command}`;
+      }
+
+      debug(`runNativeCommand.${executable}:`, command);
       return shell.exec(command, options);
     };
   };
@@ -451,6 +457,7 @@ module.exports = {
   findReleaseVersion,
   ensureRequiredDirs,
   ensureRpcClient,
+  makeNativeCommandRunner,
   runNativeForgeCommand: makeNativeCommandRunner('forgeBinPath'),
   runNativeWebCommand: makeNativeCommandRunner('webBinPath', 'web'),
   runNativeWorkshopCommand: makeNativeCommandRunner('workshopBinPath', 'workshop'),

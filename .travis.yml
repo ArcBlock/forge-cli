@@ -16,6 +16,11 @@ deploy:
   script: bash ./tools/publish.sh
   on:
     branch: master
+- provider: script
+  skip_cleanup: true
+  script: make release
+  on:
+    branch: master
 env:
   global:
   - secure: s0VbSUfni1jqcJd/+thzqayfacxg9836cvAo0IQEFZGUIvO3ZQJiGeNR1JZTCOssy+Am+XaT6P2fCv7HRi7lOBLovtz0BwytxZjvd8gIozmtACPIiYYNRI8hh7SeDZn2GMg7BttFbR1vcJ052po5Z0umx1dl71ZdDLoWVI/FfPhpOaDzz/5UOP2aajEjNmLvdZMkIP2Pn9UihPrzNwYrmcPCflVUYUU4LfzdsR8Vb82hfjwTmRVi1UQt5mDkRPXWy/baxxXIGb70sWEp+jvOmklssWEqO+I+1Dobr2R+1pQeEC9hwE7M4/GmulNteCyyhc0JdYVljKkzP3FgcmYclQv0umbmexi0Bex2kYCbfm6UjxMs1uHjaOZPYF0rcPWeBSe1onvJj/GAVMgQTTkcx4IzKM2RZSOfnJoo86SZyLfKPcdzkX09hi9m44neuTW08qgOiLm5gPXGO/ipoZoOyNL1oYonxIycH2LKi7zS/7oPjQkW3N6aScApriaCLV99emz6K7w9oECZ+DBtgQ59pRD1aWBlcD9/eu4iGOLikiGdkeuEJy0XniLgHioltD3mJVBLlno/Wb1DmqiIflVWgXdkh18O/yXGwEaYnrE5BwYd9eHlMrelxvUNhrp2bvhLiJJpYLsaHMXXPkGiu0P2lAROkCK6QcCZWpYU2AigNZM=

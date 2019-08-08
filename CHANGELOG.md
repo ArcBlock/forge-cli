@@ -1,3 +1,8 @@
+## 0.34.6 (August 08, 2019)
+
+- chore: bump version
+- fix: changelog generating error because no github release tag
+
 ## 0.34.5 (July 30, 2019)
 
 - fix: remove target blank in readme that github cannot recognize

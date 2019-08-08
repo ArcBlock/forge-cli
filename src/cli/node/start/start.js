@@ -82,7 +82,7 @@ async function main({ opts: { dryRun }, args: [chainName = process.env.FORGE_CUR
 
     shell.echo(
       `${symbols.info} If you want to access interactive console, please run ${chalk.cyan(
-        `${forgeBinPath} remote`
+        `forge remote -c ${chainName}`
       )}`
     );
     shell.echo(

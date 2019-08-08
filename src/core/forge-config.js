@@ -13,7 +13,7 @@ const {
   DEFAULT_FORGE_GRPC_PORT,
 } = require('../constant');
 const {
-  getReleaseDirectory,
+  getDataDirectory,
   getRootConfigDirectory,
   getCurrentReleaseFilePath,
   getOriginForgeReleaseFilePath,
@@ -171,7 +171,7 @@ function seConfig(
 
 function setFilePathOfConfig(configs, chainName) {
   const content = JSON.parse(JSON.stringify(configs));
-  const releaseDirectory = getReleaseDirectory(chainName);
+  const releaseDirectory = getDataDirectory(chainName);
 
   set(content, 'forge.path', path.join(releaseDirectory, 'core'));
   set(content, 'tendermint.keypath', path.join(releaseDirectory, 'keys'));

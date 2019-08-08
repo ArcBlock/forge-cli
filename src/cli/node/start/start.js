@@ -40,7 +40,7 @@ async function main({ opts: { dryRun }, args: [chainName = process.env.FORGE_CUR
 
   // add `-sname` parameter to enable start multiple forge processes
   const startCommandPrefix = `ERL_AFLAGS="-sname ${getProcessTag(
-    'main'
+    'forge'
   )}" FORGE_CONFIG=${forgeConfigPath} ${forgeBinPath}`;
   const startType = 'daemon';
 

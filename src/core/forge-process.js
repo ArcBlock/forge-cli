@@ -31,12 +31,12 @@ const processSortHandler = (x, y) => {
   return 0;
 };
 
-const getProcessTag = (name, appName = process.env.FORGE_CURRENT_CHAIN) => {
+const getProcessTag = (name, chainName = process.env.FORGE_CURRENT_CHAIN) => {
   if (!name) {
-    return `forge-${md5(appName)}`;
+    return `forge-${md5(chainName)}`;
   }
 
-  return `forge-${name}-${md5(appName)}`;
+  return `forge-${name}-${md5(chainName)}`;
 };
 
 async function findServicePid(n) {
@@ -81,7 +81,7 @@ async function getForgeProcess(chainName = process.env.PROFILE_NAME) {
   const forgeProcesses = await findProcess('name', 'forge');
 
   const forgeProcess = forgeProcesses.find(
-    ({ cmd }) => cmd.includes('/bin/beam.smp') && cmd.includes(getProcessTag('main', chainName))
+    ({ cmd }) => cmd.includes('/bin/beam.smp') && cmd.includes(getProcessTag('forge', chainName))
   );
 
   return { name: 'forge', pid: forgeProcess ? forgeProcess.pid : 0 };

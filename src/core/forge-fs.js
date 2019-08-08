@@ -40,11 +40,7 @@ function getCurrentWorkingDirectory() {
   return process.env.CURRENT_WORKING_PROFILE;
 }
 
-function getForgeDirectory() {
-  return path.join(getCurrentWorkingDirectory(), '.forge');
-}
-
-function getReleaseDirectory(chainName = process.env.FORGE_CURRENT_CHAIN) {
+function getDataDirectory(chainName = process.env.FORGE_CURRENT_CHAIN) {
   return path.join(getProfileDirectory(chainName), CHAIN_DATA_PATH_NAME);
 }
 
@@ -56,8 +52,29 @@ function getCliDirectory() {
   return path.join(os.homedir(), '.forge_cli');
 }
 
-function getForgeReleaseDirectory() {
-  return path.join(getCliDirectory(), 'release', 'forge');
+function getReleaseDirectory(name, version) {
+  const releaseRoot = path.join(getCliDirectory(), 'release', name);
+  if (version) {
+    return path.join(releaseRoot, version);
+  }
+
+  return releaseRoot;
+}
+
+function getForgeReleaseDirectory(version) {
+  return getReleaseDirectory('forge', version);
+}
+
+function getForgeWebReleaseDirectory(version) {
+  return getReleaseDirectory('forge_web', version);
+}
+
+function getForgeWorkshopReleaseDirectory(version) {
+  return getReleaseDirectory('forge_workshop', version);
+}
+
+function getForgeSimulatorReleaseDirectory(version) {
+  return getReleaseDirectory('simulator', version);
 }
 
 function getOriginForgeReleaseFilePath(version) {
@@ -107,7 +124,7 @@ function isForgeBinExists(version) {
 }
 
 function getTendermintHomeDir(chainName) {
-  return path.join(getReleaseDirectory(chainName), 'tendermint');
+  return path.join(getDataDirectory(chainName), 'tendermint');
 }
 
 function getRootConfigDirectory() {
@@ -154,7 +171,7 @@ function createNewProfile(chainName = process.env.FORGE_CURRENT_CHAIN) {
     process.exit(1);
   }
 
-  fs.mkdirSync(getReleaseDirectory(chainName), { recursive: true });
+  fs.mkdirSync(getDataDirectory(chainName), { recursive: true });
   fs.mkdirSync(path.join(profileDirectory, 'keys'), { recursive: true });
   print(`Initialized an empty storage space in ${profileDirectory}`);
 }
@@ -164,7 +181,7 @@ function ensureProfileDirectory(chainName = process.env.FORGE_CURRENT_CHAIN) {
 
   if (!fs.existsSync(forgeProfileDir)) {
     fs.mkdirSync(forgeProfileDir, { recursive: true });
-    fs.mkdirSync(getReleaseDirectory(chainName), { recursive: true });
+    fs.mkdirSync(getDataDirectory(chainName), { recursive: true });
     fs.mkdirSync(path.join(forgeProfileDir, 'keys'), { recursive: true });
     print(`Initialized an empty storage space in ${forgeProfileDir}`);
   }
@@ -209,16 +226,19 @@ module.exports = {
   getCurrentReleaseFilePath,
   getCurrentForgeVersion,
   getForgeBinPath,
-  getForgeDirectory,
   getProfileDirectory,
+  getForgeSimulatorReleaseDirectory,
+  getForgeWebReleaseDirectory,
+  getForgeWorkshopReleaseDirectory,
   getProfileReleaseFilePath,
-  getReleaseDirectory,
+  getDataDirectory,
   getProfileWorkshopDirectory,
   getLogfile,
   getRootConfigDirectory,
   getTendermintHomeDir,
   getForgeVersionFromYaml,
   getOriginForgeReleaseFilePath,
+  getForgeReleaseDirectory,
   getStorageEnginePath,
   getProfileKeyFilePath,
   isForgeBinExists,

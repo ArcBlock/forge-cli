@@ -19,6 +19,7 @@ const {
   getOriginForgeReleaseFilePath,
   getForgeVersionFromYaml,
   getProfileWorkshopDirectory,
+  getProfileDirectory,
   isDirectory,
   requiredDirs,
 } = require('./forge-fs');
@@ -174,7 +175,7 @@ function setFilePathOfConfig(configs, chainName) {
   const releaseDirectory = getDataDirectory(chainName);
 
   set(content, 'forge.path', path.join(releaseDirectory, 'core'));
-  set(content, 'tendermint.keypath', path.join(releaseDirectory, 'keys'));
+  set(content, 'tendermint.keypath', path.join(getProfileDirectory(chainName), 'keys'));
   set(content, 'tendermint.path', path.join(releaseDirectory, 'tendermint'));
 
   set(content, 'ipfs.path', path.join(releaseDirectory, 'ipfs'));

@@ -40,7 +40,6 @@ const check = async () => {
     let oldConfigs = TOML.parse(fs.readFileSync(configPath).toString());
     oldConfigs = await setFilePathOfConfig(oldConfigs, chainName);
 
-    console.log(oldConfigs);
     const forgeProfileDir = ensureProfileDirectory(chainName);
     shell.exec(`rm -rf ${path.join(forgeProfileDir, 'forge_release')}`);
     shell.exec(`mv ${dataPath} ${path.join(forgeProfileDir, 'forge_release')}`);

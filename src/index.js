@@ -20,7 +20,7 @@ const { printError, printInfo, printLogo, printCurrentChain } = require('./core/
 const { DEFAULT_CHAIN_NAME } = require('./constant');
 const debug = require('./core/debug')('main');
 const { symbols, hr } = require('./core/ui');
-const checkCompatibility = require('./core/compatibility');
+const checkCompatibility = require('./core/migration');
 const { version } = require('../package.json');
 
 const onError = error => {

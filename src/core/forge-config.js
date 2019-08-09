@@ -353,7 +353,7 @@ async function ensureForgeRelease(args, exitOn404 = true) {
         printInfo(`if you want to use forge-cli@${version}, please following below steps:`);
         print(hr);
         print(`1. run ${chalk.cyan('ps aux | grep forge')}, and kill all forge related processes`);
-        print(`2. cleanup forge release dir: ${chalk.cyan('rm -rf ~/.forge_release')}`);
+        print(`2. cleanup forge release dir: ${chalk.cyan('rm -rf ~/.forge_chains')}`);
         print(`3. cleanup forge cli dir: ${chalk.cyan('rm -rf ~/.forge_cli')}`);
         print(`4. install latest forge: ${chalk.cyan('forge install')}`);
         print(`5. start latest forge: ${chalk.cyan('forge start')}`);

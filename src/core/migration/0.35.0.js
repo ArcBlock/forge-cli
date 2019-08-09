@@ -7,14 +7,16 @@ const TOML = require('@iarna/toml');
 const debug = require('../debug')('update-0350');
 const { ensureProfileDirectory, getProfileReleaseFilePath } = require('../forge-fs');
 
-const { getDefaultChainConfigs } = require('../forge-config');
+const { setFilePathOfConfig } = require('../forge-config');
+
+const oldReleaseDirName = '.forge_release';
 
 const getOldVersionConfigFiles = () => {
   const cliPath = path.join(os.homedir(), '.forge_cli');
 
   const configPath = path.join(cliPath, 'forge_release.toml');
   const keyFilePath = path.join(cliPath, 'keys');
-  const dataPath = path.join(os.homedir(), '.forge_release');
+  const dataPath = path.join(os.homedir(), oldReleaseDirName);
 
   if (fs.existsSync(configPath)) {
     return { configPath, keyFilePath, dataPath };
@@ -36,10 +38,13 @@ const check = async () => {
     const { configPath, keyFilePath, dataPath } = oldConfigFiles;
 
     let oldConfigs = TOML.parse(fs.readFileSync(configPath).toString());
-    oldConfigs = await getDefaultChainConfigs(oldConfigs, chainName);
+    oldConfigs = await setFilePathOfConfig(oldConfigs, chainName);
 
+    console.log(oldConfigs);
     const forgeProfileDir = ensureProfileDirectory(chainName);
-    shell.exec(`mv ${configPath} ${keyFilePath} ${dataPath} ${forgeProfileDir}`);
+    shell.exec(`rm -rf ${path.join(forgeProfileDir, 'forge_release')}`);
+    shell.exec(`mv ${dataPath} ${path.join(forgeProfileDir, 'forge_release')}`);
+    shell.exec(`mv ${configPath} ${keyFilePath} ${forgeProfileDir}`);
     fs.writeFileSync(getProfileReleaseFilePath(chainName), TOML.stringify(oldConfigs));
   } catch (error) {
     debug('check failed:');

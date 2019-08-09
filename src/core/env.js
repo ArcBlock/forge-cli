@@ -305,7 +305,7 @@ function makeNativeCommandRunner(executable, name, { env } = {}) {
         shell.echo(hr);
         shell.echo(`${chalk.cyan('forge stop')}`);
         shell.echo(`${chalk.cyan('rm -rf ~/.forge_cli')}`);
-        shell.echo(`${chalk.cyan('rm -rf ~/.forge_release')}`);
+        shell.echo(`${chalk.cyan('rm -rf ~/.forge_chains')}`);
         shell.echo(`${chalk.cyan('npm install -g @arcblock/forge-cli')}`);
         shell.echo(`${chalk.cyan('forge install')}`);
         shell.echo('');

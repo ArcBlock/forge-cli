@@ -76,6 +76,11 @@ async function main({ opts: { force, all }, args: [chainName = process.env.FORGE
     deprecated('forge stop --force: Use forge stop --all instead');
   }
 
+  if (!(await isForgeStarted(chainName))) {
+    printWarning(`${chalk.cyan(chainName)} is not started!`);
+    process.exit(1);
+  }
+
   const tmp = await stop(chainName, force || all);
   process.exit(tmp ? 0 : 1);
 }

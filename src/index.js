@@ -39,64 +39,30 @@ const onError = error => {
 process.on('unhandledRejection', onError);
 process.on('uncaughtException', onError);
 
-const getCurrentChainENV = async (command, action) => {
-  let chainName = process.env.FORGE_CURRENT_CHAIN || program.chainName || DEFAULT_CHAIN_NAME;
+const getCurrentChainENV = async (command, action, argsChainName) => {
+  let chainName = process.env.FORGE_CURRENT_CHAIN || argsChainName || DEFAULT_CHAIN_NAME;
 
   const allProcesses = await getAllProcesses();
 
   if (['start', 'stop', 'reset'].includes(command) && action) {
     chainName = action;
-  } else if (
-    allProcesses.length >= 1 &&
-    !['start', 'join'].includes(command) &&
-    !program.chainName
-  ) {
+  } else if (allProcesses.length >= 1 && !['start', 'join'].includes(command) && !argsChainName) {
     chainName = allProcesses[0].name;
   }
 
   return chainName;
 };
 
-const run = async () => {
-  ensureProfileDirectory(DEFAULT_CHAIN_NAME);
+async function setupEnv() {
+  const args = process.argv.slice(2);
+  const [command, ...params] = args;
 
-  program
-    .version(version)
-    .option('-v, --verbose', 'Output runtime info when execute subcommand, useful for debug')
-    .option(
-      '-c, --chain-name <chainName>',
-      'Forge release directory path (unzipped), use your own copy forge release'
-    )
-    .option(
-      '-r, --release-dir <dir>',
-      'Forge release directory path (unzipped), use your own copy forge release'
-    )
-    .option(
-      '-c, --config-path <path>',
-      'Forge config used when starting forge node and initializing gRPC clients'
-    )
-    .option(
-      '-g, --socket-grpc <endpoint>',
-      'Socket gRPC endpoint to connect, with this you can use forge-cli with a remote node'
-    );
+  // parse [--chain-name | -m] arg
+  const action = params[0] && !params[0].startsWith('-') ? params[0] : undefined;
+  const chainNameIndex = params.findIndex(t => t === '-m' || t === '--chain-name');
+  const argsChainName = chainNameIndex > -1 ? params[chainNameIndex + 1] : undefined;
 
-  program
-    .on('--help', () => {
-      shell.echo(`
-Examples:
-
-  Please install a forge-release before running any other commands
-  > ${chalk.cyan('forge install latest')}
-  > ${chalk.cyan('forge install --mirror http://arcblock.oss-cn-beijing.aliyuncs.com')}
-
-  Curious about how to use a subcommand?
-  > ${chalk.cyan('forge help install')}
-  `);
-    })
-    .parse(process.argv);
-
-  const [command, action] = program.args;
-  const chainName = await getCurrentChainENV(command, action);
+  const chainName = await getCurrentChainENV(command, action, argsChainName);
   process.env.FORGE_CURRENT_CHAIN = chainName;
 
   if (process.env.FORGE_CURRENT_CHAIN !== DEFAULT_CHAIN_NAME) {
@@ -112,10 +78,45 @@ Examples:
     printInfo(`You can create by run ${chalk.cyan(`forge create-chain ${chainName}`)}`);
     process.exit(-1);
   }
+}
 
+const run = async () => {
+  ensureProfileDirectory(DEFAULT_CHAIN_NAME);
+
+  program
+    .version(version)
+    .option('-v, --verbose', 'Output runtime info when execute subcommand, useful for debug')
+    .option('-m, --chain-name <chainName>', 'Execute command use specific chain')
+    .option(
+      '-r, --release-dir <dir>',
+      'Forge release directory path (unzipped), use your own copy forge release'
+    )
+    .option(
+      '-c, --config-path <path>',
+      'Forge config used when starting forge node and initializing gRPC clients'
+    )
+    .option(
+      '-g, --socket-grpc <endpoint>',
+      'Socket gRPC endpoint to connect, with this you can use forge-cli with a remote node'
+    );
+
+  program.on('--help', () => {
+    shell.echo(`
+Examples:
+
+  Please install a forge-release before running any other commands
+  > ${chalk.cyan('forge install latest')}
+  > ${chalk.cyan('forge install --mirror http://arcblock.oss-cn-beijing.aliyuncs.com')}
+
+  Curious about how to use a subcommand?
+  > ${chalk.cyan('forge help install')}
+  `);
+  });
+
+  await setupEnv();
   const { initCli } = require('./core/cli'); // eslint-disable-line
-
   initCli(program);
+
   program.on('command:*', () => {
     shell.echo(hr);
     shell.echo(`${symbols.error} Unsupported command: ${chalk.cyan(program.args.join(' '))}`);

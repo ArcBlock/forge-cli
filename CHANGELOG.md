@@ -1,3 +1,8 @@
+## 0.35.0 (August 09, 2019)
+
+- chore: add protocol:list subcommand
+- feat: basic transaction protocol activate/deactivate logic
+
 ## 0.34.6 (August 08, 2019)
 
 - chore: bump version

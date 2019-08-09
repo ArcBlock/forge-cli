@@ -32,12 +32,11 @@ const processSortHandler = (x, y) => {
 };
 
 const getProcessTag = (name, chainName = process.env.FORGE_CURRENT_CHAIN) => {
-  const prefix = name === 'simulator' ? '' : 'forge-';
   if (!name) {
-    return `${prefix}${md5(chainName)}`;
+    return `forge-${md5(chainName)}`;
   }
 
-  return `${prefix}${name}-${md5(chainName)}`;
+  return `forge-${name}-${md5(chainName)}`;
 };
 
 async function findServicePid(n) {

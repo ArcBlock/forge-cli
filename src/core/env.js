@@ -79,9 +79,10 @@ function isEmptyDirectory(x) {
 }
 
 async function ensureRunningNode() {
+  const chainName = process.env.FORGE_CURRENT_CHAIN;
   if (!(await isForgeStarted())) {
-    shell.echo(`${symbols.error} forge is not started yet!`);
-    shell.echo(`${symbols.info} Please run ${chalk.cyan('forge start')} first!`);
+    shell.echo(`${symbols.error} chain ${chalk.yellow(chainName)} is not started yet!`);
+    shell.echo(`${symbols.info} Please run ${chalk.cyan(`forge start -c ${chainName}`)} first!`);
     process.exit(0);
   }
 

@@ -137,6 +137,7 @@ async function getRunningProcessesStats(chainName = process.env.FORGE_CURRENT_CH
 async function getAllRunningProcessStats() {
   const processes = [];
   const allAppNames = getAllAppNames();
+  console.log(allAppNames);
 
   // eslint-disable-next-line
   for (const appName of allAppNames) {

@@ -42,15 +42,11 @@ function getAllAppDirectories() {
   return fs
     .readdirSync(rootConfigDirectory)
     .filter(tmp => tmp.startsWith('forge'))
-    .map(tmp => path.join(rootConfigDirectory, tmp))
-    .filter(isDirectory);
+    .filter(tmp => isDirectory(path.join(rootConfigDirectory, tmp)));
 }
 
 function getAllAppNames() {
-  return getAllAppDirectories().map(tmp => {
-    const name = path.basename(tmp);
-    return name.slice(name.indexOf('_') + 1);
-  });
+  return getAllAppDirectories().map(name => name.slice(name.indexOf('_') + 1));
 }
 
 function getPortFromUri(uri) {
@@ -74,7 +70,12 @@ async function getUsedPortsByForge() {
     workshopPort: 0,
   };
 
-  configDirectories.forEach(dir => {
+  configDirectories.forEach(tmp => {
+    if (tmp === `forge_${DEFAULT_CHAIN_NAME}`) {
+      return;
+    }
+
+    const dir = path.join(getRootConfigDirectory(), tmp);
     const forgeReleasePath = path.join(dir, 'forge_release.toml');
     if (!fs.existsSync(forgeReleasePath)) {
       return;
@@ -129,19 +130,19 @@ async function getAvailablePort() {
   const res = {
     forgeWebPort: forgeWebPort
       ? forgeWebPort + 1
-      : await getPort({ port: getPort.makeRange(8210, 8300) }),
+      : await getPort({ port: getPort.makeRange(8211, 8300) }),
     tendminRpcPort: tendminRpcPort
       ? tendminRpcPort + 1
-      : await getPort({ port: getPort.makeRange(22001, 24000) }),
+      : await getPort({ port: getPort.makeRange(32001, 34000) }),
     tendmintGrpcPort: tendmintGrpcPort
       ? tendmintGrpcPort + 1
-      : await getPort({ port: getPort.makeRange(26001, 27000) }),
+      : await getPort({ port: getPort.makeRange(36001, 37000) }),
     tendmintP2pPort: tendmintP2pPort
       ? tendmintP2pPort + 1
-      : await getPort({ port: getPort.makeRange(27001, 28000) }),
+      : await getPort({ port: getPort.makeRange(37001, 38000) }),
     forgeGrpcPort: forgeGrpcPort
       ? forgeGrpcPort + 1
-      : await getPort({ port: getPort.makeRange(28210, 28300) }),
+      : await getPort({ port: getPort.makeRange(38210, 38300) }),
     workshopPort: workshopPort
       ? workshopPort + 1
       : await getPort({ port: getPort.makeRange(8807, 8900) }),
@@ -150,7 +151,7 @@ async function getAvailablePort() {
   return res;
 }
 
-function seConfig(
+function setConfig(
   configs,
   chainName,
   { forgeWebPort, forgeGrpcPort, tendminRpcPort, tendmintGrpcPort, tendmintP2pPort, workshopPort }
@@ -197,7 +198,7 @@ async function setConfigToProfile(configs, chainName) {
     workshopPort,
   } = await getAvailablePort();
 
-  return seConfig(configs, chainName, {
+  return setConfig(configs, chainName, {
     forgeWebPort,
     forgeGrpcPort,
     tendminRpcPort,
@@ -233,7 +234,7 @@ async function getDefaultChainConfigs(configs) {
   const tendmintGrpcPort = await getPort({ port: getPort.makeRange(26001, 27000) });
   const tendmintP2pPort = await getPort({ port: getPort.makeRange(27001, 28000) });
 
-  return seConfig(configs, DEFAULT_CHAIN_NAME, {
+  return setConfig(configs, DEFAULT_CHAIN_NAME, {
     forgeWebPort,
     forgeGrpcPort,
     tendminRpcPort,

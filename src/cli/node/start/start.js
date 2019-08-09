@@ -31,8 +31,7 @@ function checkError(chainName, startAtMs) {
 async function main({ opts: { dryRun }, args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
   const startAt = Date.now();
   if (await isForgeStarted(chainName)) {
-    shell.echo(`${symbols.info} forge ${chalk.cyan(chainName)} is already started!`);
-    shell.echo(`${symbols.info} Please run ${chalk.cyan('forge stop')} first!`);
+    shell.echo(`${symbols.info} Chain ${chalk.cyan(chalk.cyan(chainName))} is already started!`);
     return;
   }
 
@@ -59,7 +58,7 @@ async function main({ opts: { dryRun }, args: [chainName = process.env.FORGE_CUR
   const command = `${startCommandPrefix} ${startType}`;
   debug('start command', command);
 
-  const spinner = getSpinner('Waiting for forge daemon to start...');
+  const spinner = getSpinner(`Waiting for chain ${chalk.yellow(chainName)} to start...`);
   spinner.start();
   try {
     shell.exec(command);
@@ -70,31 +69,26 @@ async function main({ opts: { dryRun }, args: [chainName = process.env.FORGE_CUR
       throw new Error(errMessage);
     }
 
+    spinner.succeed(`Chain ${chalk.yellow(chainName)} successfully started`);
     if (config.get('forge.web.enabled')) {
-      spinner.stop();
       await startWeb();
-      spinner.start();
     }
-
-    spinner.succeed('Forge daemon successfully started');
 
     await printAllProcesses();
 
     shell.echo(
-      `${symbols.info} If you want to access interactive console, please run ${chalk.cyan(
+      `${symbols.info} For interactive console, please run ${chalk.cyan(
         `forge remote -c ${chainName}`
       )}`
     );
     shell.echo(
-      `${symbols.info} If you want to access forge web interface, please run ${chalk.cyan(
+      `${symbols.info} For forge web interface, please run ${chalk.cyan(
         `forge web open -c ${chainName}`
       )}`
     );
+    shell.echo(`${symbols.info} For above process list, please run ${chalk.cyan('forge ps')}`);
     shell.echo(
-      `${symbols.info} If you want to show above process list, please run ${chalk.cyan('forge ps')}`
-    );
-    shell.echo(
-      `${symbols.info} If you want to know forge status detail, please run ${chalk.cyan(
+      `${symbols.info} For forge status detail, please run ${chalk.cyan(
         `forge status -c ${chainName}`
       )}`
     );

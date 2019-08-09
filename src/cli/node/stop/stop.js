@@ -2,7 +2,7 @@
 const chalk = require('chalk');
 const deprecated = require('depd')('@arcblock/cli');
 const shell = require('shelljs');
-const { printSuccess, printWarning } = require('core/util');
+const { printInfo, printWarning } = require('core/util');
 const { symbols, getSpinner } = require('core/ui');
 const debug = require('core/debug')('stop');
 
@@ -38,23 +38,29 @@ async function stop(chainName, all) {
 
     debug(`all processes ${allProcesses.map(x => x.pid)}`);
 
-    let handle = null;
-    const spinner = getSpinner('Waiting for forge to stop...');
     if (all) {
       printWarning(chalk.yellow('Stopping all chains'));
-      handle = stopAllForgeProcesses;
+      const spinner = getSpinner('Waiting for all chains to stop...');
+      spinner.start();
+
+      const handle = stopAllForgeProcesses;
+      const stoppedProcesses = await handle();
+      debug(`stopped processes ${stoppedProcesses.map(x => x.pid)}`);
+
+      await waitUntilStopped();
+      spinner.succeed('All Chains are stopped!');
     } else {
-      printSuccess(`Stoping ${chalk.yellow(chainName)} chain...`);
-      handle = stopForgeProcesses.bind(null, chainName);
+      printInfo(`Stopping ${chalk.yellow(chainName)} chain...`);
+      const spinner = getSpinner(`Waiting for chain ${chalk.yellow(chainName)} to stop...`);
+      spinner.start();
+
+      const handle = stopForgeProcesses.bind(null, chainName);
+      const stoppedProcesses = await handle();
+
+      debug(`stopped processes ${stoppedProcesses.map(x => x.pid)}`);
+      await waitUntilStopped();
+      spinner.succeed(`Chain ${chalk.yellow(chainName)} stopped!`);
     }
-
-    spinner.start();
-    const stoppedProcesses = await handle();
-
-    debug(`stopped processes ${stoppedProcesses.map(x => x.pid)}`);
-
-    await waitUntilStopped();
-    spinner.succeed('Forge daemon stopped!');
 
     return true;
   } catch (err) {

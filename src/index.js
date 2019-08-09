@@ -108,7 +108,7 @@ Examples:
     !fs.existsSync(getProfileDirectory(chainName)) &&
     command !== 'create-chain'
   ) {
-    printError(`Chain ${chainName} is not exists`);
+    printError(`Chain ${chainName} does not exist`);
     printInfo(`You can create by run ${chalk.cyan(`forge create-chain ${chainName}`)}`);
     process.exit(-1);
   }

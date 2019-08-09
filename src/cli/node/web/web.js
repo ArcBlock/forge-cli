@@ -4,7 +4,7 @@ const shell = require('shelljs');
 const GraphQLClient = require('@arcblock/graphql-client');
 
 const debug = require('core/debug')('web');
-const { symbols } = require('core/ui');
+const { symbols, getSpinner } = require('core/ui');
 const { sleep } = require('core/util');
 const { runNativeWebCommand, webUrl } = require('core/env');
 const { getForgeWebProcess } = require('core/forge-process');
@@ -84,17 +84,15 @@ async function main({ args: [action = 'none'], opts }) {
         return;
       }
 
-      shell.echo(`${symbols.info} Starting forge web...`);
+      const spinner = getSpinner('Waiting for forge web to start...');
+      spinner.start();
       const succeed = await startForgeWeb(20000);
       if (!succeed) {
-        shell.echo(
-          `${symbols.warning} forge web failed to start, please retry with ${chalk.cyan(
-            'forge web start'
-          )}`
-        );
+        spinner.fail(`forge web start, failed, please retry with ${chalk.cyan('forge web start')}`);
         break;
       }
 
+      spinner.succeed('Forge web successfully started');
       shell.echo(`${symbols.info} forge web running at:     ${webUrl()}`);
       shell.echo(`${symbols.info} graphql endpoint at:      ${webUrl()}/api`);
       break;

@@ -32,7 +32,7 @@ function main() {
     const { release } = config.get('cli').requiredDirs;
     if (fs.existsSync(path.join(release, 'forge')) === false) {
       shell.echo(
-        `${symbols.error} forge not initialized, please run ${chalk.cyan('forge init')} first`
+        `${symbols.error} forge release not found, please run ${chalk.cyan('forge install')} first`
       );
       process.exit(1);
       return;

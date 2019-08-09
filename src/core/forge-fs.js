@@ -152,7 +152,7 @@ function getProfileReleaseFilePath(chainName = process.env.FORGE_CURRENT_CHAIN) 
 }
 
 function getProfileKeyFilePath(chainName = process.env.FORGE_CURRENT_CHAIN) {
-  return path.join(getProfileDirectory(chainName), 'key');
+  return path.join(getProfileDirectory(chainName), 'keys');
 }
 
 function getProfileReleaseDirectory(chainName = process.env.FORGE_CURRENT_CHAIN) {

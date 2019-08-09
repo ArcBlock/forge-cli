@@ -45,6 +45,7 @@ const check = async () => {
     shell.exec(`mv ${dataPath} ${path.join(forgeProfileDir, 'forge_release')}`);
     shell.exec(`mv ${configPath} ${keyFilePath} ${forgeProfileDir}`);
     fs.writeFileSync(getProfileReleaseFilePath(chainName), TOML.stringify(oldConfigs));
+    console.log('migration: done!');
   } catch (error) {
     debug('check failed:');
     debug(error);

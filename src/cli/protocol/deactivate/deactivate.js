@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const inquirer = require('inquirer');
 const shell = require('shelljs');
 const { createRpcClient } = require('core/env');

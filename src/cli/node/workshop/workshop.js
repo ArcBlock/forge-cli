@@ -8,7 +8,7 @@ const { getForgeWorkshopProcess } = require('core/forge-process');
 const { symbols } = require('core/ui');
 const { DEFAULT_WORKSHOP_PORT } = require('../../../constant');
 
-const MULTI_WORKSHOP_VERSION = '0.36.2';
+const MULTI_WORKSHOP_VERSION = '0.36.4';
 
 function processOutput(output, action) {
   if (/:error/.test(output)) {
@@ -25,9 +25,14 @@ function processOutput(output, action) {
 function checkForgeVersion(version) {
   if (semver.lt(version, MULTI_WORKSHOP_VERSION)) {
     printWarning(
-      `Start multi workshop was supported in the version of v${version}, before that, workshop can be only start once.`
+      `Start multiple workshop can only be above v${version} of forge,
+      otherwise, workshop can be only start once at port 8807.`
     );
+
+    return false;
   }
+
+  return true;
 }
 
 async function main({ args: [action = 'none'] }) {
@@ -38,7 +43,11 @@ async function main({ args: [action = 'none'] }) {
     env: `WORKSHOP_CONFIG=${configPath}`,
   })('daemon', { silent: true });
 
-  const port = config.get('workshop.port') || DEFAULT_WORKSHOP_PORT;
+  let port = config.get('workshop.port') || DEFAULT_WORKSHOP_PORT;
+  const res = checkForgeVersion(config.get('cli.currentVersion'));
+  if (!res) {
+    port = '8807';
+  }
   const workshopUrl = `http://127.0.0.1:${port}`;
 
   /* eslint-disable indent */
@@ -53,7 +62,6 @@ async function main({ args: [action = 'none'] }) {
         return;
       }
 
-      checkForgeVersion(config.get('cli.currentVersion'));
       const { stdout, stderr } = startWorkshop();
       processOutput(stdout || stderr, action);
       printInfo(`forge workshop running at: ${workshopUrl}`);

@@ -51,8 +51,6 @@ async function setupEnv(args, requirements) {
     }
   });
 
-  debug('setupEnv.args', { args, requirements });
-
   ensureRequiredDirs();
   checkUpdate();
 

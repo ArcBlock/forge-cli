@@ -57,9 +57,9 @@ async function setupEnv() {
   const args = process.argv.slice(2);
   const [command, ...params] = args;
 
-  // parse [--chain-name | -m] arg
+  // parse [--chain-name | -c] arg
   const action = params[0] && !params[0].startsWith('-') ? params[0] : undefined;
-  const chainNameIndex = params.findIndex(t => t === '-m' || t === '--chain-name');
+  const chainNameIndex = params.findIndex(t => t === '-c' || t === '--chain-name');
   const argsChainName = chainNameIndex > -1 ? params[chainNameIndex + 1] : undefined;
 
   const chainName = await getCurrentChainENV(command, action, argsChainName);

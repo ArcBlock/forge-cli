@@ -1,3 +1,9 @@
+## 0.36.1 (August 11, 2019)
+
+- support `forge protocol:activate` subcommand
+- support `forge protocol:deactivate` subcommand
+- support `forge protocol:list` subcommand
+
 ## 0.36.0 (August 10, 2019)
 
 - add multi chain feature, mainly includes:

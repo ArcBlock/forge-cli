@@ -197,7 +197,7 @@ async function main({ args: [userVersion], opts: { mirror, silent } }) {
       }
     }
 
-    shell.echo(`${symbols.success} Congratulations! forge initialized successfully!`);
+    shell.echo(`${symbols.success} Congratulations! forge v${version} installed successfully!`);
     shell.echo('');
 
     const questions = [

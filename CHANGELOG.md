@@ -1,4 +1,4 @@
-## 0.35.0 (August 01, 2019)
+## 0.36.0 (August 01, 2019)
 
 - add multi chain feature, mainly includes:
   - create a new chain by `forge create-chain <chainName>`
@@ -9,6 +9,7 @@
 - refact the forge process management
 - deprecated use `forge-starter` to start the chain
 - deprecated the `--force | -f` param of `forge stop` command, and add `--all | -a` to stop all chains
+- modify `--config-path | -c` to `--config-path | -f`
 
 ## 0.34.6 (August 08, 2019)
 

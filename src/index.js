@@ -86,13 +86,13 @@ const run = async () => {
   program
     .version(version)
     .option('-v, --verbose', 'Output runtime info when execute subcommand, useful for debug')
-    .option('-m, --chain-name <chainName>', 'Execute command use specific chain')
+    .option('-c, --chain-name <chainName>', 'Execute command use specific chain')
     .option(
       '-r, --release-dir <dir>',
       'Forge release directory path (unzipped), use your own copy forge release'
     )
     .option(
-      '-c, --config-path <path>',
+      '-f, --config-path <path>',
       'Forge config used when starting forge node and initializing gRPC clients'
     )
     .option(

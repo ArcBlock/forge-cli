@@ -3,7 +3,9 @@ const path = require('path');
 const yaml = require('yaml');
 const chalk = require('chalk');
 const shell = require('shelljs');
-const { config, debug, isDirectory, isEmptyDirectory, RELEASE_ASSETS } = require('core/env');
+const { config, isEmptyDirectory, RELEASE_ASSETS } = require('core/env');
+const debug = require('core/debug')('list');
+const { isDirectory } = require('core/forge-fs');
 const { symbols } = require('core/ui');
 
 function printList(title, list, current) {
@@ -30,7 +32,7 @@ function main() {
     const { release } = config.get('cli').requiredDirs;
     if (fs.existsSync(path.join(release, 'forge')) === false) {
       shell.echo(
-        `${symbols.error} forge not initialized, please run ${chalk.cyan('forge init')} first`
+        `${symbols.error} forge release not found, please run ${chalk.cyan('forge install')} first`
       );
       process.exit(1);
       return;
@@ -46,18 +48,17 @@ function main() {
   }
 
   try {
-    // eslint-disable-next-line camelcase
-    const { forge, forge_starter, simulator, forge_web } = listReleases();
-    debug({ forge, forge_starter, simulator, current });
+    const { forge, simulator, forge_web: forgeWeb, forge_workshop: forgeWorkshop } = listReleases();
+    debug({ forge, simulator, current, forgeWeb, forgeWorkshop });
 
     printList('Forge Kernel', forge, current);
-    printList('Forge Starter', forge_starter, current);
-    printList('Forge Web', forge_web, current);
+    printList('Forge Web', forgeWeb, current);
     printList('Simulator', simulator, current);
+    printList('Workshop', forgeWorkshop, current);
   } catch (err) {
     shell.echo(
       `${symbols.error} cannot list installed forge releases, ensure you have run ${chalk.cyan(
-        'forge init'
+        'forge install'
       )} first`
     );
     process.exit(1);

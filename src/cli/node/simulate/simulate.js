@@ -1,12 +1,13 @@
 const shell = require('shelljs');
 const chalk = require('chalk');
 const { symbols } = require('core/ui');
-const { runNativeSimulatorCommand, findServicePid } = require('core/env');
+const { runNativeSimulatorCommand } = require('core/env');
+const { getSimulatorProcess } = require('core/forge-process');
 
 const startSimulator = runNativeSimulatorCommand('daemon');
 
 async function main({ args: [action = 'start'] }) {
-  const pid = await findServicePid('simulator');
+  const { pid } = await getSimulatorProcess();
   if (action === 'start') {
     if (pid) {
       shell.echo(`${symbols.error} simulator is already started!`);

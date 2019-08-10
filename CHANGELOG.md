@@ -1,7 +1,15 @@
-## 0.35.0 (August 09, 2019)
+## 0.36.0 (August 10, 2019)
 
-- chore: add protocol:list subcommand
-- feat: basic transaction protocol activate/deactivate logic
+- add multi chain feature, mainly includes:
+  - create a new chain by `forge create-chain <chainName>`
+  - enable start/stop/reset the specific chain by `forge <action> <chainName>| [--chain-chain <chainName>] | [-c <chainName>]`
+  - `forge ps` will show all chains running processes
+- remove `-m` param in `start` command
+- refactor file management
+- refactor process management
+- deprecated use `forge-starter` to start the chain
+- deprecated the `--force | -f` param of `forge stop` command, and add `--all | -a` to stop all chains
+- modify `--config-path | -c` to `--config-path | -f`
 
 ## 0.34.6 (August 08, 2019)
 

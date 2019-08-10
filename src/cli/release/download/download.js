@@ -3,14 +3,15 @@ const shell = require('shelljs');
 const chalk = require('chalk');
 const semver = require('semver');
 const { symbols } = require('core/ui');
-const { config, debug, getPlatform, RELEASE_ASSETS } = require('core/env');
+const { getPlatform, RELEASE_ASSETS } = require('core/env');
+const { isForgeBinExists, getCurrentForgeVersion } = require('core/forge-fs');
+const debug = require('core/debug')('download');
 const {
-  releaseDirExists,
   fetchAssetInfo,
   downloadAsset,
   expandReleaseTarball,
   fetchReleaseVersion,
-} = require('cli/node/init/init');
+} = require('cli/node/install/install');
 
 // eslint-disable-next-line consistent-return
 async function main({ args: [userVersion], opts: { mirror } }) {
@@ -21,8 +22,9 @@ async function main({ args: [userVersion], opts: { mirror } }) {
     const userVer =
       userVersion && semver.coerce(userVersion) ? semver.coerce(userVersion).version : '';
     const version = userVer || fetchReleaseVersion(mirror);
-    if (releaseDirExists()) {
-      if (version === config.get('cli.currentVersion')) {
+    const currentVersion = getCurrentForgeVersion();
+    if (isForgeBinExists(currentVersion)) {
+      if (version === currentVersion) {
         return process.exit(1);
       }
     }

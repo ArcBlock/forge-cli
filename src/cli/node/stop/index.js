@@ -4,8 +4,8 @@ const { cli, action } = require('core/cli');
 const { execute, run } = require('./stop');
 
 cli(
-  'stop',
-  'Stop the forge daemon and all forge components',
+  'stop [<chainName>]',
+  'Stop the forge daemon and all forge components, if does not specify a chain name, it will start a default chain',
   input => action(execute, run, input),
   {
     requirements: {
@@ -13,14 +13,18 @@ cli(
       runningNode: false,
       rpcClient: false,
     },
-    options: [['-f, --force', 'Kill all forge related processes, useful for cleanup']],
+    options: [
+      ['-a, --all', 'Stop all forge related processes'],
+      ['-f, --force', '[Deprecated] Stop all forge related processes'],
+    ],
     handlers: {
       '--help': () => {
         shell.echo(`
 Examples:
-  - ${chalk.cyan('forge stop')}             stop forge in graceful manner
-  - ${chalk.cyan('forge stop -f')}          stop forge related process with kill
-  - ${chalk.cyan('forge stop --force')}     same as above`);
+  - ${chalk.cyan('forge stop')}             stop default chain in graceful manner
+  - ${chalk.cyan('forge stop test')}             stop test chain in graceful manner
+  - ${chalk.cyan('forge stop -a')}          stop all forge related processes
+  - ${chalk.cyan('forge stop --all')}     same as above`);
       },
     },
   }

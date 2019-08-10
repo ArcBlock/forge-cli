@@ -2,8 +2,12 @@
 const chalk = require('chalk');
 const shell = require('shelljs');
 const GraphQLClient = require('@arcblock/graphql-client');
-const { runNativeWebCommand, findServicePid, webUrl, sleep, debug } = require('core/env');
-const { symbols } = require('core/ui');
+
+const debug = require('core/debug')('web');
+const { symbols, getSpinner } = require('core/ui');
+const { sleep } = require('core/util');
+const { runNativeWebCommand, webUrl } = require('core/env');
+const { getForgeWebProcess } = require('core/forge-process');
 
 const startWebUI = runNativeWebCommand('daemon', { silent: true });
 
@@ -37,9 +41,9 @@ async function checkGraphQLServerStarted(client, maxRetry = 6) {
           return resolve(true);
         }
 
-        debug('check.graphql response', code);
+        debug('check.graphql response:', code);
       } catch (error) {
-        debug.error('check.graphql error', error.message);
+        debug('check.graphql error', error.message);
       }
     }, 1000);
   });
@@ -49,7 +53,7 @@ async function startForgeWeb(timeout = 10000) {
   const { stderr } = startWebUI();
 
   if (stderr) {
-    debug(`${symbols.error} start webui failed: ${stderr}!`);
+    debug(`${symbols.error} forge web start failed: ${stderr}!`);
     processOutput(stderr);
     return false;
   }
@@ -64,7 +68,9 @@ async function startForgeWeb(timeout = 10000) {
 }
 
 async function main({ args: [action = 'none'], opts }) {
-  const pid = await findServicePid('forge_web');
+  const { pid } = await getForgeWebProcess();
+
+  debug(`forge web pid: ${pid}`);
 
   /* eslint-disable indent */
   switch (action) {
@@ -78,17 +84,15 @@ async function main({ args: [action = 'none'], opts }) {
         return;
       }
 
-      shell.echo(`${symbols.info} Starting forge web...`);
+      const spinner = getSpinner('Waiting for forge web to start...');
+      spinner.start();
       const succeed = await startForgeWeb(20000);
       if (!succeed) {
-        shell.echo(
-          `${symbols.warning} forge web failed to start, please retry with ${chalk.cyan(
-            'forge web start'
-          )}`
-        );
+        spinner.fail(`forge web start, failed, please retry with ${chalk.cyan('forge web start')}`);
         break;
       }
 
+      spinner.succeed('Forge web successfully started');
       shell.echo(`${symbols.info} forge web running at:     ${webUrl()}`);
       shell.echo(`${symbols.info} graphql endpoint at:      ${webUrl()}/api`);
       break;

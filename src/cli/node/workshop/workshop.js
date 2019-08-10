@@ -1,58 +1,87 @@
 /* eslint no-case-declarations:"off" */
+const semver = require('semver');
 const shell = require('shelljs');
-const { runNativeWorkshopCommand, findServicePid, sleep } = require('core/env');
+const { print, printError, printInfo, printSuccess, printWarning, sleep } = require('core/util');
+const { config, makeNativeCommandRunner } = require('core/env');
+const { getProfileReleaseFilePath } = require('core/forge-fs');
+const { getForgeWorkshopProcess } = require('core/forge-process');
 const { symbols } = require('core/ui');
+const { DEFAULT_WORKSHOP_PORT } = require('../../../constant');
 
-const startWorkshop = runNativeWorkshopCommand('daemon', { silent: true });
-const workshopUrl = 'http://127.0.0.1:8807';
+const MULTI_WORKSHOP_VERSION = '0.36.4';
 
 function processOutput(output, action) {
   if (/:error/.test(output)) {
     if (/:already_started/.test(output)) {
-      shell.echo(`${symbols.warning} forge workshop already started`);
+      printWarning('forge workshop already started');
     } else {
-      shell.echo(`${symbols.error} forge workshop ${action} failed: ${output.trim()}`);
+      printError(`${symbols.error} forge workshop ${action} failed: ${output.trim()}`);
     }
   } else {
-    shell.echo(`${symbols.success} forge workshop ${action} success!`);
+    printSuccess(`forge workshop ${action} success!`);
   }
 }
 
+function checkForgeVersion(version) {
+  if (semver.lt(version, MULTI_WORKSHOP_VERSION)) {
+    printWarning(
+      `Start multiple workshop can only be above v${version} of forge,
+      otherwise, workshop can be only start once at port 8807.`
+    );
+
+    return false;
+  }
+
+  return true;
+}
+
 async function main({ args: [action = 'none'] }) {
-  const pid = await findServicePid('forge_workshop');
+  const { pid } = await getForgeWorkshopProcess();
+
+  const configPath = getProfileReleaseFilePath(process.env.FORGE_CURRENT_CHAIN);
+  const startWorkshop = makeNativeCommandRunner('workshopBinPath', 'workshop', {
+    env: `WORKSHOP_CONFIG=${configPath}`,
+  })('daemon', { silent: true });
+
+  let port = config.get('workshop.port') || DEFAULT_WORKSHOP_PORT;
+  const res = checkForgeVersion(config.get('cli.currentVersion'));
+  if (!res) {
+    port = '8807';
+  }
+  const workshopUrl = `http://127.0.0.1:${port}`;
 
   /* eslint-disable indent */
   switch (action) {
     case 'none':
-      shell.exec('forge workshop -h --color always');
+      print('forge workshop -h --color always');
       break;
     case 'start':
       if (pid) {
-        shell.echo(`${symbols.info} forge workshop already started`);
+        printInfo('forge workshop already started');
         process.exit(0);
         return;
       }
 
       const { stdout, stderr } = startWorkshop();
       processOutput(stdout || stderr, action);
-      shell.echo(`${symbols.info} forge workshop running at: ${workshopUrl}`);
+      printInfo(`forge workshop running at: ${workshopUrl}`);
       break;
     case 'stop':
       if (!pid) {
-        shell.echo(`${symbols.info} forge web not started yet`);
+        printInfo('forge web not started yet');
         process.exit(1);
         return;
       }
-      shell.echo('Stopping forge workshop...');
+      print('Stopping forge workshop...');
       shell.exec(`kill ${pid}`);
       break;
     case 'open':
       if (!pid) {
-        shell.echo(`${symbols.info} forge workshop not started yet`);
+        printInfo('forge workshop not started yet');
         await main({ args: ['start'] });
         await sleep(2000);
       }
-      shell.echo(`Opening ${workshopUrl}...`);
+      print(`Opening ${workshopUrl}...`);
       shell.exec(`open ${workshopUrl}`);
       break;
     default:

@@ -1,55 +1,35 @@
 /* eslint-disable no-console */
+
 const fs = require('fs');
-const os = require('os');
 const util = require('util');
 const path = require('path');
 const getos = require('getos');
 const chalk = require('chalk');
-const yaml = require('yaml');
 const shell = require('shelljs');
 const semver = require('semver');
 const inquirer = require('inquirer');
-const pidUsage = require('pidusage');
-const pidUsageTree = require('pidusage-tree');
-const findProcess = require('find-process');
-const prettyMilliseconds = require('pretty-ms');
-const prettyBytes = require('pretty-bytes');
 const isElevated = require('is-elevated');
-const figlet = require('figlet');
 const { get, set } = require('lodash');
+
 const GRpcClient = require('@arcblock/grpc-client');
 const { parse } = require('@arcblock/forge-config');
-const { name, version, engines } = require('../../package.json');
-// eslint-disable-next-line import/order
-const debug = require('debug')(name);
 
+const {
+  getProfileDirectory,
+  isDirectory,
+  getProfileReleaseFilePath,
+  requiredDirs,
+} = require('core/forge-fs');
+const { ensureForgeRelease } = require('core/forge-config');
+const { isForgeStarted, getProcessTag } = require('./forge-process');
+const { printLogo } = require('./util');
+
+const { version } = require('../../package.json');
 const { symbols, hr } = require('./ui');
+const debug = require('./debug')('env');
 
-let baseDir = path.join(os.homedir(), '.forge_cli');
-if (process.env.FORGE_CLI_DIR) {
-  try {
-    shell.echo(
-      `${symbols.info} ${chalk.yellow(`Using custom forge_cli dir: ${process.env.FORGE_CLI_DIR}`)}`
-    );
-    const dir = path.resolve(process.env.FORGE_CLI_DIR);
-    if (!fs.existsSync(dir)) {
-      shell.mkdir(dir, { silent: true });
-    }
-    baseDir = dir;
-    debug(`${symbols.info} use custom baseDir: ${baseDir}`);
-  } catch (err) {
-    shell.echo(
-      `${symbols.warning} invalid or cannot create custom baseDir: ${process.env.FORGE_CLI_DIR}`
-    );
-  }
-}
-
-const requiredDirs = {
-  tmp: path.join(baseDir, 'tmp'),
-  bin: path.join(baseDir, 'bin'),
-  cache: path.join(baseDir, 'cache'),
-  release: path.join(baseDir, 'release'),
-};
+const CURRENT_WORKING_PROFILE = getProfileDirectory(process.env.FORGE_CURRENT_CHAIN);
+process.env.CURRENT_WORKING_PROFILE = CURRENT_WORKING_PROFILE;
 
 const config = { cli: { requiredDirs } }; // global shared forge-cli run time config
 
@@ -71,13 +51,12 @@ async function setupEnv(args, requirements) {
     }
   });
 
-  debug('setupEnv.args', { args, requirements });
-
   ensureRequiredDirs();
   checkUpdate();
 
   if (requirements.forgeRelease || requirements.runningNode) {
-    await ensureForgeRelease(args);
+    const cliConfig = await ensureForgeRelease(args);
+    Object.assign(config.cli, cliConfig);
   }
 
   ensureSetupScript(args);
@@ -95,208 +74,15 @@ async function setupEnv(args, requirements) {
   }
 }
 
-function isDirectory(x) {
-  return fs.existsSync(x) && fs.statSync(x).isDirectory();
-}
-
-function isFile(x) {
-  return fs.existsSync(x) && fs.statSync(x).isFile();
-}
-
 function isEmptyDirectory(x) {
   return isDirectory(x) && fs.readdirSync(x).length === 0;
 }
 
-function prettyTime(ms) {
-  let result = prettyMilliseconds(ms, { compact: true });
-  if (result.startsWith('~')) {
-    result = result.slice(1);
-  }
-
-  return result;
-}
-
-/**
- * Ensure we have a forge release to work with, in which we find forge bin
- *
- * @param {*} args
- * @param {boolean} [exitOn404=true]
- * @returns
- */
-function ensureForgeRelease(args, exitOn404 = true) {
-  const envReleaseDir = process.env.FORGE_RELEASE_DIR;
-  const cliReleaseDir = requiredDirs.release;
-  const argReleaseDir = args.releaseDir;
-  if (envReleaseDir || argReleaseDir) {
-    shell.echo(
-      `${symbols.info} ${chalk.yellow(
-        `Using custom release dir: ${envReleaseDir || argReleaseDir}`
-      )}`
-    );
-  }
-
-  const releaseDir = argReleaseDir || envReleaseDir || cliReleaseDir;
-  if (fs.existsSync(releaseDir)) {
-    const releaseYamlPath = path.join(releaseDir, './forge/release.yml');
-    if (!fs.existsSync(releaseYamlPath)) {
-      if (exitOn404) {
-        shell.echo(`${symbols.error} required config file ${releaseYamlPath} not found`);
-        shell.echo(
-          `${symbols.info} if you have not setup forge yet, please run ${chalk.cyan(
-            'forge install'
-          )} first`
-        );
-        process.exit(1);
-      }
-      return false;
-    }
-
-    try {
-      const releaseYamlObj = yaml.parse(fs.readFileSync(releaseYamlPath).toString());
-      if (!releaseYamlObj || !releaseYamlObj.current) {
-        throw new Error('no current forge release selected');
-      }
-
-      config.cli.currentVersion = releaseYamlObj.current;
-    } catch (err) {
-      debug.error(err);
-      if (exitOn404) {
-        shell.echo(`${symbols.error} config file ${releaseYamlPath} invalid`);
-        process.exit(1);
-      }
-
-      return false;
-    }
-
-    // simulator
-    // eslint-disable-next-line prefer-destructuring
-    const currentVersion = config.cli.currentVersion;
-    const simulatorBinPath = path.join(releaseDir, 'simulator', currentVersion, './bin/simulator');
-    if (fs.existsSync(simulatorBinPath) && fs.statSync(simulatorBinPath).isFile()) {
-      debug(`${symbols.success} Using simulator executable: ${simulatorBinPath}`);
-      config.cli.simulatorBinPath = simulatorBinPath;
-    }
-
-    // forge_starter
-    const starterBinPath = path.join(
-      releaseDir,
-      'forge_starter',
-      currentVersion,
-      './bin/forge_starter'
-    );
-    if (fs.existsSync(starterBinPath) && fs.statSync(starterBinPath).isFile()) {
-      debug(`${symbols.success} Using forge_starter executable: ${starterBinPath}`);
-      config.cli.starterBinPath = starterBinPath;
-    } else {
-      if (exitOn404) {
-        shell.echo(
-          `${symbols.error} forge_starter binary not found, please run ${chalk.cyan(
-            'forge install'
-          )} first`
-        );
-        process.exit(1);
-      }
-      return false;
-    }
-
-    // forge_web
-    const webBinPath = path.join(releaseDir, 'forge_web', currentVersion, './bin/forge_web');
-    if (fs.existsSync(webBinPath) && fs.statSync(webBinPath).isFile()) {
-      debug(`${symbols.success} Using forge_web executable: ${webBinPath}`);
-      config.cli.webBinPath = webBinPath;
-    }
-
-    // forge_workshop
-    const workshopBinPath = path.join(
-      releaseDir,
-      'forge_workshop',
-      currentVersion,
-      './bin/forge_workshop'
-    );
-    if (fs.existsSync(workshopBinPath) && fs.statSync(workshopBinPath).isFile()) {
-      debug(`${symbols.success} Using forge_web executable: ${workshopBinPath}`);
-      config.cli.workshopBinPath = workshopBinPath;
-    }
-
-    // forge_kernel
-    const forgeBinPath = path.join(releaseDir, 'forge', currentVersion, './bin/forge');
-    if (fs.existsSync(forgeBinPath) && fs.statSync(forgeBinPath).isFile()) {
-      config.cli.releaseDir = releaseDir;
-      config.cli.forgeBinPath = forgeBinPath;
-      config.cli.forgeReleaseDir = path.join(releaseDir, 'forge');
-      debug(`${symbols.success} Using forge release dir: ${releaseDir}`);
-      debug(`${symbols.success} Using forge executable: ${forgeBinPath}`);
-
-      if (semver.satisfies(currentVersion, engines.forge)) {
-        copyReleaseConfig(currentVersion, false);
-        return releaseDir;
-      }
-      if (exitOn404) {
-        shell.echo(
-          `${symbols.error} forge-cli@${version} requires forge@${
-            engines.forge
-          } to work, but got ${currentVersion}!`
-        );
-        shell.echo(
-          `${symbols.info} if you want to use forge-cli@${version}, please following below steps:`
-        );
-        shell.echo(hr);
-        shell.echo(
-          `1. run ${chalk.cyan('ps aux | grep forge')}, and kill all forge related processes`
-        );
-        shell.echo(`2. cleanup forge release dir: ${chalk.cyan('rm -rf ~/.forge_release')}`);
-        shell.echo(`3. cleanup forge cli dir: ${chalk.cyan('rm -rf ~/.forge_cli')}`);
-        shell.echo(`4. install latest forge: ${chalk.cyan('forge install')}`);
-        shell.echo(`5. start latest forge: ${chalk.cyan('forge start')}`);
-        process.exit(1);
-      }
-    } else if (exitOn404) {
-      shell.echo(
-        `${symbols.error} forge release binary not found, please run ${chalk.cyan(
-          'forge install'
-        )} first`
-      );
-      process.exit(1);
-    }
-  } else if (exitOn404) {
-    shell.echo(`${symbols.error} forge release dir does not exist
-
-  You can either run ${chalk.cyan('forge install')} to get the latest forge release.
-  Or start node with custom forge release folder
-  > ${chalk.cyan('forge start --release-dir ~/Downloads/forge/')}
-  > ${chalk.cyan('FORGE_RELEASE_DIR=~/Downloads/forge/ forge start')}
-      `);
-    process.exit(1);
-  }
-
-  return false;
-}
-
-function copyReleaseConfig(currentVersion, overwrite = true) {
-  const targetPath = path.join(path.dirname(requiredDirs.release), 'forge_release.toml');
-  if (fs.existsSync(targetPath) && !overwrite) {
-    return;
-  }
-
-  const sourcePath =
-    findReleaseConfig(requiredDirs.release, currentVersion) ||
-    findReleaseConfigOld(requiredDirs.release, currentVersion);
-  if (sourcePath) {
-    const cliDir = path.dirname(requiredDirs.release);
-    shell.echo(`${symbols.success} Extract forge config from ${sourcePath}`);
-    shell.exec(`cp ${sourcePath} ${cliDir}/`);
-    shell.echo(`${symbols.success} Forge config written to ${cliDir}/${path.basename(sourcePath)}`);
-  } else {
-    shell.echo(`${symbols.error} Forge config not found under release folder`);
-    process.exit(1);
-  }
-}
-
 async function ensureRunningNode() {
-  const pid = await findServicePid('forge_starter');
-  if (!pid) {
-    shell.echo(`${symbols.error} forge is not started yet!`);
-    shell.echo(`${symbols.info} Please run ${chalk.cyan('forge start')} first!`);
+  const chainName = process.env.FORGE_CURRENT_CHAIN;
+  if (!(await isForgeStarted())) {
+    shell.echo(`${symbols.error} chain ${chalk.yellow(chainName)} is not started yet!`);
+    shell.echo(`${symbols.info} Please run ${chalk.cyan(`forge start -c ${chainName}`)} first!`);
     process.exit(0);
   }
 
@@ -310,10 +96,27 @@ async function ensureRunningNode() {
  * @param {*} args
  */
 function ensureRpcClient(args) {
-  const releaseConfig = path.join(path.dirname(requiredDirs.release), 'forge_release.toml');
-  const configPath = args.configPath || process.env.FORGE_CONFIG || releaseConfig;
+  const socketGrpc = args.socketGrpc || process.env.FORGE_SOCK_GRPC;
+  const configPath = getProfileReleaseFilePath();
 
-  if (configPath && fs.existsSync(configPath)) {
+  if (socketGrpc) {
+    shell.echo(
+      `${symbols.info} ${chalk.yellow(
+        `Using custom grpc socket endpoint: ${process.env.FORGE_SOCK_GRPC}`
+      )}`
+    );
+    const forgeConfig = {
+      forge: {
+        sockGrpc: socketGrpc,
+        unlockTtl: 300,
+        web: {
+          port: 8210,
+        },
+      },
+    };
+    debug(`${symbols.info} using forge-cli with remote node ${socketGrpc}`);
+    Object.assign(config, forgeConfig);
+  } else if (fs.existsSync(configPath)) {
     if (process.env.FORGE_CONFIG) {
       shell.echo(
         `${symbols.info} ${chalk.yellow(`Using custom forge config: ${process.env.FORGE_CONFIG}`)}`
@@ -326,30 +129,15 @@ function ensureRpcClient(args) {
     debug(
       `${symbols.success} Using forge config: ${util.inspect(config, { depth: 5, colors: true })}`
     );
-  }
-
-  const socketGrpc = args.socketGrpc || process.env.FORGE_SOCK_GRPC;
-  if (socketGrpc) {
-    shell.echo(
-      `${symbols.info} ${chalk.yellow(
-        `Using custom grpc socket endpoint: ${process.env.FORGE_SOCK_GRPC}`
-      )}`
-    );
-    debug(`${symbols.info} using forge-cli with remote node ${socketGrpc}`);
-    set(config, 'forge.sockGrpc', socketGrpc);
-  }
-
-  if (!configPath && !socketGrpc) {
-    shell.echo(`${symbols.error} this command requires a valid forge config file to start
-
+  } else {
+    shell.echo(`${symbols.error} forge-cli requires a valid forge config file to start
 If you have not setup any forge core release on this machine, run this first:
 > ${chalk.cyan('forge install')}
-
 Or you can run forge-cli with custom config path
 > ${chalk.cyan('forge start --config-path ~/Downloads/forge/forge_release.toml')}
 > ${chalk.cyan('FORGE_CONFIG=~/Downloads/forge/forge_release.toml forge start')}
     `);
-    process.exit(1);
+    process.exit();
   }
 }
 
@@ -431,39 +219,6 @@ function ensureSetupScript(args) {
 }
 
 /**
- * Search forge release config under forge_sdk/prev folder
- *
- * @returns String
- */
-function createFileFinder(keyword, filePath) {
-  return function fileFinder(releaseDir, ver) {
-    if (!releaseDir) {
-      return '';
-    }
-
-    const libDir = path.join(releaseDir, 'forge', ver, 'lib');
-    debug('createFileFinder', { keyword, filePath, libDir });
-    if (!isDirectory(libDir)) {
-      return '';
-    }
-
-    const pattern = new RegExp(`^${keyword}`, 'i');
-    const sdkDir = fs.readdirSync(libDir).find(x => pattern.test(x));
-    debug('createFileFinder', { keyword, filePath, sdkDir });
-    if (sdkDir) {
-      const releaseFile = path.join(libDir, sdkDir, filePath);
-      if (fs.existsSync(releaseFile) && fs.statSync(releaseFile).isFile()) {
-        return releaseFile;
-      }
-    }
-
-    return '';
-  };
-}
-const findReleaseConfig = createFileFinder('forge', 'priv/forge_release.toml');
-const findReleaseConfigOld = createFileFinder('forge_sdk', 'priv/forge_release.toml');
-
-/**
  * Find version of current forge release
  *
  * @param {*} releaseDir
@@ -535,7 +290,8 @@ function createRpcClient() {
   return client;
 }
 
-function makeNativeCommandRunner(executable) {
+// TODO: need to refact to on name parameter
+function makeNativeCommandRunner(executable, name, { env } = {}) {
   return function runNativeForgeCommand(subCommand, options = {}) {
     return function rumCommand() {
       // eslint-disable-next-line prefer-destructuring
@@ -548,7 +304,7 @@ function makeNativeCommandRunner(executable) {
         shell.echo(hr);
         shell.echo(`${chalk.cyan('forge stop')}`);
         shell.echo(`${chalk.cyan('rm -rf ~/.forge_cli')}`);
-        shell.echo(`${chalk.cyan('rm -rf ~/.forge_release')}`);
+        shell.echo(`${chalk.cyan('rm -rf ~/.forge_chains')}`);
         shell.echo(`${chalk.cyan('npm install -g @arcblock/forge-cli')}`);
         shell.echo(`${chalk.cyan('forge install')}`);
         shell.echo('');
@@ -556,113 +312,24 @@ function makeNativeCommandRunner(executable) {
       }
 
       const sockGrpc =
-        process.env.FORGE_SOCK_GRPC || get(config, 'forge.sock_grpc') || 'tcp://127.0.0.1:28210';
+        process.env.FORGE_SOCK_GRPC || get(config, 'forge.sockGrpc') || 'tcp://127.0.0.1:28210';
 
-      let command = `FORGE_CONFIG=${forgeConfigPath} ${binPath} ${subCommand}`;
+      const erlAflagsParam = `ERL_AFLAGS="-sname ${getProcessTag(name)}"`;
+      let command = `${erlAflagsParam} FORGE_CONFIG=${forgeConfigPath} ${binPath} ${subCommand}`;
+
       if (['webBinPath', 'simulatorBinPath'].includes(executable)) {
-        command = `FORGE_CONFIG=${forgeConfigPath} FORGE_SOCK_GRPC=${sockGrpc} ${binPath} ${subCommand}`;
+        command = `${erlAflagsParam} FORGE_CONFIG=${forgeConfigPath} FORGE_SOCK_GRPC=${sockGrpc} ${binPath} ${subCommand}`; // eslint-disable-line
       }
-      debug(`runNativeCommand.${executable}`, command);
+
+      if (env) {
+        debug('makeNativeCommandRunner env:', env);
+        command = `${env} ${command}`;
+      }
+
+      debug(`runNativeCommand.${executable}:`, command);
       return shell.exec(command, options);
     };
   };
-}
-
-async function getRunningProcesses() {
-  try {
-    const processNames = ['workshop', 'simulator', 'forge_web'];
-    const processIds = await Promise.all(
-      processNames.map(processName => findServicePid(processName))
-    );
-
-    const processesMap = {};
-    processNames.forEach((processName, index) => {
-      if (processName) {
-        processesMap[processIds[index]] = processName;
-      }
-    });
-
-    const processes = await Promise.all(processIds.filter(Boolean).map(pid => pidUsage(pid)));
-
-    const processesStats = processes.map(x => ({
-      name: processesMap[x.pid],
-      pid: x.pid,
-      uptime: prettyTime(x.elapsed, { compact: true }),
-      memory: prettyBytes(x.memory),
-      cpu: `${x.cpu.toFixed(2)} %`,
-    }));
-
-    const forgeProcessStats = await getForgeProcesses();
-
-    // sort by name asc
-    return [...processesStats, ...forgeProcessStats].sort((x, y) => {
-      if (x.name > y.name) {
-        return 1;
-      }
-      if (x.name < y.name) {
-        return -1;
-      }
-
-      return 0;
-    });
-  } catch (error) {
-    console.error(error);
-    return [];
-  }
-}
-
-async function getForgeProcesses() {
-  const pid = await findServicePid('forge_starter');
-  if (!pid) {
-    return [];
-  }
-
-  debug(`${symbols.info} forge pid: ${pid}`);
-  try {
-    const processes = await pidUsageTree(pid);
-    const results = await Promise.all(
-      Object.values(processes).map(async x => {
-        try {
-          const [info] = await findProcess('pid', x.pid);
-          Object.assign(x, info);
-          debug(`${symbols.info} forge managed process info: `, x);
-        } catch (err) {
-          console.error(`Error getting pid info: ${x.pid}`, err);
-        }
-
-        return x;
-      })
-    );
-
-    const getProcessName = x => {
-      if (x.cmd.indexOf('/forge_starter/') > 0 && x.cmd.indexOf('/bin/beam.smp') > 0) {
-        return 'starter';
-      }
-
-      if (x.cmd.indexOf('/forge/') > 0 && x.cmd.indexOf('/bin/beam.smp') > 0) {
-        return 'forge';
-      }
-
-      if (x.cmd.indexOf('/tendermint/') > 0) {
-        return 'tendermint';
-      }
-
-      return x.name.replace(path.extname(x.name), '').replace(/^forge_/, '');
-    };
-
-    return results
-      .filter(x => /(forge|tendermint|beam.smp)/.test(x.name))
-      .map(x => ({
-        name: getProcessName(x),
-        pid: x.pid,
-        uptime: prettyTime(x.elapsed),
-        memory: prettyBytes(x.memory),
-        cpu: `${x.cpu.toFixed(2)} %`,
-      }));
-  } catch (err) {
-    console.error(err);
-    return [];
-  }
 }
 
 function getPlatform() {
@@ -720,15 +387,6 @@ function readCache(key) {
   }
 }
 
-function sleep(timeout = 1000) {
-  return new Promise(resolve => setTimeout(resolve, timeout));
-}
-
-function printLogo() {
-  shell.echo('');
-  shell.echo(chalk.cyan(figlet.textSync('By ArcBlock', { font: 'ANSI Shadow' })));
-}
-
 function checkUpdate() {
   const lastCheck = readCache('check-update');
   const now = Math.floor(Date.now() / 1000);
@@ -761,12 +419,6 @@ function checkUpdate() {
   }
 }
 
-async function findServicePid(n) {
-  const list = await findProcess('name', n);
-  const match = list.find(x => x.name === 'beam.smp');
-  return match ? match.pid : 0;
-}
-
 // Because some comments have special usage, we need to add it back
 function ensureConfigComment(str) {
   return str.replace(
@@ -796,33 +448,23 @@ module.exports = {
   },
 
   DEFAULT_MIRROR: 'https://releases.arcblock.io',
-  RELEASE_ASSETS: ['forge', 'forge_starter', 'simulator', 'forge_web', 'forge_workshop'],
+  RELEASE_ASSETS: ['forge', 'simulator', 'forge_web', 'forge_workshop'],
 
   debug,
-  sleep,
   setupEnv,
   requiredDirs,
-  findReleaseConfig,
-  findReleaseConfigOld,
-  copyReleaseConfig,
   findReleaseVersion,
-  createFileFinder,
   ensureRequiredDirs,
-  ensureForgeRelease,
   ensureRpcClient,
+  makeNativeCommandRunner,
   runNativeForgeCommand: makeNativeCommandRunner('forgeBinPath'),
-  runNativeWebCommand: makeNativeCommandRunner('webBinPath'),
-  runNativeWorkshopCommand: makeNativeCommandRunner('workshopBinPath'),
-  runNativeStarterCommand: makeNativeCommandRunner('starterBinPath'),
-  runNativeSimulatorCommand: makeNativeCommandRunner('simulatorBinPath'),
-  getForgeProcesses,
-  findServicePid,
+  runNativeWebCommand: makeNativeCommandRunner('webBinPath', 'web'),
+  runNativeWorkshopCommand: makeNativeCommandRunner('workshopBinPath', 'workshop'),
+  runNativeSimulatorCommand: makeNativeCommandRunner('simulatorBinPath', 'simulator'),
   getPlatform,
   createRpcClient,
   isDirectory,
-  isFile,
   isEmptyDirectory,
   printLogo,
   ensureConfigComment,
-  getRunningProcesses,
 };

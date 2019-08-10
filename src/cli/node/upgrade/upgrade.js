@@ -91,9 +91,12 @@ async function main() {
     },
     wallet: moderator,
   });
+
   shell.echo(`${symbols.success} upgrade node transaction sent`);
   shell.echo(hr);
+
   shell.exec(`forge tx ${hash}`);
+
   shell.echo(hr);
   shell.echo(`${symbols.info} forge will stop at height ${answers.height}`);
   shell.echo(

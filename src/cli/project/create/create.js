@@ -5,7 +5,9 @@ const fuzzy = require('fuzzy');
 const inquirer = require('inquirer');
 const shell = require('shelljs');
 const GraphQLClient = require('@arcblock/graphql-client');
-const { isDirectory, isFile, debug, webUrl } = require('core/env');
+const { webUrl } = require('core/env');
+const debug = require('core/debug')('create');
+const { isDirectory, isFile } = require('core/forge-fs');
 const { symbols, hr } = require('core/ui');
 inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
 

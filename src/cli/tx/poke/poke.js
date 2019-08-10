@@ -2,7 +2,8 @@ const shell = require('shelljs');
 const chalk = require('chalk');
 const moment = require('moment');
 const { symbols, hr, pretty } = require('core/ui');
-const { createRpcClient, config, debug } = require('core/env');
+const { createRpcClient, config } = require('core/env');
+const debug = require('core/debug')('poke');
 
 async function main() {
   const client = createRpcClient();

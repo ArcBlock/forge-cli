@@ -1,12 +1,14 @@
 const shell = require('shelljs');
 const chalk = require('chalk');
 const inquirer = require('inquirer');
-const { findServicePid } = require('core/env');
+const { clearDataDirectories } = require('core/forge-fs');
+const { print } = require('core/util');
+const { isForgeStarted } = require('core/forge-process');
 const { symbols } = require('core/ui');
 
-async function main({ opts: { yes } }) {
-  const pid = await findServicePid('forge_starter');
-  if (pid) {
+async function main({ opts: { yes }, args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
+  const isStarted = await isForgeStarted();
+  if (isStarted) {
     shell.echo(`${symbols.error} forge is running!`);
     shell.echo(`${symbols.info} Please run ${chalk.cyan('forge stop')} first, then we can reset!`);
     process.exit(0);
@@ -21,23 +23,20 @@ async function main({ opts: { yes } }) {
         type: 'confirm',
         name: 'confirm',
         default: false,
-        message: chalk.red(
-          'Reset chain state will erase chain state, logs and configuration are you sure to continue?'
-        ),
+        message: `${chalk.red('Are you sure to continue reset the')} ${chalk.cyan(
+          chainName
+        )} ${chalk.red('chain')}?`,
       },
     ];
+
+    print(chalk.red('Reset chain state will erase chain state, logs and configuration!'));
     const answers = await inquirer.prompt(questions);
     // eslint-disable-next-line prefer-destructuring
     confirm = answers.confirm;
   }
 
   if (confirm) {
-    shell.exec('rm -rf ~/.forge_release');
-    shell.echo(`${symbols.info} rm -rf ~/.forge_release`);
-    shell.exec('rm -rf ~/.forge_cli/keys');
-    shell.echo(`${symbols.info} rm -rf ~/.forge_cli/keys`);
-    shell.exec('rm -f ~/.forge_cli/forge_release.toml');
-    shell.echo(`${symbols.info} rm -f ~/.forge_cli/forge_release.toml`);
+    clearDataDirectories(chainName);
   } else {
     shell.echo(`${symbols.info} User abort, nothing changed!`);
     process.exit();

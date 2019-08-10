@@ -6,7 +6,10 @@ const { toItxAddress } = require('@arcblock/did-util');
 const { fromSecretKey } = require('@arcblock/forge-wallet');
 const { bytesToHex, hexToBytes, isHexStrict } = require('@arcblock/forge-util');
 const { symbols } = require('core/ui');
-const { isFile, debug, config, sleep, createRpcClient } = require('core/env');
+const { printError, printInfo, sleep } = require('core/util');
+const { isFile } = require('core/forge-fs');
+const { config, createRpcClient } = require('core/env');
+const debug = require('core/debug')('deploy');
 
 function ensureModeratorSecretKey() {
   const sk = process.env.FORGE_MODERATOR_SK;
@@ -58,17 +61,19 @@ const ensureModerator = async client => {
   shell.echo(`${symbols.info} moderator address ${moderator.toAddress()}`);
 
   if (!config.get('forge.moderator.address')) {
-    shell.echo(`${symbols.error} Abort because forge.moderator is not set in config file`);
-    shell.echo(
-      `${symbols.info} please add following content in config file ${chalk.cyan(
+    printError('Abort because forge.moderator is not set in config file');
+    printInfo(
+      `Please add following content in config file ${chalk.cyan(
         config.get('cli.forgeConfigPath')
-      )}`
+      )},`
     );
+    printInfo(`${chalk.red('then restart current forge:')}`);
     shell.echo(`
 [forge.moderator]
 address = "${moderator.toAddress()}"
 publicKey = "${base64.escape(base64.encode(hexToBytes(moderator.publicKey)))}"
 `);
+
     process.exit(1);
   }
 

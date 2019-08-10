@@ -1,22 +1,26 @@
 /* eslint-disable consistent-return */
-const shell = require('shelljs');
 const chalk = require('chalk');
+const deprecated = require('depd')('@arcblock/cli');
+const shell = require('shelljs');
+const { printInfo, printWarning } = require('core/util');
 const { symbols, getSpinner } = require('core/ui');
-const { findServicePid, sleep } = require('core/env');
+const debug = require('core/debug')('stop');
 
-async function isStopped() {
-  const pid = await findServicePid('forge_starter');
-  return !pid;
-}
+const {
+  getAllRunningProcesses,
+  isForgeStarted,
+  stopForgeProcesses,
+  stopAllForgeProcesses,
+} = require('core/forge-process');
 
 function waitUntilStopped() {
   return new Promise(async resolve => {
-    if (await isStopped(true)) {
+    if (!(await isForgeStarted())) {
       return resolve();
     }
 
     const timer = setInterval(async () => {
-      if (await isStopped(true)) {
+      if (!(await isForgeStarted())) {
         clearInterval(timer);
         return resolve();
       }
@@ -24,64 +28,63 @@ function waitUntilStopped() {
   });
 }
 
-async function main({ opts: { force } }) {
+async function stop(chainName, all) {
   try {
-    if (force) {
-      shell.echo(`${symbols.warning} ${chalk.yellow('Stop all forge processes in force mode')}`);
-      // prettier-ignore
-      // eslint-disable-next-line
-      const command = `ps -ef | grep -v grep | grep -v ${process.pid} | grep -v stop | grep forge | awk '{print $2}' | xargs kill`;
-      shell.exec(command, { silent: true });
-      shell.echo(chalk.cyan(command));
-      shell.echo(`${symbols.info} It may take up to 10 seconds for all forge processes to stop`);
-      return;
+    const allProcesses = await getAllRunningProcesses();
+    if (!allProcesses || !allProcesses.length) {
+      printWarning('No running processes');
+      process.exit(0);
     }
 
-    const pid = await findServicePid('forge_starter');
-    if (!pid) {
-      shell.echo(`${symbols.error} forge is not started yet!`);
-      shell.echo(`${symbols.info} start with ${chalk.cyan('forge start')}!`);
-      process.exit(1);
-      return;
+    debug(`all processes ${allProcesses.map(x => x.pid)}`);
+
+    if (all) {
+      printWarning(chalk.yellow('Stopping all chains'));
+      const spinner = getSpinner('Waiting for all chains to stop...');
+      spinner.start();
+
+      const handle = stopAllForgeProcesses;
+      const stoppedProcesses = await handle();
+      debug(`stopped processes ${stoppedProcesses.map(x => x.pid)}`);
+
+      await waitUntilStopped();
+      spinner.succeed('All Chains are stopped!');
+    } else {
+      printInfo(`Stopping ${chalk.yellow(chainName)} chain...`);
+      const spinner = getSpinner(`Waiting for chain ${chalk.yellow(chainName)} to stop...`);
+      spinner.start();
+
+      const handle = stopForgeProcesses.bind(null, chainName);
+      const stoppedProcesses = await handle();
+
+      debug(`stopped processes ${stoppedProcesses.map(x => x.pid)}`);
+      await waitUntilStopped();
+      spinner.succeed(`Chain ${chalk.yellow(chainName)} stopped!`);
     }
 
-    shell.echo(`${symbols.success} Sending stop signal to forge daemon...`);
-    const spinner = getSpinner('Waiting for forge daemon to stop...');
-    spinner.start();
-    const { code, stderr } = shell.exec(`kill ${pid}`, { silent: true });
-    if (code !== 0) {
-      spinner.fail(`Forge daemon stop failed ${stderr}!`);
-      return;
-    }
-
-    try {
-      const simulatorPid = await findServicePid('simulator');
-      if (simulatorPid) {
-        shell.exec(`kill ${simulatorPid}`, { silent: true });
-      }
-
-      const workshopPid = await findServicePid('forge_workshop');
-      if (workshopPid) {
-        shell.exec(`kill ${workshopPid}`, { silent: true });
-      }
-
-      const webPid = await findServicePid('forge_web');
-      if (webPid) {
-        shell.exec(`kill ${webPid}`, { silent: true });
-      }
-    } catch (err) {
-      // do nothing
-    }
-    await waitUntilStopped();
-    await sleep(5000);
-    spinner.succeed('Forge daemon stopped!');
-
-    process.exit(0);
+    return true;
   } catch (err) {
+    shell.echo();
+    debug(err);
     shell.echo(`${symbols.error} cannot get daemon process info, ensure forge is started!`);
+    return false;
+  }
+}
+
+async function main({ opts: { force, all }, args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
+  if (force) {
+    deprecated('forge stop --force: Use forge stop --all instead');
+  }
+
+  if (!(await isForgeStarted(chainName))) {
+    printWarning(`${chalk.cyan(chainName)} is not started!`);
     process.exit(1);
   }
+
+  const tmp = await stop(chainName, force || all);
+  process.exit(tmp ? 0 : 1);
 }
 
 exports.run = main;
 exports.execute = main;
+exports.stop = stop;

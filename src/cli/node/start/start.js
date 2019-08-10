@@ -1,46 +1,22 @@
 /* eslint-disable consistent-return */
+const chalk = require('chalk');
 const fs = require('fs');
 const shell = require('shelljs');
-const chalk = require('chalk');
-const findProcess = require('find-process');
+
 const { symbols, hr, getSpinner } = require('core/ui');
-const { config, debug, sleep } = require('core/env');
+const { config } = require('core/env');
+const debug = require('core/debug')('start');
 const { getLogfile } = require('core/forge-fs');
+const { sleep, print, printInfo } = require('core/util');
+const { isForgeStarted, getProcessTag } = require('core/forge-process');
 
+const { printAllProcesses } = require('../ps/ps');
+const { stop } = require('../stop/stop');
 const { start: startWeb } = require('../web/web');
-const { run: stop } = require('../stop/stop');
 
-function getForgeReleaseEnv() {
-  if (process.env.FORGE_RELEASE && fs.existsSync(process.env.FORGE_RELEASE)) {
-    return process.env.FORGE_RELEASE;
-  }
-
-  return config.get('cli.forgeReleaseDir');
-}
-
-async function isStarted(silent = false) {
-  try {
-    const tendermintProcess = await findProcess('name', 'tendermint');
-    if (tendermintProcess && tendermintProcess.length > 0) {
-      debug('node.start.isStarted', { tendermintProcess });
-      if (silent === false) {
-        shell.echo(`${symbols.info} forge is already started!`);
-        shell.echo(`${symbols.info} Please run ${chalk.cyan('forge stop')} first!`);
-      }
-
-      return true;
-    }
-  } catch (error) {
-    debug('node.start.isStarted', error.message);
-  }
-
-  return false;
-}
-
-function checkError(startAtMs) {
+function checkError(chainName, startAtMs) {
   return new Promise(resolve => {
-    const errorFilePath = getLogfile('exit_status.json');
-
+    const errorFilePath = getLogfile(chainName, 'exit_status.json');
     fs.stat(errorFilePath, (err, stats) => {
       if (!err && stats.ctimeMs > startAtMs) {
         const { status, message } = JSON.parse(fs.readFileSync(errorFilePath).toString());
@@ -52,112 +28,112 @@ function checkError(startAtMs) {
   });
 }
 
-async function main({ opts: { multiple, dryRun } }) {
+async function main({ opts: { dryRun }, args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
   const startAt = Date.now();
-  if (multiple && !process.env.FORGE_CONFIG) {
-    shell.echo(`${symbols.error} start multiple chain requires provided custom config`);
+  if (await isForgeStarted(chainName)) {
+    shell.echo(`${symbols.info} Chain ${chalk.cyan(chalk.cyan(chainName))} is already started!`);
     return;
   }
 
-  if (!multiple && (await isStarted())) {
-    return;
-  }
+  const { forgeBinPath, forgeConfigPath } = config.get('cli');
 
-  const { starterBinPath, forgeBinPath, forgeConfigPath } = config.get('cli');
-  if (!starterBinPath) {
-    shell.echo(`${symbols.error} starterBinPath not found, abort!`);
-    return;
-  }
-
-  const command = `FORGE_CONFIG=${forgeConfigPath} FORGE_RELEASE=${getForgeReleaseEnv()} ${starterBinPath} daemon`;
-  debug('start command', command);
+  // add `-sname` parameter to enable start multiple forge processes
+  const startCommandPrefix = `ERL_AFLAGS="-sname ${getProcessTag(
+    'forge'
+  )}" FORGE_CONFIG=${forgeConfigPath} ${forgeBinPath}`;
+  const startType = 'daemon';
 
   if (dryRun) {
-    shell.echo(`${symbols.info} Command to debug forge starting issue: `);
-    shell.echo(hr);
-    shell.echo(chalk.cyan(command));
-    shell.echo(hr);
+    printInfo('Command to debug forge starting issue:');
+    print(hr);
+    print(chalk.cyan(`${startCommandPrefix} start`));
+    print(hr);
     const url = 'https://github.com/ArcBlock/forge-cli/issues';
-    shell.echo(
-      `${symbols.info} Please create an issue on ${chalk.cyan(
-        url
-      )} with output after running above command`
+    printInfo(
+      `Please create an issue on ${chalk.cyan(url)} with output after running above command`
     );
     return;
   }
 
-  const spinner = getSpinner('Waiting for forge daemon to start...');
+  const command = `${startCommandPrefix} ${startType}`;
+  debug('start command', command);
+
+  const spinner = getSpinner(`Waiting for chain ${chalk.yellow(chainName)} to start...`);
   spinner.start();
   try {
     shell.exec(command);
-    await waitUntilStarted(40000);
+    await waitUntilStarted(chainName, 40000);
     await sleep(6000);
-    const errMessage = await checkError(startAt);
+    const errMessage = await checkError(chainName, startAt);
     if (errMessage) {
       throw new Error(errMessage);
     }
 
+    spinner.succeed(`Chain ${chalk.yellow(chainName)} successfully started`);
     if (config.get('forge.web.enabled')) {
-      spinner.stop();
       await startWeb();
-      spinner.start();
     }
 
-    spinner.succeed('Forge daemon successfully started');
-    shell.exec('forge ps');
-    shell.echo('');
+    await printAllProcesses();
+
     shell.echo(
-      `${symbols.info} If you want to access interactive console, please run ${chalk.cyan(
-        `${forgeBinPath} remote`
+      `${symbols.info} For interactive console, please run ${chalk.cyan(
+        `forge remote -c ${chainName}`
       )}`
     );
     shell.echo(
-      `${symbols.info} If you want to access forge web interface, please run ${chalk.cyan(
-        'forge web open'
+      `${symbols.info} For forge web interface, please run ${chalk.cyan(
+        `forge web open -c ${chainName}`
       )}`
     );
-    shell.echo(
-      `${symbols.info} If you want to show above process list, please run ${chalk.cyan('forge ps')}`
-    );
+    shell.echo(`${symbols.info} For above process list, please run ${chalk.cyan('forge ps')}`);
     shell.echo(
       `${symbols.info} If you want to know forge status detail, please run ${chalk.cyan(
-        'forge status'
+        `${symbols.info} For forge status detail, please run ${chalk.cyan(
+          `forge status -c ${chainName}`
+        )}`
       )}`
     );
   } catch (err) {
     debug.error(err);
     shell.echo();
-    shell.echo(`${symbols.error} Start failed: ${err.message}`);
+    shell.echo(`${symbols.error} Forge start failed: ${err.message}`);
 
     spinner.fail('Forge cannot be successfully started, now exiting...');
-    await stop({ opts: { force: true } });
-    shell.echo('');
+
+    await stop(chainName, false);
+
+    shell.echo();
     shell.echo(`${symbols.info} Possible solutions:`);
     shell.echo(hr);
     shell.echo('1. Cleanup already running forge');
     shell.echo('Ensure no running forge process that cannot be detected by forge-cli');
     shell.echo(
       `Run: ${chalk.cyan(
-        'forge stop --force'
-      )}, to kill forge related processes, then try ${chalk.cyan('forge start')} again`
+        `forge stop ${chainName}`
+      )}, to stop forge related processes, then try ${chalk.cyan(`forge start ${chainName}`)} again`
     );
     shell.echo('');
     shell.echo('2. Report bug to our engineer');
     shell.echo('It is very likely that forge cannot be started on your environment');
-    shell.echo(`Please run: ${chalk.cyan('forge start --dry-run')}`);
+    shell.echo(`Please run: ${chalk.cyan(`forge start ${chainName} --dry-run`)}`);
+
+    process.exit(1);
+  } finally {
+    process.exit(0);
   }
 }
 
-function waitUntilStarted(timeout = 30000) {
+function waitUntilStarted(chainName, timeout = 30000) {
   return new Promise(async (resolve, reject) => {
-    if (await isStarted(true)) {
+    if (await isForgeStarted(chainName)) {
       return resolve();
     }
 
     let timeElapsed = 0;
     const interval = 800;
     const timer = setInterval(async () => {
-      if (await isStarted(true)) {
+      if (await isForgeStarted(chainName)) {
         clearInterval(timer);
         return resolve();
       }

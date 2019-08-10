@@ -6,7 +6,8 @@ const safeEval = require('safe-eval');
 const { enums } = require('@arcblock/forge-proto');
 const { fakeMessage } = require('@arcblock/forge-message');
 const { symbols, hr, pretty } = require('core/ui');
-const { createRpcClient, config, debug } = require('core/env');
+const { createRpcClient, config } = require('core/env');
+const debug = require('core/debug')('tx:send');
 
 inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
 

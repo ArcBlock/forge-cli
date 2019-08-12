@@ -1,3 +1,8 @@
+## 0.36.2 (August 12, 2019)
+
+- fix: forge upgrade tx not display correctly #107
+- upgrade forge-js dependencies #139
+
 ## 0.36.1 (August 12, 2019)
 
 - chore: create symbolic links correctly when copy files #140

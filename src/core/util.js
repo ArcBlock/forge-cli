@@ -109,11 +109,30 @@ const makeRange = (start = 0, end = 0) => {
   return result;
 };
 
+const parseTimeStrToMS = time => {
+  const tmp = time.match(/(\d+)([h|m|s|ms]{1,2})/);
+  const num = parseInt(tmp[1], 10);
+  const unit = tmp[2];
+
+  switch (unit) {
+    case 'h':
+      return num * 60 * 60 * 1000;
+    case 'm':
+      return num * 60 * 1000;
+    case 's':
+      return num * 1000;
+    case 'ms':
+    default:
+      return num;
+  }
+};
+
 module.exports = {
   getPort,
   getFreePort,
   makeRange,
   md5,
+  parseTimeStrToMS,
   prettyTime,
   print,
   printLogo,

@@ -1,3 +1,6 @@
+## 0.36.1 (August 12, 2019)
+
+
 ## 0.36.0 (August 01, 2019)
 
 - add multi chain feature, mainly includes:

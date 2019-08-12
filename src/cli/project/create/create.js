@@ -9,6 +9,7 @@ const { webUrl } = require('core/env');
 const debug = require('core/debug')('create');
 const { isDirectory, isFile } = require('core/forge-fs');
 const { symbols, hr } = require('core/ui');
+const { printError, printSuccess, printInfo } = require('core/util');
 inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
 
 const findTemplates = baseDir => {
@@ -84,35 +85,42 @@ const questions = [
   },
 ];
 
-function createDirectoryContents(fromPath, toPath, blacklist) {
+function createDirectoryContents({ fromPath, toPath, blacklist, symbolicLinks }) {
   const filesToCreate = fs.readdirSync(fromPath).filter(x => blacklist.every(s => x !== s));
 
   filesToCreate.forEach(file => {
     const origFilePath = `${fromPath}/${file}`;
 
     // get stats about the current file
-    const stats = fs.statSync(origFilePath);
+    const stats = fs.lstatSync(origFilePath);
     const targetPath = `${toPath}/${file}`;
 
     if (stats.isFile()) {
       try {
         const contents = fs.readFileSync(origFilePath);
         fs.writeFileSync(targetPath, contents);
-        shell.echo(`${symbols.success} created file ${targetPath}`);
+        printSuccess(`created file ${targetPath}`);
       } catch (err) {
-        shell.echo(`${symbols.error} error sync file ${targetPath}`);
+        printError(`error sync file ${targetPath}`);
         debug.error(err);
         process.exit(1);
       }
+    } else if (stats.isSymbolicLink()) {
+      symbolicLinks.push([origFilePath, targetPath]);
     } else if (stats.isDirectory()) {
       try {
         if (!fs.existsSync(targetPath)) {
           fs.mkdirSync(targetPath);
         }
-        createDirectoryContents(`${fromPath}/${file}`, `${toPath}/${file}`, blacklist);
-        shell.echo(`${symbols.success} created dir ${targetPath}`);
+        createDirectoryContents({
+          fromPath: `${fromPath}/${file}`,
+          toPath: `${toPath}/${file}`,
+          blacklist,
+          symbolicLinks,
+        });
+        printSuccess(`created dir ${targetPath}`);
       } catch (err) {
-        shell.echo(`${symbols.error} error sync file ${targetPath}`);
+        printError(`error sync file ${targetPath}`);
         debug.error(err);
         process.exit(1);
       }
@@ -123,18 +131,14 @@ function createDirectoryContents(fromPath, toPath, blacklist) {
 async function main({ args: [_target], opts: { yes } }) {
   try {
     if (Object.keys(templates).length === 0) {
-      shell.echo(`${symbols.error} No starter project templates found`);
-      shell.echo(
-        `${symbols.info} Run ${chalk.cyan(
-          'npm install -g forge-react-starter'
-        )} to install react-starter`
-      );
+      printError('No starter project templates found');
+      printInfo(`Run ${chalk.cyan('npm install -g forge-react-starter')} to install react-starter`);
       process.exit(1);
     }
 
     if (!_target) {
-      shell.echo(`${symbols.error} Please specify a folder for creating the new application`);
-      shell.echo(`${symbols.info} You can try ${chalk.cyan('forge create-project hello-forge')}`);
+      printError('Please specify a folder for creating the new application');
+      printInfo(`You can try ${chalk.cyan('forge create-project hello-forge')}`);
       process.exit(1);
     }
 
@@ -142,7 +146,7 @@ async function main({ args: [_target], opts: { yes } }) {
     // Determine targetDir
     const targetDir = path.resolve(target);
     if (isDirectory(targetDir) && fs.readdirSync(targetDir).length > 0) {
-      shell.echo(`${symbols.error} target folder ${target} already exist and not empty`);
+      printError(`target folder ${target} already exist and not empty`);
       process.exit(1);
     }
 
@@ -163,9 +167,9 @@ async function main({ args: [_target], opts: { yes } }) {
     }
 
     // Sync files
-    shell.echo(`${symbols.info} application config`, config);
-    shell.echo(`${symbols.info} project folder: ${targetDir}`);
-    shell.echo(`${symbols.info} creating project files...`);
+    printInfo('application config', config);
+    printInfo(`project folder: ${targetDir}`);
+    printInfo('creating project files...');
     shell.echo(hr);
     if (!fs.existsSync(targetDir)) {
       shell.mkdir(targetDir);
@@ -183,8 +187,29 @@ async function main({ args: [_target], opts: { yes } }) {
       'dist',
       'build',
     ].concat(starter.blacklist || []);
-    shell.echo(`${symbols.info} file blacklist`, blacklist);
-    createDirectoryContents(starterDir, targetDir, blacklist);
+    printInfo('file blacklist', blacklist);
+    const symbolicLinks = [];
+    createDirectoryContents({
+      fromPath: starterDir,
+      toPath: targetDir,
+      blacklist,
+      symbolicLinks,
+    });
+
+    symbolicLinks.forEach(([origFilePath, targetPath]) => {
+      try {
+        const sourcePathReal = fs.realpathSync(origFilePath);
+        const fromRootReal = fs.realpathSync(starterDir);
+        const sourcePath = path.join(targetDir, sourcePathReal.replace(fromRootReal, ''));
+        fs.symlinkSync(sourcePath, targetPath);
+        printSuccess(`symbolic file ${targetPath}`);
+      } catch (err) {
+        printError(`error sync file ${targetPath}`);
+        debug.error(err);
+        process.exit(1);
+      }
+    });
+
     shell.echo(hr);
 
     // Create configuration files, etc
@@ -198,7 +223,7 @@ async function main({ args: [_target], opts: { yes } }) {
     }
 
     // Prompt getting started command
-    shell.echo(`${symbols.success} application created successfully...`);
+    printSuccess('application created successfully...');
     if (typeof starter.onComplete === 'function') {
       await starter.onComplete(Object.assign({ client, symbols }, config));
     }

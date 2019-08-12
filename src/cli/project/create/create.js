@@ -84,14 +84,14 @@ const questions = [
   },
 ];
 
-function createDirectoryContents(fromPath, toPath, blacklist) {
+function createDirectoryContents({ fromPath, toPath, blacklist, symbolicLinks }) {
   const filesToCreate = fs.readdirSync(fromPath).filter(x => blacklist.every(s => x !== s));
 
   filesToCreate.forEach(file => {
     const origFilePath = `${fromPath}/${file}`;
 
     // get stats about the current file
-    const stats = fs.statSync(origFilePath);
+    const stats = fs.lstatSync(origFilePath);
     const targetPath = `${toPath}/${file}`;
 
     if (stats.isFile()) {
@@ -104,12 +104,19 @@ function createDirectoryContents(fromPath, toPath, blacklist) {
         debug.error(err);
         process.exit(1);
       }
+    } else if (stats.isSymbolicLink()) {
+      symbolicLinks.push([origFilePath, targetPath]);
     } else if (stats.isDirectory()) {
       try {
         if (!fs.existsSync(targetPath)) {
           fs.mkdirSync(targetPath);
         }
-        createDirectoryContents(`${fromPath}/${file}`, `${toPath}/${file}`, blacklist);
+        createDirectoryContents({
+          fromPath: `${fromPath}/${file}`,
+          toPath: `${toPath}/${file}`,
+          blacklist,
+          symbolicLinks,
+        });
         shell.echo(`${symbols.success} created dir ${targetPath}`);
       } catch (err) {
         shell.echo(`${symbols.error} error sync file ${targetPath}`);
@@ -184,7 +191,28 @@ async function main({ args: [_target], opts: { yes } }) {
       'build',
     ].concat(starter.blacklist || []);
     shell.echo(`${symbols.info} file blacklist`, blacklist);
-    createDirectoryContents(starterDir, targetDir, blacklist);
+    const symbolicLinks = [];
+    createDirectoryContents({
+      fromPath: starterDir,
+      toPath: targetDir,
+      blacklist,
+      symbolicLinks,
+    });
+
+    symbolicLinks.forEach(([origFilePath, targetPath]) => {
+      try {
+        const sourcePathReal = fs.realpathSync(origFilePath);
+        const fromRootReal = fs.realpathSync(starterDir);
+        const sourcePath = path.join(targetDir, sourcePathReal.replace(fromRootReal, ''));
+        fs.symlinkSync(sourcePath, targetPath);
+        shell.echo(`${symbols.success} symbolic file ${targetPath}`);
+      } catch (err) {
+        shell.echo(`${symbols.error} error sync file ${targetPath}`);
+        debug.error(err);
+        process.exit(1);
+      }
+    });
+
     shell.echo(hr);
 
     // Create configuration files, etc

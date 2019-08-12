@@ -3,8 +3,9 @@ const semver = require('semver');
 const shell = require('shelljs');
 const chalk = require('chalk');
 const { config, createRpcClient } = require('core/env');
-const { symbols, hr } = require('core/ui');
+const { symbols, hr, getSpinner } = require('core/ui');
 
+const { sleep, parseTimeStrToMS } = require('core/util');
 const { ensureModerator } = require('../../protocol/deploy/deploy');
 const { listReleases } = require('../../release/list/list');
 
@@ -95,6 +96,11 @@ async function main() {
   shell.echo(`${symbols.success} upgrade node transaction sent`);
   shell.echo(hr);
 
+  const spinner = getSpinner('Waiting for transaction is done...');
+  spinner.start();
+  const waitMS = 1000 + parseTimeStrToMS(config.get('tendermint.timeoutCommit', '5s'));
+  await sleep(waitMS);
+  spinner.stop();
   shell.exec(`forge tx ${hash}`);
 
   shell.echo(hr);

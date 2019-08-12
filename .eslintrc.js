@@ -10,7 +10,7 @@ module.exports = {
   },
   extends: ['airbnb-base'],
   rules: {
-    indent: ['error', 2],
+    indent: ['error', 2, { SwitchCase: 1 }],
     'operator-linebreak': 'off',
     'linebreak-style': ['error', 'unix'],
     quotes: ['error', 'single'],

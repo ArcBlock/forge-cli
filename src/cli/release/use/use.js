@@ -42,7 +42,7 @@ async function main({ args: [userVersion] }) {
 
     shell.echo(`${symbols.success} forge v${version} activated successfully!`);
     shell.echo('');
-    shell.echo(`Now you can restart forge with ${chalk.cyan('forge start')}`);
+    shell.echo(`Now you can start forge with ${chalk.cyan('forge start')}`);
     shell.echo('');
   } catch (err) {
     debug.error(err);

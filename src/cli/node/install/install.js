@@ -12,7 +12,7 @@ const { symbols, hr, getSpinner, getProgress } = require('core/ui');
 const { printError, printInfo } = require('core/util');
 const { debug, getPlatform, RELEASE_ASSETS, DEFAULT_MIRROR } = require('core/env');
 const { printLogo } = require('core/util');
-const { copyReleaseConfig } = require('core/forge-config');
+const { copyReleaseConfig, getAllAppNames } = require('core/forge-config');
 const { requiredDirs, isForgeBinExists, getCurrentForgeVersion } = require('core/forge-fs');
 const { isForgeStarted } = require('core/forge-process');
 
@@ -200,16 +200,23 @@ async function main({ args: [userVersion], opts: { mirror, silent } }) {
     shell.echo(`${symbols.success} Congratulations! forge v${version} installed successfully!`);
     shell.echo('');
 
-    const questions = [
-      {
-        type: 'confirm',
-        name: 'customizeConfig',
-        message: 'Do you want to customize config for this chain?',
-        default: true,
-      },
-    ];
     if (!silent) {
+      const chainsCount = getAllAppNames().length;
+      if (chainsCount > 0) {
+        printInfo(`If you want to custom the config, run: ${chalk.cyan('forge config set')}`);
+        return;
+      }
+
+      const questions = [
+        {
+          type: 'confirm',
+          name: 'customizeConfig',
+          message: 'Do you want to customize config for this chain?',
+          default: true,
+        },
+      ];
       const { customizeConfig } = await inquirer.prompt(questions);
+
       if (customizeConfig) {
         const childProcess = spawn('forge', ['config', 'set'], {
           stdio: 'inherit',
@@ -244,6 +251,3 @@ exports.fetchAssetInfo = fetchAssetInfo;
 exports.downloadAsset = downloadAsset;
 exports.expandReleaseTarball = expandReleaseTarball;
 exports.updateReleaseYaml = updateReleaseYaml;
-
-// exports.run = () => updateReleaseYaml('forge', '0.16.0');
-// exports.execute = () => updateReleaseYaml('forge', '0.16.0');

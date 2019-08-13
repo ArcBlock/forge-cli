@@ -1,3 +1,9 @@
+## -0.36.4 (August 13, 2019)
+
+- feature: add `chain:ls` command to show all chains #133
+- chore: rename `reset` to `chain:remove` #133
+- refact: rename appName to chainName, and move getAllAppNames function from forge-fs to forge-process
+
 ## 0.36.3 (August 13, 2019)
 
 - change the logic after forge installation #137

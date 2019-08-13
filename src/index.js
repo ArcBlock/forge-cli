@@ -44,7 +44,7 @@ const getCurrentChainENV = async (command, action, argsChainName) => {
 
   const allProcesses = await getAllProcesses();
 
-  if (['start', 'stop', 'reset'].includes(command) && action) {
+  if (['start', 'stop', 'reset', 'chain:remove'].includes(command) && action) {
     chainName = action;
   } else if (allProcesses.length >= 1 && !['start', 'join'].includes(command) && !argsChainName) {
     chainName = allProcesses[0].name;

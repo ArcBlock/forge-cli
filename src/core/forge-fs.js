@@ -243,6 +243,7 @@ module.exports = {
   clearDataDirectories,
   createNewProfile,
   ensureProfileDirectory,
+  getAllAppDirectories,
   getAllChainNames,
   getCliDirectory,
   getConsensusEnginBinPath,

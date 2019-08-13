@@ -108,9 +108,9 @@ async function main() {
   printInfo(`forge will stop at height ${answers.height}`);
   printInfo('you need to run following commands in sequence to complete the upgrade:');
   print();
-  print(`1. ${chalk.cyan('forge stop')} #stop forge daemon`);
-  print(`2. ${chalk.cyan(`forge use ${answers.version}`)} #select new version in forge-cli`);
-  print(`3. ${chalk.cyan('forge start')} #start forge again`);
+  print(`1. ${chalk.cyan('forge stop')}    #stop forge daemon`);
+  print(`2. ${chalk.cyan(`forge use ${answers.version}`)}    #select new version in forge-cli`);
+  print(`3. ${chalk.cyan('forge start')}    #start forge again`);
 }
 
 exports.run = main;

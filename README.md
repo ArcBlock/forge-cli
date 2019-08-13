@@ -38,7 +38,7 @@
 
 ## QuickStart
 
-[![asciicast](https://asciinema.org/a/253439.svg)](https://asciinema.org/a/253439){target="_blank"}
+[![asciicast](https://asciinema.org/a/253439.svg)](https://asciinema.org/a/253439)
 
 ## Install
 
@@ -56,71 +56,6 @@ Run `forge` and get available options and subcommands.
 
 ```terminal
 ❯ forge
-
-██████╗ ██╗   ██╗     █████╗ ██████╗  ██████╗██████╗ ██╗      ██████╗  ██████╗██╗  ██╗
-██╔══██╗╚██╗ ██╔╝    ██╔══██╗██╔══██╗██╔════╝██╔══██╗██║     ██╔═══██╗██╔════╝██║ ██╔╝
-██████╔╝ ╚████╔╝     ███████║██████╔╝██║     ██████╔╝██║     ██║   ██║██║     █████╔╝ 
-██╔══██╗  ╚██╔╝      ██╔══██║██╔══██╗██║     ██╔══██╗██║     ██║   ██║██║     ██╔═██╗ 
-██████╔╝   ██║       ██║  ██║██║  ██║╚██████╗██████╔╝███████╗╚██████╔╝╚██████╗██║  ██╗
-╚═════╝    ╚═╝       ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═════╝ ╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝
-                                                                                      
-Usage: forge [options] [command]
-
-Options:
-  -V, --version                         output the version number
-  -v, --verbose                         Output runtime info when execute subcommand, useful for debug
-  -r, --release-dir <dir>               Forge release directory path (unzipped), use your own copy forge release
-  -c, --config-path <path>              Forge config used when starting forge node and initializing gRPC clients
-  -g, --socket-grpc <endpoint>          Socket gRPC endpoint to connect, with this you can use forge-cli with a remote node
-  -h, --help                            output usage information
-
-Commands:
-  account <address>                     Get an account info by address
-  account:create                        Interactively create an account, guarded by a passphrase
-  account:delete <address>              Delete an account by address
-  account:list [role]                   List all accounts stored in this node
-  asset <address>                       Get asset info by address
-  block [options] [height]              Get the block info from the running node
-  checkin                               Send a poke tx to the network to get tokens for test
-  config [options] [action]             Read/write chain/node config
-  create-project [options] [targetDir]  Create a project from forge starter projects
-  declare:node                          Declare the current node to be a validator candidate
-  download [options] [version]          Download a forge release without activate it
-  help <subcommand>                     Show help of a sub command
-  install|init [options] [version]      Download and setup forge release on this machine
-  join <endpoint>                       Join a network by providing a valid forge web graphql endpoint
-  logs [type]                           Show logs for various forge components
-  ls                                    List forge releases installed locally
-  protocol:compile [sourceDir]          Compile a forge transaction protocol
-  protocol:deploy [itxPath]             Deploy a compiled transaction protocol to ABT Node
-  ps                                    List running forge component processes
-  reset [options]                       Reset current chain state, run with caution
-  simulator [action]                    Start/stop simulator and generate random traffic
-  stake [options] [show]                Stake to various entities: node/user/asset
-  start [options]                       Start forge as a daemon in the background
-  status [type]                         List info of the running chain/node
-  stop [options]                        Stop the forge daemon and all forge components
-  tx [hash]                             Get a tx detail and display
-  tx:list                               List latest transactions
-  tx:send                               Send a signed tx to the network
-  tx:sign                               Sign a transaction (base64) according to sender’s wallet
-  unstake                               Revert stakes to various entities
-  upgrade                               Upgrade chain node to new version without reset
-  use [version]                         Activate an already downloaded forge release
-  version                               Output version for all forge components
-  wallet:create [options]               Create a local wallet and dump its public/private key
-  web [options] [action]                Start/stop the web interface of running forge chain/node
-  workshop [action]                     Start/stop the dApps workshop
-
-Examples:
-
-  Please install a forge-release before running any other commands
-  > forge install latest
-  > forge install --mirror http://arcblock.oss-cn-beijing.aliyuncs.com
-
-  Curious about how to use a subcommand?
-  > forge help install
-  
 
 ```
 

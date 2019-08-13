@@ -45,7 +45,7 @@ function getAllAppDirectories() {
     .filter(tmp => isDirectory(path.join(rootConfigDirectory, tmp)));
 }
 
-function getAllAppNames() {
+function getAllChainNames() {
   return getAllAppDirectories().map(name => name.slice(name.indexOf('_') + 1));
 }
 
@@ -234,7 +234,7 @@ module.exports = {
   clearDataDirectories,
   createNewProfile,
   ensureProfileDirectory,
-  getAllAppNames,
+  getAllChainNames,
   getCliDirectory,
   getConsensusEnginBinPath,
   getCurrentReleaseFilePath,

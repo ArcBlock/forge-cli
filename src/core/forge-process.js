@@ -6,7 +6,7 @@ const findProcess = require('find-process');
 const shell = require('shelljs');
 
 const debug = require('./debug')('forge-process');
-const { getTendermintHomeDir, getAllAppNames } = require('./forge-fs');
+const { getTendermintHomeDir, getAllChainNames } = require('./forge-fs');
 const { prettyTime, md5, sleep } = require('./util');
 const { DEFAULT_CHAIN_NAME } = require('../constant');
 
@@ -44,8 +44,8 @@ async function findServicePid(n) {
   return match ? match.pid : 0;
 }
 
-async function getTendermintProcess(appName) {
-  const homeDir = getTendermintHomeDir(appName);
+async function getTendermintProcess(chainName) {
+  const homeDir = getTendermintHomeDir(chainName);
   const tendermintProcess = await findProcess('name', 'tendermint');
 
   const tmp = tendermintProcess.find(({ cmd }) => cmd.includes(homeDir));
@@ -59,8 +59,8 @@ async function findForgeEpmdDeamon() {
   return { name: 'forge-epmd', pid: tmp ? tmp.pid : 0 };
 }
 
-async function isForgeStarted(appName = process.env.FORGE_CURRENT_CHAIN) {
-  const { pid } = await getTendermintProcess(appName);
+async function isForgeStarted(chainName = process.env.FORGE_CURRENT_CHAIN) {
+  const { pid } = await getTendermintProcess(chainName);
 
   return !!pid;
 }
@@ -135,14 +135,14 @@ async function getRunningProcessesStats(chainName = process.env.FORGE_CURRENT_CH
 
 async function getAllRunningProcessStats() {
   const processes = [];
-  const allAppNames = getAllAppNames();
+  const allChains = getAllChainNames();
 
   // eslint-disable-next-line
-  for (const appName of allAppNames) {
+  for (const name of allChains) {
     // eslint-disable-next-line
-    const tmp = await getRunningProcessesStats(appName);
+    const tmp = await getRunningProcessesStats(name);
     if (tmp && tmp.length) {
-      processes.push({ name: appName, value: tmp });
+      processes.push({ name, value: tmp });
     }
   }
 
@@ -151,14 +151,14 @@ async function getAllRunningProcessStats() {
 
 async function getAllProcesses() {
   const processes = [];
-  const allAppNames = getAllAppNames();
+  const allChains = getAllChainNames();
 
   // eslint-disable-next-line
-  for (const appName of allAppNames) {
+  for (const name of allChains) {
     // eslint-disable-next-line
-    const tmp = await getRunningProcesses(appName);
+    const tmp = await getRunningProcesses(name);
     if (tmp && tmp.length) {
-      processes.push({ name: appName, value: tmp });
+      processes.push({ name, value: tmp });
     }
   }
 
@@ -222,12 +222,12 @@ async function stopForgeProcesses(chainName) {
 }
 
 module.exports = {
+  findServicePid,
+  isForgeStarted,
   getAllProcesses,
   getAllRunningProcesses,
   getAllRunningProcessStats,
   getRunningProcesses,
-  findServicePid,
-  isForgeStarted,
   getForgeProcess,
   getForgeWebProcess,
   getForgeWorkshopProcess,

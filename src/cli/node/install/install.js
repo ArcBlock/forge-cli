@@ -17,7 +17,7 @@ const {
   requiredDirs,
   isForgeBinExists,
   getCurrentForgeVersion,
-  getAllAppNames,
+  getAllChainNames,
 } = require('core/forge-fs');
 const { isForgeStarted } = require('core/forge-process');
 
@@ -206,7 +206,7 @@ async function main({ args: [userVersion], opts: { mirror, silent } }) {
     shell.echo('');
 
     if (!silent) {
-      const chainsCount = getAllAppNames().length;
+      const chainsCount = getAllChainNames().length;
       if (chainsCount > 0) {
         printInfo(`If you want to custom the config, run: ${chalk.cyan('forge config set')}`);
         return;

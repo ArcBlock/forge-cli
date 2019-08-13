@@ -3,9 +3,10 @@ const figlet = require('figlet');
 const shell = require('shelljs');
 const chalk = require('chalk');
 const getPort = require('get-port');
-
 const prettyMilliseconds = require('pretty-ms');
+
 const { symbols, hr } = require('./ui');
+const { DEFAULT_CHAIN_NAME } = require('../constant');
 const debug = require('./debug')('util');
 
 function prettyTime(ms) {
@@ -127,6 +128,31 @@ const parseTimeStrToMS = time => {
   }
 };
 
+/**
+ * sort number
+ * @param {name} x
+ * @param {name} y
+ */
+const chainSortHandler = (xName, yName) => {
+  // make default chain the first in order
+  if (xName === DEFAULT_CHAIN_NAME) {
+    return -1;
+  }
+
+  if (yName === DEFAULT_CHAIN_NAME) {
+    return 1;
+  }
+
+  if (xName > yName) {
+    return 1;
+  }
+  if (xName < yName) {
+    return -1;
+  }
+
+  return 0;
+};
+
 module.exports = {
   getPort,
   getFreePort,
@@ -142,4 +168,5 @@ module.exports = {
   printSuccess,
   printWarning,
   sleep,
+  chainSortHandler,
 };

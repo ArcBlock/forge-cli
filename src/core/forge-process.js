@@ -7,28 +7,9 @@ const shell = require('shelljs');
 
 const debug = require('./debug')('forge-process');
 const { getTendermintHomeDir, getAllChainNames } = require('./forge-fs');
-const { prettyTime, md5, sleep } = require('./util');
-const { DEFAULT_CHAIN_NAME } = require('../constant');
+const { prettyTime, md5, sleep, chainSortHandler } = require('./util');
 
-const processSortHandler = (x, y) => {
-  // make default chain the first in order
-  if (x.name === DEFAULT_CHAIN_NAME) {
-    return -1;
-  }
-
-  if (y.name === DEFAULT_CHAIN_NAME) {
-    return 1;
-  }
-
-  if (x.name > y.name) {
-    return 1;
-  }
-  if (x.name < y.name) {
-    return -1;
-  }
-
-  return 0;
-};
+const sortHandler = (x, y) => chainSortHandler(x.name, y.name);
 
 const getProcessTag = (name, chainName = process.env.FORGE_CURRENT_CHAIN) => {
   if (!name) {
@@ -146,7 +127,7 @@ async function getAllRunningProcessStats() {
     }
   }
 
-  return processes.sort(processSortHandler);
+  return processes.sort(sortHandler);
 }
 
 async function getAllProcesses() {
@@ -162,7 +143,7 @@ async function getAllProcesses() {
     }
   }
 
-  processes.sort(processSortHandler);
+  processes.sort(sortHandler);
 
   return processes;
 }

@@ -1,8 +1,4 @@
 #!/usr/bin/env node
 
-if (process.env.TRAVIS && process.env.CI) {
-  return;
-}
-
-const path = require('path');
-require(path.resolve(__dirname, '../src/index.js'));
+const path = require('path'); // eslint-disable-line
+require(path.resolve(__dirname, '../src/index.js')); // eslint-disable-line

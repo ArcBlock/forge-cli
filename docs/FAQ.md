@@ -38,8 +38,8 @@ Run the command, and create an issue for us at [https://github.com/ArcBlock/forg
 
 Steps to completely remove an installation of `@arcblock/forge-cli`:
 
-- Cleanup data directory: `forge reset --yes`
-- Remove cli directory: `rm -rf ~/.forge_cli`
+- Cleanup data directory: `forge chain:remove <chainName> --yes`
+- Remove cli directory: `rm -rf ~/.forge_chains/<chainName>`
 - Remove cli package: `npm uninstall -g @arcblock/forge-cli`
 
 ## How to start forge with custom config or release directory?

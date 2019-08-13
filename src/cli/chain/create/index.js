@@ -4,10 +4,11 @@ const { cli, action } = require('core/cli');
 const { execute, run } = require('./create');
 
 cli(
-  'create-chain [chainName]',
+  'chain:create [chainName]',
   'Create a new chain instance',
   input => action(execute, run, input),
   {
+    alias: 'create-chain',
     requirements: {
       forgeRelease: true,
       rpcClient: false,

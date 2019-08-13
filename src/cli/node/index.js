@@ -4,7 +4,6 @@ exports.install = require('./install');
 exports.join = require('./join');
 exports.logs = require('./logs');
 exports.ps = require('./ps');
-exports.reset = require('./reset');
 exports.simulate = require('./simulate');
 exports.start = require('./start');
 exports.state = require('./state');

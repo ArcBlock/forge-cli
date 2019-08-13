@@ -13,6 +13,7 @@ const {
   DEFAULT_FORGE_GRPC_PORT,
 } = require('../constant');
 const {
+  getAllAppDirectories,
   getDataDirectory,
   getRootConfigDirectory,
   getCurrentReleaseFilePath,
@@ -20,7 +21,6 @@ const {
   getForgeVersionFromYaml,
   getProfileWorkshopDirectory,
   getProfileDirectory,
-  isDirectory,
   requiredDirs,
 } = require('./forge-fs');
 const {
@@ -35,19 +35,6 @@ const {
 const { hr, symbols } = require('./ui');
 const debug = require('./debug')('forge-config');
 const { version, engines } = require('../../package.json');
-
-function getAllAppDirectories() {
-  const rootConfigDirectory = getRootConfigDirectory();
-
-  return fs
-    .readdirSync(rootConfigDirectory)
-    .filter(tmp => tmp.startsWith('forge'))
-    .filter(tmp => isDirectory(path.join(rootConfigDirectory, tmp)));
-}
-
-function getAllAppNames() {
-  return getAllAppDirectories().map(name => name.slice(name.indexOf('_') + 1));
-}
 
 function getPortFromUri(uri) {
   if (!uri || typeof uri !== 'string') {
@@ -382,7 +369,6 @@ async function ensureForgeRelease(args, exitOn404 = true) {
 module.exports = {
   copyReleaseConfig,
   ensureForgeRelease,
-  getAllAppNames,
   getDefaultChainConfigs,
   setConfigToProfile,
   setFilePathOfConfig,

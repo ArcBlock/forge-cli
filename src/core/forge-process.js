@@ -6,8 +6,7 @@ const findProcess = require('find-process');
 const shell = require('shelljs');
 
 const debug = require('./debug')('forge-process');
-const { getAllAppNames } = require('./forge-config');
-const { getTendermintHomeDir } = require('./forge-fs');
+const { getTendermintHomeDir, getAllAppNames } = require('./forge-fs');
 const { prettyTime, md5, sleep } = require('./util');
 const { DEFAULT_CHAIN_NAME } = require('../constant');
 

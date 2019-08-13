@@ -12,8 +12,13 @@ const { symbols, hr, getSpinner, getProgress } = require('core/ui');
 const { printError, printInfo } = require('core/util');
 const { debug, getPlatform, RELEASE_ASSETS, DEFAULT_MIRROR } = require('core/env');
 const { printLogo } = require('core/util');
-const { copyReleaseConfig, getAllAppNames } = require('core/forge-config');
-const { requiredDirs, isForgeBinExists, getCurrentForgeVersion } = require('core/forge-fs');
+const { copyReleaseConfig } = require('core/forge-config');
+const {
+  requiredDirs,
+  isForgeBinExists,
+  getCurrentForgeVersion,
+  getAllAppNames,
+} = require('core/forge-fs');
 const { isForgeStarted } = require('core/forge-process');
 
 function fetchReleaseVersion(mirror = DEFAULT_MIRROR) {

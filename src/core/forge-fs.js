@@ -36,6 +36,19 @@ function isFile(x) {
   return fs.existsSync(x) && fs.statSync(x).isFile();
 }
 
+function getAllAppDirectories() {
+  const rootConfigDirectory = getRootConfigDirectory();
+
+  return fs
+    .readdirSync(rootConfigDirectory)
+    .filter(tmp => tmp.startsWith('forge'))
+    .filter(tmp => isDirectory(path.join(rootConfigDirectory, tmp)));
+}
+
+function getAllAppNames() {
+  return getAllAppDirectories().map(name => name.slice(name.indexOf('_') + 1));
+}
+
 function getCurrentWorkingDirectory() {
   return process.env.CURRENT_WORKING_PROFILE;
 }
@@ -221,6 +234,7 @@ module.exports = {
   clearDataDirectories,
   createNewProfile,
   ensureProfileDirectory,
+  getAllAppNames,
   getCliDirectory,
   getConsensusEnginBinPath,
   getCurrentReleaseFilePath,

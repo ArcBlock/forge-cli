@@ -1,7 +1,7 @@
 ## 0.36.3 (August 13, 2019)
 
 - change the logic after forge installation #137
-- chore: chore: modify prompt message
+- chore: modify prompt message
 
 ## 0.36.2 (August 12, 2019)
 

@@ -251,6 +251,3 @@ exports.fetchAssetInfo = fetchAssetInfo;
 exports.downloadAsset = downloadAsset;
 exports.expandReleaseTarball = expandReleaseTarball;
 exports.updateReleaseYaml = updateReleaseYaml;
-
-// exports.run = () => updateReleaseYaml('forge', '0.16.0');
-// exports.execute = () => updateReleaseYaml('forge', '0.16.0');

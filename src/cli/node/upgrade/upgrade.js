@@ -2,11 +2,14 @@ const inquirer = require('inquirer');
 const semver = require('semver');
 const shell = require('shelljs');
 const chalk = require('chalk');
+
 const { config, createRpcClient } = require('core/env');
 const { hr, getSpinner } = require('core/ui');
 const { print, printError, printInfo, printSuccess } = require('core/util');
-
 const { sleep, parseTimeStrToMS } = require('core/util');
+const debug = require('core/debug')('upgrade');
+
+const { waitUntilStopped } = require('../stop/stop');
 const { ensureModerator } = require('../../protocol/deploy/deploy');
 const { listReleases } = require('../../release/list/list');
 
@@ -97,20 +100,33 @@ async function main() {
   printSuccess('upgrade node transaction sent');
   print(hr);
 
-  const spinner = getSpinner('Waiting for transaction is done...');
-  spinner.start();
+  const txSpinner = getSpinner('Waiting for transaction commit...');
+  txSpinner.start();
   const waitMS = 1000 + parseTimeStrToMS(config.get('tendermint.timeoutCommit', '5s'));
   await sleep(waitMS);
-  spinner.stop();
+  txSpinner.stop();
+
   shell.exec(`forge tx ${hash}`);
 
-  print(hr);
-  printInfo(`forge will stop at height ${answers.height}`);
-  printInfo('you need to run following commands in sequence to complete the upgrade:');
+  const chainName = process.env.FORGE_CURRENT_CHAIN;
+
+  const spinner = getSpinner('Stopping forge...');
+  spinner.start();
+  debug('waiting forge stop');
+  await waitUntilStopped();
+  debug('forge stopped');
+  spinner.stop();
+
+  shell.exec(`forge use ${answers.version} --color always`);
+  shell.exec(`forge start ${chainName} --color always`);
+
   print();
-  print(`1. ${chalk.cyan('forge stop')}    #stop forge daemon`);
-  print(`2. ${chalk.cyan(`forge use ${answers.version}`)}    #select new version in forge-cli`);
-  print(`3. ${chalk.cyan('forge start')}    #start forge again`);
+  printInfo('Version:');
+  shell.exec('forge version');
+  print();
+  printSuccess('Upgrade success!');
+
+  process.exit(0);
 }
 
 exports.run = main;

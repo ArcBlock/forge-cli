@@ -1,3 +1,7 @@
+## 0.36.6 (August 14, 2019)
+
+- chore: update badges in readme
+
 ## 0.36.5 (August 14, 2019)
 
 - fix publish script bug

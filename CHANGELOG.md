@@ -1,3 +1,7 @@
+## 0.36.5 (August 14, 2019)
+
+- fix publish script bug
+
 ## -0.36.4 (August 13, 2019)
 
 - feature: add `chain:ls` command to show all chains #133

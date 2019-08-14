@@ -4,7 +4,16 @@ const path = require('path');
 const shell = require('shelljs');
 
 const readmeFile = path.join(__dirname, '../README.md');
-const { stdout } = shell.exec(path.resolve(__dirname, '../bin/forge'), { silent: true });
+const { code, stdout, stderr } = shell.exec(path.resolve(__dirname, '../bin/forge'), {
+  silent: true,
+});
+
+if (code > 0) {
+  console.error(`get forge help error ${code}:`);
+  console.error(stderr);
+  process.exit(code);
+}
+
 const readmeContent = `![forge-cli](https://www.arcblock.io/.netlify/functions/badge/?text=Forge%20CLI)
 
 > Command line toolbox maintained by [Arcblock](https://www.arcblock.io) that helps developers to work with [Forge SDK](https://docs.arcblock.io/forge/latest/)

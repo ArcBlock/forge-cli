@@ -4,10 +4,11 @@ const { cli, action } = require('core/cli');
 const { execute, run } = require('./create');
 
 cli(
-  'create-project [targetDir]',
+  'project:create [targetDir]',
   'Create a project from forge starter projects',
   input => action(execute, run, input),
   {
+    alias: 'create-project',
     requirements: {
       forgeRelease: false,
       runningNode: false,

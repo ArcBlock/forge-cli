@@ -36,6 +36,8 @@ const findBaseDirs = () => {
   const { stdout: npmGlobal } = shell.exec('npm prefix -g', { silent: true });
   baseDirs.push(path.join(npmGlobal.trim(), 'lib/node_modules'));
 
+  debug('baseDirs', baseDirs);
+
   // yarn packages and links
   const { stdout: yarn = '' } = shell.which('yarn', { silent: true }) || { stdout: '' };
   if (yarn.trim()) {
@@ -128,6 +130,67 @@ function createDirectoryContents({ fromPath, toPath, blacklist, symbolicLinks })
   });
 }
 
+function copyFiles({ starterDir, blacklist, targetDir }) {
+  const excludes = [
+    '.git',
+    '.cache',
+    '.vscode',
+    '.netlify',
+    '.next',
+    '.env',
+    'cache',
+    'tmp',
+    'node_modules',
+    'dist',
+    'build',
+  ].concat(blacklist || []);
+  printInfo('exclude files:', excludes);
+  const symbolicLinks = [];
+  createDirectoryContents({
+    fromPath: starterDir,
+    toPath: targetDir,
+    blacklist: excludes,
+    symbolicLinks,
+  });
+
+  symbolicLinks.forEach(([origFilePath, targetPath]) => {
+    try {
+      const sourcePathReal = fs.realpathSync(origFilePath);
+      const fromRootReal = fs.realpathSync(starterDir);
+      const sourcePath = path.join(targetDir, sourcePathReal.replace(fromRootReal, ''));
+      fs.symlinkSync(sourcePath, targetPath);
+      printSuccess(`symbolic file ${targetPath}`);
+    } catch (err) {
+      printError(`error sync file ${targetPath}`);
+      debug.error(err);
+      process.exit(1);
+    }
+  });
+}
+
+function getStarter(starterDir) {
+  let configFilePath = path.join(starterDir, './starter.config.js');
+
+  // for compatible with old starter
+  if (!fs.existsSync(configFilePath)) {
+    const packageJSONPath = path.join(starter, 'package.json');
+    if (!fs.existsSync(packageJSONPath)) {
+      throw new Error('no package.json file in starter');
+    }
+
+    const packageJSON = JSON.parse(fs.readFileSync(packageJSONPath).toString());
+    configFilePath = path.resolve(starterDir, packageJSON.main);
+    if (!fs.existsSync(configFilePath)) {
+      throw new Error(`entry file: "${configFilePath}" is no exists`);
+    }
+  }
+
+  // eslint-disable-next-line
+  const starter = require(configFilePath);
+
+  return starter;
+}
+
 async function main({ args: [_target], opts: { yes } }) {
   try {
     if (Object.keys(templates).length === 0) {
@@ -142,6 +205,7 @@ async function main({ args: [_target], opts: { yes } }) {
       process.exit(1);
     }
 
+    // fix: is absolute path
     const target = _target.startsWith('/') ? _target : path.join(process.cwd(), _target);
     // Determine targetDir
     const targetDir = path.resolve(target);
@@ -150,14 +214,14 @@ async function main({ args: [_target], opts: { yes } }) {
       process.exit(1);
     }
 
+    // fix: check forge is running, or better error handling
     // Collecting starter config
     const { template, chainHost } = yes ? defaults : await inquirer.prompt(questions);
     const client = new GraphQLClient({ endpoint: chainHost });
     const { info } = await client.getChainInfo();
     const chainId = info.network;
     const starterDir = templates[template];
-    // eslint-disable-next-line
-    const starter = require(path.join(starterDir, './starter.config.js'));
+    const starter = getStarter(starterDir);
     const config = { starterDir, targetDir, template, chainHost, chainId };
     if (yes || (Array.isArray(starter.questions) && starter.questions.length === 0)) {
       Object.assign(config, defaults, starter.defaults || {});
@@ -174,41 +238,13 @@ async function main({ args: [_target], opts: { yes } }) {
     if (!fs.existsSync(targetDir)) {
       shell.mkdir(targetDir);
     }
-    const blacklist = [
-      '.git',
-      '.cache',
-      '.vscode',
-      '.netlify',
-      '.next',
-      '.env',
-      'cache',
-      'tmp',
-      'node_modules',
-      'dist',
-      'build',
-    ].concat(starter.blacklist || []);
-    printInfo('file blacklist', blacklist);
-    const symbolicLinks = [];
-    createDirectoryContents({
-      fromPath: starterDir,
-      toPath: targetDir,
-      blacklist,
-      symbolicLinks,
-    });
 
-    symbolicLinks.forEach(([origFilePath, targetPath]) => {
-      try {
-        const sourcePathReal = fs.realpathSync(origFilePath);
-        const fromRootReal = fs.realpathSync(starterDir);
-        const sourcePath = path.join(targetDir, sourcePathReal.replace(fromRootReal, ''));
-        fs.symlinkSync(sourcePath, targetPath);
-        printSuccess(`symbolic file ${targetPath}`);
-      } catch (err) {
-        printError(`error sync file ${targetPath}`);
-        debug.error(err);
-        process.exit(1);
-      }
-    });
+    // compatible code
+    if (typeof starter.onCopyFiles === 'function') {
+      starter.onCopyFiles(targetDir);
+    } else {
+      copyFiles({ starterDir, blacklist: starter.blacklist, targetDir });
+    }
 
     shell.echo(hr);
 

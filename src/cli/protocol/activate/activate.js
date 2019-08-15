@@ -18,7 +18,6 @@ const doActivate = async (client, address, moderator) => {
     printInfo(`Run ${chalk.cyan(`forge tx ${hash} -c ${chainName}`)} to inspect the transaction`);
   } catch (err) {
     printError(`Protocol ${address} activate failed`);
-    printError.error(err);
   }
 };
 

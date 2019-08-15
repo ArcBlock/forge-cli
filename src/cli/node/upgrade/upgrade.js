@@ -2,9 +2,14 @@ const inquirer = require('inquirer');
 const semver = require('semver');
 const shell = require('shelljs');
 const chalk = require('chalk');
-const { config, createRpcClient } = require('core/env');
-const { symbols, hr } = require('core/ui');
 
+const { config, createRpcClient } = require('core/env');
+const { hr, getSpinner } = require('core/ui');
+const { print, printError, printInfo, printSuccess } = require('core/util');
+const { sleep, parseTimeStrToMS } = require('core/util');
+const debug = require('core/debug')('upgrade');
+
+const { waitUntilStopped } = require('../stop/stop');
 const { ensureModerator } = require('../../protocol/deploy/deploy');
 const { listReleases } = require('../../release/list/list');
 
@@ -16,8 +21,8 @@ async function main() {
     .sort((v1, v2) => semver.gt(v2, v1));
 
   if (!releases.length) {
-    shell.echo(`${symbols.error} Abort because no available newer version to upgrade!`);
-    shell.echo(`${symbols.info} run ${chalk.cyan('forge download')} to install a new version`);
+    printError('Abort because no available newer version to upgrade!');
+    printInfo(`run ${chalk.cyan('forge download')} to install a new version`);
     process.exit(1);
     return;
   }
@@ -81,7 +86,7 @@ async function main() {
 
   const answers = await inquirer.prompt(questions);
   if (!answers.confirm) {
-    shell.echo(`${symbols.error} Abort because user cancellation!`);
+    printError('Abort because user cancellation!');
     process.exit(0);
   }
 
@@ -92,19 +97,36 @@ async function main() {
     wallet: moderator,
   });
 
-  shell.echo(`${symbols.success} upgrade node transaction sent`);
-  shell.echo(hr);
+  printSuccess('upgrade node transaction sent');
+  print(hr);
+
+  const txSpinner = getSpinner('Waiting for transaction commit...');
+  txSpinner.start();
+  const waitMS = 1000 + parseTimeStrToMS(config.get('tendermint.timeoutCommit', '5s'));
+  await sleep(waitMS);
+  txSpinner.stop();
 
   shell.exec(`forge tx ${hash}`);
 
-  shell.echo(hr);
-  shell.echo(`${symbols.info} forge will stop at height ${answers.height}`);
-  shell.echo(
-    `${symbols.info} you need to run following commands in sequence to complete the upgrade:`
-  );
-  shell.echo(`1. stop forge daemon: ${chalk.cyan('forge stop')}`);
-  shell.echo(`2. select new version in forge-cli: ${chalk.cyan(`forge use ${answers.version}`)}`);
-  shell.echo(`3. start forge again: ${chalk.cyan('forge start')}`);
+  const chainName = process.env.FORGE_CURRENT_CHAIN;
+
+  const spinner = getSpinner('Stopping forge...');
+  spinner.start();
+  debug('waiting forge stop');
+  await waitUntilStopped();
+  debug('forge stopped');
+  spinner.stop();
+
+  shell.exec(`forge use ${answers.version} --color always`);
+  shell.exec(`forge start ${chainName} --color always`);
+
+  print();
+  printInfo('Version:');
+  shell.exec('forge version');
+  print();
+  printSuccess('Upgrade success!');
+
+  process.exit(0);
 }
 
 exports.run = main;

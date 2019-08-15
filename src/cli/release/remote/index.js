@@ -5,7 +5,7 @@ const { print } = require('core/util');
 const { execute, run } = require('./remote');
 
 cli(
-  'remote [shell_name]',
+  'remote [shellName]',
   'Connects to the running system via a remote shell',
   input => action(execute, run, input),
   {

@@ -1,8 +1,34 @@
+<<<<<<< HEAD
 ## 0.36.2 (August 12, 2019)
 
 - support `forge protocol:activate` subcommand
 - support `forge protocol:deactivate` subcommand
 - support `forge protocol:list` subcommand
+=======
+## 0.36.6 (August 14, 2019)
+
+- chore: update badges in readme
+
+## 0.36.5 (August 14, 2019)
+
+- fix publish script bug
+
+## -0.36.4 (August 13, 2019)
+
+- feature: add `chain:ls` command to show all chains #133
+- chore: rename `reset` to `chain:remove` #133
+- refact: rename appName to chainName, and move getAllAppNames function from forge-fs to forge-process
+
+## 0.36.3 (August 13, 2019)
+
+- change the logic after forge installation #137
+- chore: modify prompt message
+
+## 0.36.2 (August 12, 2019)
+
+- fix: forge upgrade tx not display correctly #107
+- upgrade forge-js dependencies #139
+>>>>>>> master
 
 ## 0.36.1 (August 12, 2019)
 

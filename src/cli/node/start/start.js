@@ -14,21 +14,12 @@ const { printAllProcesses } = require('../ps/ps');
 const { stop } = require('../stop/stop');
 const { start: startWeb } = require('../web/web');
 
-function checkError(chainName, startAtMs) {
-  return new Promise(resolve => {
-    const errorFilePath = getLogfile(chainName, 'exit_status.json');
-    fs.stat(errorFilePath, (err, stats) => {
-      if (!err && stats.ctimeMs > startAtMs) {
-        const { status, message } = JSON.parse(fs.readFileSync(errorFilePath).toString());
-        return resolve(`${status}: ${message}`);
-      }
-
-      resolve(null);
-    });
-  });
+async function main({ opts: { dryRun }, args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
+  const tmp = await start(chainName, dryRun);
+  process.exit(tmp ? 0 : 1);
 }
 
-async function main({ opts: { dryRun }, args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
+async function start(chainName, dryRun = false) {
   const startAt = Date.now();
   if (await isForgeStarted(chainName)) {
     shell.echo(`${symbols.info} Chain ${chalk.cyan(chalk.cyan(chainName))} is already started!`);
@@ -94,6 +85,7 @@ async function main({ opts: { dryRun }, args: [chainName = process.env.FORGE_CUR
         )}`
       )}`
     );
+    return true;
   } catch (err) {
     debug.error(err);
     shell.echo();
@@ -118,10 +110,22 @@ async function main({ opts: { dryRun }, args: [chainName = process.env.FORGE_CUR
     shell.echo('It is very likely that forge cannot be started on your environment');
     shell.echo(`Please run: ${chalk.cyan(`forge start ${chainName} --dry-run`)}`);
 
-    process.exit(1);
-  } finally {
-    process.exit(0);
+    return false;
   }
+}
+
+function checkError(chainName, startAtMs) {
+  return new Promise(resolve => {
+    const errorFilePath = getLogfile(chainName, 'exit_status.json');
+    fs.stat(errorFilePath, (err, stats) => {
+      if (!err && stats.ctimeMs > startAtMs) {
+        const { status, message } = JSON.parse(fs.readFileSync(errorFilePath).toString());
+        return resolve(`${status}: ${message}`);
+      }
+
+      resolve(null);
+    });
+  });
 }
 
 function waitUntilStarted(chainName, timeout = 30000) {
@@ -150,3 +154,4 @@ function waitUntilStarted(chainName, timeout = 30000) {
 
 exports.execute = main;
 exports.run = main;
+exports.start = start;

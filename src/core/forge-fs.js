@@ -5,7 +5,14 @@ const shell = require('shelljs');
 const yaml = require('yaml');
 
 const debug = require('core/debug')('forge-fs');
-const { print, printWarning, printInfo, printSuccess, printError } = require('core/util');
+const {
+  print,
+  printWarning,
+  printInfo,
+  printSuccess,
+  printError,
+  chainSortHandler,
+} = require('core/util');
 
 const { CONFIG_FILE_NAME, CHAIN_DATA_PATH_NAME } = require('../constant');
 
@@ -34,6 +41,21 @@ function isDirectory(x) {
 
 function isFile(x) {
   return fs.existsSync(x) && fs.statSync(x).isFile();
+}
+
+function getAllAppDirectories() {
+  const rootConfigDirectory = getRootConfigDirectory();
+
+  return fs
+    .readdirSync(rootConfigDirectory)
+    .filter(tmp => tmp.startsWith('forge'))
+    .filter(tmp => isDirectory(path.join(rootConfigDirectory, tmp)));
+}
+
+function getAllChainNames() {
+  return getAllAppDirectories()
+    .map(name => name.slice(name.indexOf('_') + 1))
+    .sort(chainSortHandler);
 }
 
 function getCurrentWorkingDirectory() {
@@ -221,6 +243,8 @@ module.exports = {
   clearDataDirectories,
   createNewProfile,
   ensureProfileDirectory,
+  getAllAppDirectories,
+  getAllChainNames,
   getCliDirectory,
   getConsensusEnginBinPath,
   getCurrentReleaseFilePath,

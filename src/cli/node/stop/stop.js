@@ -11,6 +11,7 @@ const {
   isForgeStarted,
   stopForgeProcesses,
   stopAllForgeProcesses,
+  getRunningProcesses,
 } = require('core/forge-process');
 
 function waitUntilStopped() {
@@ -28,7 +29,7 @@ function waitUntilStopped() {
   });
 }
 
-async function stop(chainName, all) {
+async function stop(chainName, all = false) {
   try {
     const allProcesses = await getAllRunningProcesses();
     if (!allProcesses || !allProcesses.length) {
@@ -76,9 +77,12 @@ async function main({ opts: { force, all }, args: [chainName = process.env.FORGE
     deprecated('forge stop --force: Use forge stop --all instead');
   }
 
-  if (!(await isForgeStarted(chainName))) {
-    printWarning(`${chalk.cyan(chainName)} is not started!`);
-    process.exit(1);
+  if (!all) {
+    const processes = await getRunningProcesses(chainName);
+    if (processes.length === 0) {
+      printWarning(`${chalk.cyan(chainName)} is not started!`);
+      process.exit(1);
+    }
   }
 
   const tmp = await stop(chainName, force || all);
@@ -88,3 +92,4 @@ async function main({ opts: { force, all }, args: [chainName = process.env.FORGE
 exports.run = main;
 exports.execute = main;
 exports.stop = stop;
+exports.waitUntilStopped = waitUntilStopped;

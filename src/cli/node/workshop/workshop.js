@@ -25,7 +25,7 @@ function processOutput(output, action) {
 function checkForgeVersion(version) {
   if (semver.lt(version, MULTI_WORKSHOP_VERSION)) {
     printWarning(
-      `Start multiple workshop can only be above v${version} of forge,
+      `Start multiple workshop can only be above v${MULTI_WORKSHOP_VERSION} of forge,
       otherwise, workshop can be only start once at port 8807.`
     );
 

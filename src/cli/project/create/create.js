@@ -1,17 +1,20 @@
+const chalk = require('chalk');
 const fs = require('fs');
 const fsExtra = require('fs-extra');
 const path = require('path');
-const chalk = require('chalk');
-const fuzzy = require('fuzzy');
 const inquirer = require('inquirer');
+const os = require('os');
 const shell = require('shelljs');
 const GraphQLClient = require('@arcblock/graphql-client');
+const tar = require('tar'); // eslint-disable-line
 const { webUrl } = require('core/env');
 const debug = require('core/debug')('create');
 const { isDirectory, isFile } = require('core/forge-fs');
 const { symbols, hr } = require('core/ui');
 const { prettyStringify, print, printError, printSuccess, printInfo } = require('core/util');
 inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
+
+const STARTER_DIRECTORY = path.join(os.homedir(), '.forge_starter');
 
 const findTemplates = baseDir => {
   const templates = fs
@@ -65,19 +68,6 @@ const defaults = {
 debug('application defaults:', defaults);
 
 const questions = [
-  {
-    type: 'autocomplete',
-    name: 'template',
-    message: 'Select a starter template:',
-    default: defaults.template,
-    source: (_, inp) => {
-      const input = inp || '';
-      return new Promise(resolve => {
-        const result = fuzzy.filter(input, Object.keys(templates));
-        resolve(result.map(item => item.original));
-      });
-    },
-  },
   {
     type: 'text',
     name: 'chainHost',
@@ -210,13 +200,40 @@ function getStartPackageConfig(starterPath) {
   return packageJSON;
 }
 
+async function downloadStarter(startName) {
+  if (!fs.existsSync(STARTER_DIRECTORY)) {
+    fs.mkdirSync(STARTER_DIRECTORY);
+  }
+
+  const dest = path.join(os.tmpdir(), `forge-starter${Date.now()}`);
+  fs.mkdirSync(dest);
+  const { code, stdout, stderr } = shell.exec(`cd ${dest} && npm pack ${startName}`);
+  if (code !== 0) {
+    throw new Error(stderr);
+  }
+
+  const packageName = stdout.trim();
+  await tar.x({ file: path.join(dest, packageName), C: dest });
+  const starterPath = path.join(dest, 'package');
+  shell.exec(`cd ${starterPath} && yarn`);
+
+  return starterPath;
+}
+
+function clearStarter(starterDir) {
+  fsExtra.removeSync(starterDir);
+  debug('starter cleared...');
+}
+
 async function main({ args: [_target], opts: { yes } }) {
+  let starterDir = '';
+
   try {
-    if (Object.keys(templates).length === 0) {
-      printError('No starter project templates found');
-      printInfo(`Run ${chalk.cyan('npm install -g forge-react-starter')} to install react-starter`);
-      process.exit(1);
-    }
+    // if (Object.keys(templates).length === 0) {
+    //   printError('No starter project templates found');
+    //   printInfo(`Run ${chalk.cyan('npm install -g forge-react-starter')} to install react-starter`);
+    //   process.exit(1);
+    // }
 
     if (!_target) {
       printError('Please specify a folder for creating the new application');
@@ -235,18 +252,29 @@ async function main({ args: [_target], opts: { yes } }) {
 
     // fix: check forge is running, or better error handling
     // Collecting starter config
-    const { template, chainHost } = yes ? defaults : await inquirer.prompt(questions);
-    const client = new GraphQLClient({ endpoint: chainHost });
-    const { info } = await client.getChainInfo();
-    const chainId = info.network;
-    const starterDir = templates[template];
+    const { starterName } = await inquirer.prompt([
+      {
+        type: 'text',
+        name: 'starterName',
+        message: 'Input starter name:',
+        validate: input => {
+          if (!input) return 'starterName should not be empty';
+          return true;
+        },
+      },
+    ]);
 
+    starterDir = await downloadStarter(starterName);
     const starterPackageConfig = getStartPackageConfig(starterDir);
     const starter = getStarter(starterDir, starterPackageConfig.main);
 
-    // 1. check requirements
+    const { chainHost } = yes ? defaults : await inquirer.prompt(questions);
+    const client = new GraphQLClient({ endpoint: chainHost });
+    const { info } = await client.getChainInfo();
+    const chainId = info.network;
 
-    const config = { starterDir, targetDir, template, chainHost, chainId };
+    // 1. check requirements
+    const config = { starterDir, targetDir, template: starterName, chainHost, chainId };
     if (yes || (Array.isArray(starter.questions) && starter.questions.length === 0)) {
       Object.assign(config, defaults, starter.defaults || {});
     } else {
@@ -286,8 +314,10 @@ async function main({ args: [_target], opts: { yes } }) {
       await starter.onCreated(Object.assign({ client, symbols }, config));
     }
 
+    clearStarter(starterDir);
+
     // Prompt getting started command
-    printSuccess('application created successfully...');
+    printSuccess('Application created successfully...');
     if (typeof starter.onComplete === 'function') {
       await starter.onComplete(Object.assign({ client, symbols }, config));
     }
@@ -295,6 +325,10 @@ async function main({ args: [_target], opts: { yes } }) {
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error(err);
+  } finally {
+    if (fs.existsSync(starterDir)) {
+      clearStarter(starterDir);
+    }
   }
 }
 

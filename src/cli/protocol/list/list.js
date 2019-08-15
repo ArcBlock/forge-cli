@@ -2,7 +2,7 @@ const shell = require('shelljs');
 const Table = require('cli-table-redemption');
 const { messages } = require('@arcblock/forge-proto');
 const { createRpcClient } = require('core/env');
-const { printError } = require('core/util');
+const { printError, printWarning } = require('core/util');
 
 const ensureProtocols = async client => {
   const { state } = await client.getForgeState();
@@ -34,7 +34,7 @@ async function main() {
 
   // Fast return if all protocols are running
   if (!protocols.length) {
-    shell.echo('No transaction protocols installed');
+    printWarning('No transaction protocols installed');
     process.exit(0);
     return;
   }

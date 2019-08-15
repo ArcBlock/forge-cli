@@ -1,9 +1,8 @@
 /* eslint-disable no-console */
 const inquirer = require('inquirer');
-const shell = require('shelljs');
 const chalk = require('chalk');
 const { createRpcClient } = require('core/env');
-const { printError, printInfo, printSuccess } = require('core/util');
+const { printError, printWarning, printInfo, printSuccess } = require('core/util');
 const { ensureModerator } = require('../deploy/deploy');
 const { ensureProtocols } = require('../activate/activate');
 
@@ -31,7 +30,7 @@ async function main({ args: [id = ''] }) {
 
   // Fast return if all protocols are running
   if (!choices.length) {
-    shell.echo('All installed protocols are disabled, nothing to deactivate');
+    printWarning('All installed protocols are disabled, nothing to deactivate');
     process.exit(0);
     return;
   }
@@ -42,7 +41,7 @@ async function main({ args: [id = ''] }) {
     if (protocol) {
       await doDeactivate(client, protocol.address, moderator);
     } else {
-      shell.echo(`Protocol ${id} not found`);
+      printError(`Protocol ${id} not found`);
       process.exit(1);
     }
 

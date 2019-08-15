@@ -1,9 +1,8 @@
 /* eslint-disable no-console */
 const inquirer = require('inquirer');
-const shell = require('shelljs');
 const chalk = require('chalk');
 const { createRpcClient } = require('core/env');
-const { printError, printInfo, printSuccess } = require('core/util');
+const { printError, printWarning, printInfo, printSuccess } = require('core/util');
 const { ensureModerator } = require('../deploy/deploy');
 
 const doActivate = async (client, address, moderator) => {
@@ -36,7 +35,7 @@ const ensureProtocols = async (client, op) => {
   );
 
   if (!protocols.some(x => x.itx.name === op)) {
-    shell.echo(
+    printWarning(
       `${op}_tx not installed on your chain, please install it with ${chalk.cyan(
         'forge protocol:deploy'
       )}`
@@ -73,7 +72,7 @@ async function main({ args: [id = ''] }) {
 
   // Fast return if all protocols are running
   if (!choices.length) {
-    shell.echo('All installed protocols are running, no need to activate');
+    printWarning('All installed protocols are running, no need to activate');
     process.exit(0);
     return;
   }
@@ -84,7 +83,7 @@ async function main({ args: [id = ''] }) {
     if (protocol) {
       await doActivate(client, protocol.address, moderator);
     } else {
-      shell.echo(`Protocol ${id} not found`);
+      printError(`Protocol ${id} not found`);
       process.exit(1);
     }
 

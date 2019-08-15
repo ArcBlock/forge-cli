@@ -9,6 +9,15 @@ const { symbols, hr } = require('./ui');
 const { DEFAULT_CHAIN_NAME } = require('../constant');
 const debug = require('./debug')('util');
 
+/**
+ * return json string with indent
+ * @param {object} json object
+ * @returns {string} stringified json
+ */
+function prettyStringify(json) {
+  return JSON.stringify(json, null, 4);
+}
+
 function prettyTime(ms) {
   let result = prettyMilliseconds(ms, { compact: true });
   if (result.startsWith('~')) {
@@ -159,6 +168,7 @@ module.exports = {
   makeRange,
   md5,
   parseTimeStrToMS,
+  prettyStringify,
   prettyTime,
   print,
   printLogo,

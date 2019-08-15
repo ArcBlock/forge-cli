@@ -1,4 +1,5 @@
 const fs = require('fs');
+const fsExtra = require('fs-extra');
 const path = require('path');
 const chalk = require('chalk');
 const fuzzy = require('fuzzy');
@@ -9,18 +10,20 @@ const { webUrl } = require('core/env');
 const debug = require('core/debug')('create');
 const { isDirectory, isFile } = require('core/forge-fs');
 const { symbols, hr } = require('core/ui');
-const { printError, printSuccess, printInfo } = require('core/util');
+const { prettyStringify, print, printError, printSuccess, printInfo } = require('core/util');
 inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
 
 const findTemplates = baseDir => {
   const templates = fs
     .readdirSync(baseDir)
-    .filter(
-      x =>
+    .filter(x => {
+      const templateDirectory = fs.realpathSync(path.join(baseDir, x));
+      return (
         /forge-[-a-zA-Z0-9_]+-starter/.test(x) &&
-        isDirectory(path.join(baseDir, x)) &&
-        isFile(path.join(baseDir, x, 'starter.config.js'))
-    )
+        isDirectory(templateDirectory) &&
+        isFile(path.join(templateDirectory, 'starter.config.js'))
+      );
+    })
     .reduce((obj, x) => {
       obj[x] = path.join(baseDir, x);
       return obj;
@@ -59,7 +62,7 @@ const defaults = {
   template: Object.keys(templates)[0],
   chainHost: `${webUrl()}/api`,
 };
-debug('application defaults', defaults);
+debug('application defaults:', defaults);
 
 const questions = [
   {
@@ -168,18 +171,24 @@ function copyFiles({ starterDir, blacklist, targetDir }) {
   });
 }
 
-function getStarter(starterDir) {
+/**
+ *
+ * @param {string} src source directory
+ * @param {string[]} files files/directories in source directory
+ * @param {string} dest dest directory
+ */
+async function copyTemplateFiles(src, files, dest) {
+  files.forEach(file => {
+    fsExtra.copySync(path.resolve(src, file), dest);
+  });
+}
+
+function getStarter(starterDir, starterEntryPath) {
   let configFilePath = path.join(starterDir, './starter.config.js');
 
   // for compatible with old starter
   if (!fs.existsSync(configFilePath)) {
-    const packageJSONPath = path.join(starter, 'package.json');
-    if (!fs.existsSync(packageJSONPath)) {
-      throw new Error('no package.json file in starter');
-    }
-
-    const packageJSON = JSON.parse(fs.readFileSync(packageJSONPath).toString());
-    configFilePath = path.resolve(starterDir, packageJSON.main);
+    configFilePath = path.resolve(starterDir, starterEntryPath);
     if (!fs.existsSync(configFilePath)) {
       throw new Error(`entry file: "${configFilePath}" is no exists`);
     }
@@ -189,6 +198,16 @@ function getStarter(starterDir) {
   const starter = require(configFilePath);
 
   return starter;
+}
+
+function getStartPackageConfig(starterPath) {
+  const packageJSONPath = path.join(starterPath, 'package.json');
+  if (!fs.existsSync(packageJSONPath)) {
+    throw new Error('no package.json file in starter');
+  }
+
+  const packageJSON = JSON.parse(fs.readFileSync(packageJSONPath).toString());
+  return packageJSON;
 }
 
 async function main({ args: [_target], opts: { yes } }) {
@@ -221,7 +240,12 @@ async function main({ args: [_target], opts: { yes } }) {
     const { info } = await client.getChainInfo();
     const chainId = info.network;
     const starterDir = templates[template];
-    const starter = getStarter(starterDir);
+
+    const starterPackageConfig = getStartPackageConfig(starterDir);
+    const starter = getStarter(starterDir, starterPackageConfig.main);
+
+    // 1. check requirements
+
     const config = { starterDir, targetDir, template, chainHost, chainId };
     if (yes || (Array.isArray(starter.questions) && starter.questions.length === 0)) {
       Object.assign(config, defaults, starter.defaults || {});
@@ -230,19 +254,23 @@ async function main({ args: [_target], opts: { yes } }) {
       Object.assign(config, answers);
     }
 
-    // Sync files
-    printInfo('application config', config);
+    // sync files
+    printInfo('application config:');
+    print(prettyStringify(config));
     printInfo(`project folder: ${targetDir}`);
     printInfo('creating project files...');
+
     shell.echo(hr);
+
     if (!fs.existsSync(targetDir)) {
       shell.mkdir(targetDir);
     }
 
-    // compatible code
-    if (typeof starter.onCopyFiles === 'function') {
-      starter.onCopyFiles(targetDir);
+    if (starterPackageConfig.files) {
+      copyTemplateFiles(starterDir, starterPackageConfig.files, targetDir);
+      debug();
     } else {
+      // compatible code
       copyFiles({ starterDir, blacklist: starter.blacklist, targetDir });
     }
 

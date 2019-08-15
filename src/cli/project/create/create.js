@@ -268,7 +268,7 @@ async function main({ args: [_target], opts: { yes } }) {
 
     if (starterPackageConfig.files) {
       copyTemplateFiles(starterDir, starterPackageConfig.files, targetDir);
-      debug();
+      debug('template file copied');
     } else {
       // compatible code
       copyFiles({ starterDir, blacklist: starter.blacklist, targetDir });

@@ -4,10 +4,10 @@ const { messages } = require('@arcblock/forge-proto');
 const { createRpcClient } = require('core/env');
 const { printError, printWarning } = require('core/util');
 
-const ensureProtocols = async client => {
+const ensureProtocols = async (client, op) => {
   const { state } = await client.getForgeState();
   try {
-    const protocols = await Promise.all(
+    const protocolsRaw = await Promise.all(
       state.protocolsList.map(
         ({ address }) =>
           new Promise((resolve, reject) => {
@@ -17,13 +17,29 @@ const ensureProtocols = async client => {
           })
       )
     );
-    return protocols.map(x => ({
+    const protocols = protocolsRaw.map(x => ({
       name: x.itx.name,
       address: x.itx.address,
       status: x.status,
     }));
+
+    // Get protocols that are disabled
+    const choices = protocols
+      .filter(x => (op === 'activate_protocol' ? x.status : x.status === 0))
+      .sort((a, b) => {
+        if (a.name > b.name) {
+          return 1;
+        }
+        if (a.name < b.name) {
+          return -1;
+        }
+
+        return 0;
+      });
+
+    return choices;
   } catch (err) {
-    printError('Failed to fetch protocol list');
+    printError('Failed to fetch protocol list', err);
     return [];
   }
 };
@@ -54,3 +70,4 @@ async function main() {
 
 exports.run = main;
 exports.execute = main;
+exports.ensureProtocols = ensureProtocols;

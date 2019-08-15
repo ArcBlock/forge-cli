@@ -4,7 +4,7 @@ const chalk = require('chalk');
 const { createRpcClient } = require('core/env');
 const { printError, printWarning, printInfo, printSuccess } = require('core/util');
 const { ensureModerator } = require('../deploy/deploy');
-const { ensureProtocols } = require('../activate/activate');
+const { ensureProtocols } = require('../list/list');
 
 const doDeactivate = async (client, address, moderator) => {
   try {
@@ -18,8 +18,7 @@ const doDeactivate = async (client, address, moderator) => {
     printSuccess(`Protocol ${address} successfully deactivated`);
     printInfo(`Run ${chalk.cyan(`forge tx ${hash} -c ${chainName}`)} to inspect the transaction`);
   } catch (err) {
-    printError(`Protocol ${address} deactivate failed`);
-    printError.error(err);
+    printError(`Protocol ${address} deactivate failed`, err);
   }
 };
 

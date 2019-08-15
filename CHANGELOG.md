@@ -1,3 +1,10 @@
+## 0.36.7 (August 15, 2019)
+
+- chore: tune protocol related sub commands
+- support `forge protocol:activate` subcommand
+- support `forge protocol:deactivate` subcommand
+- support `forge protocol:list` subcommand
+
 ## 0.36.6 (August 14, 2019)
 
 - chore: update badges in readme
@@ -33,8 +40,8 @@
   - enable start/stop/reset the specific chain by `forge <action> <chainName>| [--chain-chain <chainName>] | [-c <chainName>]`
   - `forge ps` will show all chains running processes
 - remove `-m` param in `start` command
-- refact the file management
-- refact the forge process management
+- refactor file management
+- refactor process management
 - deprecated use `forge-starter` to start the chain
 - deprecated the `--force | -f` param of `forge stop` command, and add `--all | -a` to stop all chains
 - modify `--config-path | -c` to `--config-path | -f`

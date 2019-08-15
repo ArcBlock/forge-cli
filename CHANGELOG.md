@@ -1,10 +1,10 @@
-<<<<<<< HEAD
-## 0.36.2 (August 12, 2019)
+## 0.36.7 (August 15, 2019)
 
+- chore: tune protocol related sub commands
 - support `forge protocol:activate` subcommand
 - support `forge protocol:deactivate` subcommand
 - support `forge protocol:list` subcommand
-=======
+
 ## 0.36.6 (August 14, 2019)
 
 - chore: update badges in readme
@@ -28,7 +28,6 @@
 
 - fix: forge upgrade tx not display correctly #107
 - upgrade forge-js dependencies #139
->>>>>>> master
 
 ## 0.36.1 (August 12, 2019)
 

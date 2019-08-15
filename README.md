@@ -95,8 +95,11 @@ Commands:
   join [options] <endpoint>                   Join a network by providing a valid forge web graphql endpoint
   logs [type]                                 Show logs for various forge components
   ls                                          List forge releases installed locally
+  protocol:activate [name|address]            Activate a transaction protocol by name or address
   protocol:compile [sourceDir]                Compile a forge transaction protocol
+  protocol:deactivate [name|adderss]          Deactivate a transaction protocol
   protocol:deploy [itxPath]                   Deploy a compiled transaction protocol to ABT Node
+  protocol:ls                                 List transaction protocols
   ps                                          List running forge component processes
   remote [shellName]                          Connects to the running system via a remote shell
   simulator [action]                          Start/stop simulator and generate random traffic

@@ -3,19 +3,23 @@ const inquirer = require('inquirer');
 const shell = require('shelljs');
 const chalk = require('chalk');
 const { createRpcClient } = require('core/env');
+const { printError, printInfo, printSuccess } = require('core/util');
 const { ensureModerator } = require('../deploy/deploy');
 
 const doActivate = async (client, address, moderator) => {
   try {
-    const res = await client.sendActivateProtocolTx({
+    const chainName = process.env.FORGE_CURRENT_CHAIN;
+    const hash = await client.sendActivateProtocolTx({
       tx: {
         itx: { address },
       },
       wallet: moderator,
     });
-    console.log(res);
+    printSuccess(`Protocol ${address} successfully activated`);
+    printInfo(`Run ${chalk.cyan(`forge tx ${hash} -c ${chainName}`)} to inspect the transaction`);
   } catch (err) {
-    console.error(err);
+    printError(`Protocol ${address} activate failed`);
+    printError.error(err);
   }
 };
 

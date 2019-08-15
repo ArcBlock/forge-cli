@@ -2,24 +2,30 @@ const shell = require('shelljs');
 const Table = require('cli-table-redemption');
 const { messages } = require('@arcblock/forge-proto');
 const { createRpcClient } = require('core/env');
+const { printError } = require('core/util');
 
 const ensureProtocols = async client => {
   const { state } = await client.getForgeState();
-  const protocols = await Promise.all(
-    state.protocolsList.map(
-      ({ address }) =>
-        new Promise(resolve => {
-          const stream = client.getProtocolState({ address });
-          stream.on('data', res => resolve(res.state));
-        })
-    )
-  );
-
-  return protocols.map(x => ({
-    name: x.itx.name,
-    address: x.itx.address,
-    status: x.status,
-  }));
+  try {
+    const protocols = await Promise.all(
+      state.protocolsList.map(
+        ({ address }) =>
+          new Promise((resolve, reject) => {
+            const stream = client.getProtocolState({ address });
+            stream.on('data', res => resolve(res.state));
+            stream.on('error', reject);
+          })
+      )
+    );
+    return protocols.map(x => ({
+      name: x.itx.name,
+      address: x.itx.address,
+      status: x.status,
+    }));
+  } catch (err) {
+    printError('Failed to fetch protocol list');
+    return [];
+  }
 };
 
 async function main() {

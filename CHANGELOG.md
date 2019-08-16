@@ -1,3 +1,11 @@
+## 0.36.8-beta (August 16, 2019)
+
+- chain:create, check is package exists
+- project:create, support load from local
+- project:create, download starter from npm
+- refactor: make create project read some config from package.json
+- refact: capsulate copy file code to a function
+
 ## 0.36.8 (August 16, 2019)
 
 - fix: forge config set will cause poke not working #156

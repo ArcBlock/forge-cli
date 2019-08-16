@@ -1,6 +1,6 @@
 {
   "name": "@arcblock/forge-cli",
-  "version": "0.36.8",
+  "version": "0.36.8-beta",
   "description": "a general set of CLI for arcblock Forge framework",
   "license": "Apache-2.0",
   "main": "src/index.js",
@@ -110,6 +110,7 @@
     "semver": "^5.6.0",
     "shelljs": "^0.8.1",
     "slugify": "^1.3.0",
+    "tar": "^4.4.10",
     "terminal-image": "^0.2.0",
     "yaml": "^1.3.2"
   },

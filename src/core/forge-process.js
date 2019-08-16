@@ -46,6 +46,10 @@ async function isForgeStarted(chainName = process.env.FORGE_CURRENT_CHAIN) {
   return !!pid;
 }
 
+async function isForgeStopped(chainName = process.env.FORGE_CURRENT_CHAIN) {
+  return !isForgeStarted(chainName);
+}
+
 async function getForgeProcessByTag(processName, chainName = process.env.FORGE_CURRENT_CHAIN) {
   const forgeProcesses = await findProcess('name', processName);
 
@@ -204,6 +208,7 @@ async function stopForgeProcesses(chainName) {
 
 module.exports = {
   findServicePid,
+  isForgeStopped,
   isForgeStarted,
   getAllProcesses,
   getAllRunningProcesses,

@@ -15,7 +15,11 @@ cli(
       rpcClient: false,
       wallet: false,
     },
-    options: [['-y, --yes', 'Use default value for all options']],
+    options: [
+      ['-y, --yes', 'Use default value for all options'],
+      ['--target <target>', 'Target directory, default is current directory'],
+      ['--boilerplateDir <boilerplateDir>', 'Local boilerplate directory'],
+    ],
     handlers: {
       '--help': () => {
         shell.echo(`

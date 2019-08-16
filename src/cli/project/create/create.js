@@ -8,63 +8,20 @@ const shell = require('shelljs');
 const GraphQLClient = require('@arcblock/graphql-client');
 const tar = require('tar'); // eslint-disable-line
 const { webUrl } = require('core/env');
-const debug = require('core/debug')('create');
-const { isDirectory, isFile } = require('core/forge-fs');
+const debug = require('core/debug')('project:create');
+const { isDirectory } = require('core/forge-fs');
+const { isForgeStopped } = require('core/forge-process');
 const { symbols, hr } = require('core/ui');
 const { prettyStringify, print, printError, printSuccess, printInfo } = require('core/util');
 inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
 
-const STARTER_DIRECTORY = path.join(os.homedir(), '.forge_starter');
-
-const findTemplates = baseDir => {
-  const templates = fs
-    .readdirSync(baseDir)
-    .filter(x => {
-      const templateDirectory = fs.realpathSync(path.join(baseDir, x));
-      return (
-        /forge-[-a-zA-Z0-9_]+-starter/.test(x) &&
-        isDirectory(templateDirectory) &&
-        isFile(path.join(templateDirectory, 'starter.config.js'))
-      );
-    })
-    .reduce((obj, x) => {
-      obj[x] = path.join(baseDir, x);
-      return obj;
-    }, {});
-
-  return templates;
-};
-
-const findBaseDirs = () => {
-  const baseDirs = [];
-
-  // npm packages
-  const { stdout: npmGlobal } = shell.exec('npm prefix -g', { silent: true });
-  baseDirs.push(path.join(npmGlobal.trim(), 'lib/node_modules'));
-
-  debug('baseDirs', baseDirs);
-
-  // yarn packages and links
-  const { stdout: yarn = '' } = shell.which('yarn', { silent: true }) || { stdout: '' };
-  if (yarn.trim()) {
-    const { stdout: yarnBase } = shell.exec('yarn global dir', { silent: true });
-    baseDirs.push(path.join(yarnBase.trim(), 'node_modules'));
-    baseDirs.push(path.join(path.dirname(yarnBase.trim()), 'link'));
-  }
-
-  return baseDirs.filter(x => isDirectory(x));
-};
-
-// get starter templates
-const templates = findBaseDirs()
-  .map(x => findTemplates(x))
-  .reduce((obj, x) => Object.assign(obj, x), {});
-debug('project templates', templates);
+const pm = shell.which('yarn').stdout || 'npm';
+debug('pm:', pm);
 
 const defaults = {
-  template: Object.keys(templates)[0],
   chainHost: `${webUrl()}/api`,
 };
+
 debug('application defaults:', defaults);
 
 const questions = [
@@ -200,14 +157,21 @@ function getStartPackageConfig(starterPath) {
   return packageJSON;
 }
 
-async function downloadStarter(startName) {
-  if (!fs.existsSync(STARTER_DIRECTORY)) {
-    fs.mkdirSync(STARTER_DIRECTORY);
-  }
+function installNodeDependencies(dir) {
+  return shell.exec(`cd ${dir} && ${pm}`, { colors: true });
+}
 
-  const dest = path.join(os.tmpdir(), `forge-starter${Date.now()}`);
+async function downloadStarter(template) {
+  printInfo('Downloading package...');
+  const dest = path.join(os.tmpdir(), `forge-starter-${Date.now()}`);
   fs.mkdirSync(dest);
-  const { code, stdout, stderr } = shell.exec(`cd ${dest} && npm pack ${startName}`);
+  debug('package temp directory:', dest);
+
+  const { code, stdout, stderr } = shell.exec(`cd ${dest} && npm pack ${template}`, {
+    colors: true,
+    silent: true,
+  });
+
   if (code !== 0) {
     throw new Error(stderr);
   }
@@ -215,7 +179,6 @@ async function downloadStarter(startName) {
   const packageName = stdout.trim();
   await tar.x({ file: path.join(dest, packageName), C: dest });
   const starterPath = path.join(dest, 'package');
-  shell.exec(`cd ${starterPath} && yarn`);
 
   return starterPath;
 }
@@ -225,46 +188,82 @@ function clearStarter(starterDir) {
   debug('starter cleared...');
 }
 
-async function main({ args: [_target], opts: { yes } }) {
+async function getTargetDir(targetDirectory) {
+  let result = targetDirectory || process.cwd();
+  if (!fs.existsSync(result) || fs.readdirSync(result).length) {
+    const { targetDir } = await inquirer.prompt({
+      type: 'text',
+      name: 'targetDir',
+      message: 'Target directory is not empty, please choose another:',
+      validate: input => {
+        if (!input) return 'Target directory should not be empty';
+
+        const dest = path.resolve(input);
+        if (isDirectory(dest) && fs.readdirSync(dest).length > 0) {
+          return `Target folder ${chalk.cyan(path.basename(dest))} is not empty`;
+        }
+
+        return true;
+      },
+    });
+
+    result = targetDir;
+  }
+
+  return path.resolve(result);
+}
+
+async function getBoilerplateName(boilerplate) {
+  let result = boilerplate;
+  if (!boilerplate) {
+    const { template } = await inquirer.prompt({
+      type: 'text',
+      name: 'template',
+      message: 'Input template name:',
+      validate: input => {
+        if (!input) return 'Template should not be empty';
+
+        return true;
+      },
+    });
+
+    result = template;
+  }
+
+  return result;
+}
+
+async function main({ args: [boilerplate = ''], opts: { yes, target = '', boilerplateDir } }) {
   let starterDir = '';
+  let shouldClearStarter = false;
 
   try {
-    // if (Object.keys(templates).length === 0) {
-    //   printError('No starter project templates found');
-    //   printInfo(`Run ${chalk.cyan('npm install -g forge-react-starter')} to install react-starter`);
-    //   process.exit(1);
-    // }
-
-    if (!_target) {
-      printError('Please specify a folder for creating the new application');
-      printInfo(`You can try ${chalk.cyan('forge create-project hello-forge')}`);
+    if (await isForgeStopped(process.env.FORGE_CURRENT_CHAIN)) {
+      printError('Create a dApp need a running forge');
       process.exit(1);
     }
 
-    // fix: is absolute path
-    const target = _target.startsWith('/') ? _target : path.join(process.cwd(), _target);
-    // Determine targetDir
-    const targetDir = path.resolve(target);
-    if (isDirectory(targetDir) && fs.readdirSync(targetDir).length > 0) {
-      printError(`target folder ${target} already exist and not empty`);
-      process.exit(1);
+    const targetDir = await getTargetDir(target);
+
+    if (boilerplateDir) {
+      if (!fs.existsSync(boilerplateDir)) {
+        printError(`Boilerplate ${boilerplateDir} is not exists`);
+        process.exit(1);
+      }
+
+      starterDir = boilerplateDir;
+    } else {
+      const template = await getBoilerplateName(boilerplate);
+      debug('template:', template);
+      debug('dest:', targetDir);
+
+      starterDir = await downloadStarter(template);
+      shouldClearStarter = true;
     }
 
-    // fix: check forge is running, or better error handling
-    // Collecting starter config
-    const { starterName } = await inquirer.prompt([
-      {
-        type: 'text',
-        name: 'starterName',
-        message: 'Input starter name:',
-        validate: input => {
-          if (!input) return 'starterName should not be empty';
-          return true;
-        },
-      },
-    ]);
+    installNodeDependencies(starterDir);
+    debug('boilerplate dependencies installed...');
 
-    starterDir = await downloadStarter(starterName);
     const starterPackageConfig = getStartPackageConfig(starterDir);
     const starter = getStarter(starterDir, starterPackageConfig.main);
 
@@ -273,8 +272,14 @@ async function main({ args: [_target], opts: { yes } }) {
     const { info } = await client.getChainInfo();
     const chainId = info.network;
 
-    // 1. check requirements
-    const config = { starterDir, targetDir, template: starterName, chainHost, chainId };
+    // fixme: check requirements
+    const config = {
+      starterDir,
+      targetDir,
+      template: starterPackageConfig.name,
+      chainHost,
+      chainId,
+    };
     if (yes || (Array.isArray(starter.questions) && starter.questions.length === 0)) {
       Object.assign(config, defaults, starter.defaults || {});
     } else {
@@ -314,8 +319,6 @@ async function main({ args: [_target], opts: { yes } }) {
       await starter.onCreated(Object.assign({ client, symbols }, config));
     }
 
-    clearStarter(starterDir);
-
     // Prompt getting started command
     printSuccess('Application created successfully...');
     if (typeof starter.onComplete === 'function') {
@@ -323,10 +326,9 @@ async function main({ args: [_target], opts: { yes } }) {
     }
     shell.echo(hr);
   } catch (err) {
-    // eslint-disable-next-line no-console
-    console.error(err);
+    printError(err);
   } finally {
-    if (fs.existsSync(starterDir)) {
+    if (shouldClearStarter && fs.existsSync(starterDir)) {
       clearStarter(starterDir);
     }
   }

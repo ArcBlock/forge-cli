@@ -5,7 +5,7 @@ const chalk = require('chalk');
 const getPort = require('get-port');
 const prettyMilliseconds = require('pretty-ms');
 
-const { symbols, hr } = require('./ui');
+const { symbols, hr, getSpinner } = require('./ui');
 const { DEFAULT_CHAIN_NAME } = require('../constant');
 const debug = require('./debug')('util');
 
@@ -60,6 +60,10 @@ function printWarning(...args) {
 
 function printError(...args) {
   debug(...args);
+  if (args.length && args[0] instanceof Error) {
+    args[0] = args[0].message;
+  }
+
   print.apply(null, [symbols.error, ...args]);
 }
 
@@ -162,7 +166,17 @@ const chainSortHandler = (xName, yName) => {
   return 0;
 };
 
+async function spinnerWrapper(message = '', func, ...args) {
+  const spinner = getSpinner(message);
+  spinner.start();
+  const result = await func(args);
+  spinner.succeed();
+
+  return result;
+}
+
 module.exports = {
+  chainSortHandler,
   getPort,
   getFreePort,
   makeRange,
@@ -178,5 +192,5 @@ module.exports = {
   printSuccess,
   printWarning,
   sleep,
-  chainSortHandler,
+  spinnerWrapper,
 };

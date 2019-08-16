@@ -1,3 +1,7 @@
+## 0.36.8 (August 16, 2019)
+
+- fix: forge config set will cause poke not working #156
+
 ## 0.36.7 (August 15, 2019)
 
 - chore: tune protocol related sub commands

@@ -1,3 +1,4 @@
+const axios = require('axios');
 const chalk = require('chalk');
 const fs = require('fs');
 const fsExtra = require('fs-extra');
@@ -12,7 +13,14 @@ const debug = require('core/debug')('project:create');
 const { isDirectory } = require('core/forge-fs');
 const { isForgeStopped } = require('core/forge-process');
 const { symbols, hr } = require('core/ui');
-const { prettyStringify, print, printError, printSuccess, printInfo } = require('core/util');
+const {
+  prettyStringify,
+  print,
+  printError,
+  printSuccess,
+  printInfo,
+  printWarning,
+} = require('core/util');
 inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
 
 const pm = shell.which('yarn').stdout || 'npm';
@@ -158,7 +166,17 @@ function getStartPackageConfig(starterPath) {
 }
 
 function installNodeDependencies(dir) {
+  printInfo('Installing dependencies...');
   return shell.exec(`cd ${dir} && ${pm}`, { colors: true });
+}
+
+async function isPackageExist(packageName) {
+  try {
+    await axios.head(`https://registry.npmjs.org/${packageName}`);
+    return true;
+  } catch (error) {
+    return false;
+  }
 }
 
 async function downloadStarter(template) {
@@ -189,12 +207,16 @@ function clearStarter(starterDir) {
 }
 
 async function getTargetDir(targetDirectory) {
-  let result = targetDirectory || process.cwd();
-  if (!fs.existsSync(result) || fs.readdirSync(result).length) {
+  let result = targetDirectory;
+  if (fs.existsSync(result) && fs.readdirSync(result).length) {
+    printWarning(`Target directory ${result} is exists, please choose other:`);
+    result = '';
+  }
+  if (!result) {
     const { targetDir } = await inquirer.prompt({
       type: 'text',
       name: 'targetDir',
-      message: 'Target directory is not empty, please choose another:',
+      message: 'Please input target directory:',
       validate: input => {
         if (!input) return 'Target directory should not be empty';
 
@@ -215,13 +237,23 @@ async function getTargetDir(targetDirectory) {
 
 async function getBoilerplateName(boilerplate) {
   let result = boilerplate;
-  if (!boilerplate) {
+  if (!(await isPackageExist(result))) {
+    printWarning(`Template ${boilerplate} is not exists, please input the right template name:`);
+    result = '';
+  }
+
+  if (!result) {
     const { template } = await inquirer.prompt({
       type: 'text',
       name: 'template',
       message: 'Input template name:',
-      validate: input => {
+      validate: async input => {
         if (!input) return 'Template should not be empty';
+
+        const exist = await isPackageExist(input);
+        if (!exist) {
+          return `${input} is not exists`;
+        }
 
         return true;
       },

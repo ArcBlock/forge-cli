@@ -11,7 +11,6 @@ const tar = require('tar'); // eslint-disable-line
 const { webUrl } = require('core/env');
 const debug = require('core/debug')('project:create');
 const { isDirectory } = require('core/forge-fs');
-const { isForgeStopped } = require('core/forge-process');
 const { symbols, hr } = require('core/ui');
 const {
   prettyStringify,
@@ -23,7 +22,8 @@ const {
 } = require('core/util');
 inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
 
-const pm = shell.which('yarn').stdout || 'npm';
+const yarnCheckResult = shell.which('yarn');
+const pm = yarnCheckResult ? yarnCheckResult.output : 'npm';
 debug('pm:', pm);
 
 const defaults = {
@@ -167,7 +167,7 @@ function getStartPackageConfig(starterPath) {
 
 function installNodeDependencies(dir) {
   printInfo('Installing dependencies...');
-  return shell.exec(`cd ${dir} && ${pm}`, { colors: true });
+  return shell.exec(`cd ${dir} && ${pm} install`, { colors: true });
 }
 
 async function isPackageExist(packageName) {
@@ -199,11 +199,6 @@ async function downloadStarter(template) {
   const starterPath = path.join(dest, 'package');
 
   return starterPath;
-}
-
-function clearStarter(starterDir) {
-  fsExtra.removeSync(starterDir);
-  debug('starter cleared...');
 }
 
 async function getTargetDir(targetDirectory) {
@@ -265,32 +260,22 @@ async function getBoilerplateName(boilerplate) {
   return result;
 }
 
-async function main({ args: [boilerplate = ''], opts: { yes, target = '', boilerplateDir } }) {
-  let starterDir = '';
-  let shouldClearStarter = false;
-
+async function main({ args: [boilerplate = ''], opts: { yes, target = '', starterDir: tmp } }) {
   try {
-    if (await isForgeStopped(process.env.FORGE_CURRENT_CHAIN)) {
-      printError('Create a dApp need a running forge');
-      process.exit(1);
-    }
-
+    let starterDir = tmp;
     const targetDir = await getTargetDir(target);
 
-    if (boilerplateDir) {
-      if (!fs.existsSync(boilerplateDir)) {
-        printError(`Boilerplate ${boilerplateDir} is not exists`);
+    if (starterDir) {
+      if (!fs.existsSync(starterDir)) {
+        printError(`Boilerplate ${starterDir} is not exists`);
         process.exit(1);
       }
-
-      starterDir = boilerplateDir;
     } else {
       const template = await getBoilerplateName(boilerplate);
       debug('template:', template);
       debug('dest:', targetDir);
 
       starterDir = await downloadStarter(template);
-      shouldClearStarter = true;
     }
 
     installNodeDependencies(starterDir);
@@ -359,10 +344,6 @@ async function main({ args: [boilerplate = ''], opts: { yes, target = '', boiler
     shell.echo(hr);
   } catch (err) {
     printError(err);
-  } finally {
-    if (shouldClearStarter && fs.existsSync(starterDir)) {
-      clearStarter(starterDir);
-    }
   }
 }
 

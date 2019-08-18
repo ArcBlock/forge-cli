@@ -35,7 +35,7 @@ async function main({ opts: { yes }, args: [chainName = process.env.FORGE_CURREN
       },
     ];
 
-    print(chalk.red('Reset chain state will erase chain state, logs and configuration!'));
+    print(chalk.red('Remove chain will erase chain state, logs and configuration!'));
     const answers = await inquirer.prompt(questions);
     // eslint-disable-next-line prefer-destructuring
     confirm = answers.confirm;

@@ -22,8 +22,10 @@ const {
 } = require('core/util');
 inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
 
+const STARTER_DIR = path.join(os.homedir(), '.forge_starter');
+
 const yarnCheckResult = shell.which('yarn');
-const pm = yarnCheckResult ? yarnCheckResult.output : 'npm';
+const pm = yarnCheckResult.stdout ? yarnCheckResult.stdout : 'npm';
 debug('pm:', pm);
 
 const defaults = {
@@ -165,9 +167,14 @@ function getStartPackageConfig(starterPath) {
   return packageJSON;
 }
 
-function installNodeDependencies(dir) {
+function installNodeDependencies(dir, registry) {
   printInfo('Installing dependencies...');
-  return shell.exec(`cd ${dir} && ${pm} install`, { colors: true });
+  let command = `${pm} install`;
+  if (registry) {
+    command = `${command} --registry=${registry}`;
+    debug('using registry:', registry);
+  }
+  return shell.exec(command, { colors: true, cwd: dir });
 }
 
 async function isPackageExist(packageName) {
@@ -179,15 +186,26 @@ async function isPackageExist(packageName) {
   }
 }
 
-async function downloadStarter(template) {
+async function downloadStarter(template, registry) {
   printInfo('Downloading package...');
-  const dest = path.join(os.tmpdir(), `forge-starter-${Date.now()}`);
-  fs.mkdirSync(dest);
-  debug('package temp directory:', dest);
+  const dest = path.join(STARTER_DIR, template);
+  if (fs.existsSync(dest)) {
+    // todo: check update
+    return dest;
+  }
 
-  const { code, stdout, stderr } = shell.exec(`cd ${dest} && npm pack ${template}`, {
+  fs.mkdirSync(dest, { recursive: true });
+  debug('starter directory:', dest);
+
+  let packCommand = `npm pack ${template}`;
+  if (template) {
+    packCommand = `${packCommand} --registry=${registry}`;
+  }
+
+  const { code, stdout, stderr } = shell.exec(packCommand, {
     colors: true,
     silent: true,
+    cwd: dest,
   });
 
   if (code !== 0) {
@@ -195,10 +213,9 @@ async function downloadStarter(template) {
   }
 
   const packageName = stdout.trim();
-  await tar.x({ file: path.join(dest, packageName), C: dest });
-  const starterPath = path.join(dest, 'package');
+  await tar.x({ file: path.join(dest, packageName), C: dest, strip: 1 });
 
-  return starterPath;
+  return dest;
 }
 
 async function getTargetDir(targetDirectory) {
@@ -260,7 +277,10 @@ async function getBoilerplateName(boilerplate) {
   return result;
 }
 
-async function main({ args: [boilerplate = ''], opts: { yes, target = '', starterDir: tmp } }) {
+async function main({
+  args: [boilerplate = ''],
+  opts: { yes, target = '', starterDir: tmp, registry },
+}) {
   try {
     let starterDir = tmp;
     const targetDir = await getTargetDir(target);
@@ -275,11 +295,11 @@ async function main({ args: [boilerplate = ''], opts: { yes, target = '', starte
       debug('template:', template);
       debug('dest:', targetDir);
 
-      starterDir = await downloadStarter(template);
+      starterDir = await downloadStarter(template, registry);
     }
 
-    installNodeDependencies(starterDir);
-    debug('boilerplate dependencies installed...');
+    installNodeDependencies(starterDir, registry);
+    debug('Starter dependencies installed...');
 
     const starterPackageConfig = getStartPackageConfig(starterDir);
     const starter = getStarter(starterDir, starterPackageConfig.main);

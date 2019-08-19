@@ -169,12 +169,12 @@ function getStartPackageConfig(starterPath) {
 
 function installNodeDependencies(dir, registry) {
   printInfo('Installing dependencies...');
-  let command = `${pm} install`;
+  let command = `${pm} install --color`;
   if (registry) {
     command = `${command} --registry=${registry}`;
     debug('using registry:', registry);
   }
-  return shell.exec(command, { colors: true, cwd: dir });
+  return shell.exec(command, { cwd: dir });
 }
 
 async function isPackageExist(packageName) {
@@ -197,13 +197,12 @@ async function downloadStarter(template, registry) {
   fs.mkdirSync(dest, { recursive: true });
   debug('starter directory:', dest);
 
-  let packCommand = `npm pack ${template}`;
+  let packCommand = `npm pack ${template} --color`;
   if (template) {
     packCommand = `${packCommand} --registry=${registry}`;
   }
 
   const { code, stdout, stderr } = shell.exec(packCommand, {
-    colors: true,
     silent: true,
     cwd: dest,
   });
@@ -309,7 +308,8 @@ async function main({
     const { info } = await client.getChainInfo();
     const chainId = info.network;
 
-    // fixme: check requirements
+    // todo: first step, check requirements, like python, node...
+
     const config = {
       starterDir,
       targetDir,
@@ -317,6 +317,7 @@ async function main({
       chainHost,
       chainId,
     };
+
     if (yes || (Array.isArray(starter.questions) && starter.questions.length === 0)) {
       Object.assign(config, defaults, starter.defaults || {});
     } else {

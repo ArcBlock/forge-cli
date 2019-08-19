@@ -182,6 +182,7 @@ async function isPackageExist(packageName) {
     await axios.head(`https://registry.npmjs.org/${packageName}`);
     return true;
   } catch (error) {
+    debug(error);
     return false;
   }
 }
@@ -246,10 +247,10 @@ async function getTargetDir(targetDirectory) {
   return path.resolve(result);
 }
 
-async function getBoilerplateName(boilerplate) {
-  let result = boilerplate;
+async function getStarterName(starter) {
+  let result = starter;
   if (!(await isPackageExist(result))) {
-    printWarning(`Template ${boilerplate} is not exists, please input the right template name:`);
+    printWarning(`Template ${result} is not exists, please input the right template name:`);
     result = '';
   }
 
@@ -286,11 +287,11 @@ async function main({
 
     if (starterDir) {
       if (!fs.existsSync(starterDir)) {
-        printError(`Boilerplate ${starterDir} is not exists`);
+        printError(`Starter ${starterDir} is not exists`);
         process.exit(1);
       }
     } else {
-      const template = await getBoilerplateName(boilerplate);
+      const template = await getStarterName(boilerplate);
       debug('template:', template);
       debug('dest:', targetDir);
 

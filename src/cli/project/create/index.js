@@ -4,7 +4,7 @@ const { cli, action } = require('core/cli');
 const { execute, run } = require('./create');
 
 cli(
-  'project:create [targetDir]',
+  'project:create [starterName]',
   'Create a project from forge starter projects',
   input => action(execute, run, input),
   {

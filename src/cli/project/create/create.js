@@ -2,9 +2,11 @@ const axios = require('axios');
 const chalk = require('chalk');
 const fs = require('fs');
 const fsExtra = require('fs-extra');
+const fuzzy = require('fuzzy');
 const path = require('path');
 const inquirer = require('inquirer');
 const os = require('os');
+const semver = require('semver');
 const shell = require('shelljs');
 const GraphQLClient = require('@arcblock/graphql-client');
 const tar = require('tar'); // eslint-disable-line
@@ -20,6 +22,7 @@ const {
   printInfo,
   printWarning,
 } = require('core/util');
+const { REMOTE_STARTER_URL } = require('../../../constant');
 inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
 
 const STARTER_DIR = path.join(os.homedir(), '.forge_starter');
@@ -157,7 +160,7 @@ function getStarter(starterDir, starterEntryPath) {
   return starter;
 }
 
-function getStartPackageConfig(starterPath) {
+function getStarterPackageConfig(starterPath) {
   const packageJSONPath = path.join(starterPath, 'package.json');
   if (!fs.existsSync(packageJSONPath)) {
     throw new Error('no package.json file in starter');
@@ -177,27 +180,11 @@ function installNodeDependencies(dir, registry) {
   return shell.exec(command, { cwd: dir });
 }
 
-async function isPackageExist(packageName) {
-  try {
-    await axios.head(`https://registry.npmjs.org/${packageName}`);
-    return true;
-  } catch (error) {
-    debug(error);
-    return false;
-  }
-}
-
-async function downloadStarter(template, registry) {
-  printInfo('Downloading package...');
-  const dest = path.join(STARTER_DIR, template);
-  if (fs.existsSync(dest)) {
-    // todo: check update
-    return dest;
-  }
-
+async function downloadStarter(template, dest, registry = '') {
   fs.mkdirSync(dest, { recursive: true });
   debug('starter directory:', dest);
 
+  printInfo('Downloading package...');
   let packCommand = `npm pack ${template} --color`;
   if (template) {
     packCommand = `${packCommand} --registry=${registry}`;
@@ -247,29 +234,30 @@ async function getTargetDir(targetDirectory) {
   return path.resolve(result);
 }
 
-async function getStarterName(starter) {
+async function getStarterName(starter, starters) {
   let result = starter;
-  if (!(await isPackageExist(result))) {
-    printWarning(`Template ${result} is not exists, please input the right template name:`);
+  if (result && !starters[result]) {
+    printError('Please select a valid starter template.');
     result = '';
   }
 
   if (!result) {
-    const { template } = await inquirer.prompt({
-      type: 'text',
-      name: 'template',
-      message: 'Input template name:',
-      validate: async input => {
-        if (!input) return 'Template should not be empty';
-
-        const exist = await isPackageExist(input);
-        if (!exist) {
-          return `${input} is not exists`;
-        }
-
-        return true;
+    const templates = Object.keys(starters);
+    const { template } = await inquirer.prompt([
+      {
+        type: 'autocomplete',
+        name: 'template',
+        message: 'Select a starter template:',
+        default: defaults.template,
+        source: (_, inp) => {
+          const input = inp || '';
+          return new Promise(resolve => {
+            const r = fuzzy.filter(input, templates);
+            resolve(r.map(item => item.original));
+          });
+        },
       },
-    });
+    ]);
 
     result = template;
   }
@@ -277,31 +265,76 @@ async function getStarterName(starter) {
   return result;
 }
 
+async function checkStarterVersion(starterName, localVersion, remoteVersion) {
+  if (semver.lt(localVersion, remoteVersion)) {
+    const { confirm } = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'confirm',
+        default: false,
+        message: `${starterName}: new version ${remoteVersion} is available, upgrade?`,
+      },
+    ]);
+
+    return confirm;
+  }
+
+  return false;
+}
+
+function getLocalStarterDir(starterName) {
+  if (!starterName) {
+    return '';
+  }
+  const dest = path.join(STARTER_DIR, starterName);
+
+  return dest;
+}
+
+async function getAllRemoteStarters(url) {
+  try {
+    const { data } = await axios.get(url);
+    return data;
+  } catch (error) {
+    debug(error);
+    return {};
+  }
+}
+
 async function main({
-  args: [boilerplate = ''],
+  args: [starterName = ''],
   opts: { yes, target = '', starterDir: tmp, registry },
 }) {
   try {
-    let starterDir = tmp;
-    const targetDir = await getTargetDir(target);
+    const starters = await getAllRemoteStarters(REMOTE_STARTER_URL);
+    const templates = Object.keys(starters);
+    if (templates.length === 0) {
+      printError('No available starters, please check your network.');
+      process.exit(1);
+    }
 
-    if (starterDir) {
-      if (!fs.existsSync(starterDir)) {
-        printError(`Starter ${starterDir} is not exists`);
-        process.exit(1);
+    const targetDir = await getTargetDir(target);
+    debug('dest:', targetDir);
+
+    let starterDir = tmp || getLocalStarterDir(starterName); // read starter template from starterDir or starterName
+    let starterPackageConfig = null;
+    if (fs.existsSync(starterDir)) {
+      starterPackageConfig = getStarterPackageConfig(starterDir);
+      const { name, version } = starterPackageConfig;
+
+      if (await checkStarterVersion(name, version, starters[name].version)) {
+        fsExtra.removeSync(starterDir);
+        await downloadStarter(name, starterDir, registry);
       }
     } else {
-      const template = await getStarterName(boilerplate);
-      debug('template:', template);
-      debug('dest:', targetDir);
-
-      starterDir = await downloadStarter(template, registry);
+      const sName = await getStarterName(starterName, starters);
+      starterDir = await downloadStarter(sName, getLocalStarterDir(sName), registry);
+      starterPackageConfig = getStarterPackageConfig(starterDir);
     }
 
     installNodeDependencies(starterDir, registry);
     debug('Starter dependencies installed...');
 
-    const starterPackageConfig = getStartPackageConfig(starterDir);
     const starter = getStarter(starterDir, starterPackageConfig.main);
 
     const { chainHost } = yes ? defaults : await inquirer.prompt(questions);

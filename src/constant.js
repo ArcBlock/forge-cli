@@ -5,4 +5,6 @@ module.exports = {
   DEFAULT_FORGE_WEB_PORT: 8210,
   DEFAULT_WORKSHOP_PORT: 8807,
   DEFAULT_FORGE_GRPC_PORT: 28210,
+  REMOTE_STARTER_URL:
+    'https://arcblockcn.oss-cn-beijing.aliyuncs.com/forge_starters/starter-release.json',
 };

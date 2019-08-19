@@ -25,8 +25,12 @@ cli(
       '--help': () => {
         shell.echo(`
 Examples:
-  - ${chalk.cyan('forge create-project')}           create a project interactively
-  - ${chalk.cyan('forge create-project --yes')}      create a project with default settings
+  - ${chalk.cyan(
+    'forge project:create forge-react-starter'
+  )}           create a project by forge-react-starter template interactively
+  - ${chalk.cyan(
+    'forge project:create forge-react-starter --yes'
+  )}      create a project by forge-react-starter template with default settings
         `);
       },
     },

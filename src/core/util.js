@@ -5,7 +5,7 @@ const chalk = require('chalk');
 const getPort = require('get-port');
 const prettyMilliseconds = require('pretty-ms');
 
-const { symbols, hr, getSpinner } = require('./ui');
+const { symbols, hr } = require('./ui');
 const { DEFAULT_CHAIN_NAME } = require('../constant');
 const debug = require('./debug')('util');
 
@@ -166,15 +166,6 @@ const chainSortHandler = (xName, yName) => {
   return 0;
 };
 
-async function spinnerWrapper(message = '', func, ...args) {
-  const spinner = getSpinner(message);
-  spinner.start();
-  const result = await func(args);
-  spinner.succeed();
-
-  return result;
-}
-
 module.exports = {
   chainSortHandler,
   getPort,
@@ -192,5 +183,4 @@ module.exports = {
   printSuccess,
   printWarning,
   sleep,
-  spinnerWrapper,
 };

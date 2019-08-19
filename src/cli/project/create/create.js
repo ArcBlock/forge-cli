@@ -316,7 +316,14 @@ async function main({
     const targetDir = await getTargetDir(target);
     debug('dest:', targetDir);
 
-    let starterDir = tmp || getLocalStarterDir(starterName); // read starter template from starterDir or starterName
+    let starterDir = tmp;
+
+    let sName = '';
+    if (!starterDir || !fs.existsSync(starterDir)) {
+      sName = await getStarterName(starterName, starters);
+      starterDir = getLocalStarterDir(sName, registry);
+    }
+
     let starterPackageConfig = null;
     if (fs.existsSync(starterDir)) {
       starterPackageConfig = getStarterPackageConfig(starterDir);
@@ -327,8 +334,7 @@ async function main({
         await downloadStarter(name, starterDir, registry);
       }
     } else {
-      const sName = await getStarterName(starterName, starters);
-      starterDir = await downloadStarter(sName, getLocalStarterDir(sName), registry);
+      await downloadStarter(sName, starterDir, registry);
       starterPackageConfig = getStarterPackageConfig(starterDir);
     }
 

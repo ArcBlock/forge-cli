@@ -1,13 +1,4 @@
-## 0.36.8-beta4 (August 16, 2019)
-
-
-## 0.36.8-beta3 (August 16, 2019)
-
-
-## 0.36.8-beta2 (August 16, 2019)
-
-
-## 0.36.8-beta (August 16, 2019)
+## 0.36.9 (August 20, 2019)
 
 - chain:create, check is package exists
 - project:create, support load from local

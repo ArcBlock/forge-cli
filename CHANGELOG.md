@@ -1,4 +1,4 @@
-## 0.36.9 (August 20, 2019)
+## 0.37.0 (August 20, 2019)
 
 - chain:create, check is package exists
 - project:create, support load from local

@@ -53,6 +53,18 @@ const getCurrentChainENV = async (command, action, argsChainName) => {
   return chainName;
 };
 
+const shouldPrintCurrentChain = (currentChainName, command) => {
+  if (['chain:remove'].includes(command)) {
+    return false;
+  }
+
+  if (currentChainName !== DEFAULT_CHAIN_NAME) {
+    return true;
+  }
+
+  return false;
+};
+
 async function setupEnv() {
   const args = process.argv.slice(2);
   const [command, ...params] = args;
@@ -65,7 +77,7 @@ async function setupEnv() {
   const chainName = await getCurrentChainENV(command, action, argsChainName);
   process.env.FORGE_CURRENT_CHAIN = chainName;
 
-  if (process.env.FORGE_CURRENT_CHAIN !== DEFAULT_CHAIN_NAME) {
+  if (shouldPrintCurrentChain(process.env.FORGE_CURRENT_CHAIN, command)) {
     printCurrentChain(process.env.FORGE_CURRENT_CHAIN);
   }
 

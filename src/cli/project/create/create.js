@@ -172,11 +172,13 @@ function getStarterPackageConfig(starterPath) {
 
 function installNodeDependencies(dir, registry) {
   printInfo('Installing dependencies...');
+
   let command = `${pm} install --color`;
   if (registry) {
     command = `${command} --registry=${registry}`;
     debug('using registry:', registry);
   }
+
   return shell.exec(command, { cwd: dir });
 }
 
@@ -301,9 +303,36 @@ async function getAllRemoteStarters(url) {
   }
 }
 
+async function getStarterConfig({ starters, inputStarterName, inputStarterDir, registry }) {
+  let starterPackageConfig = null;
+  let starterDir = '';
+
+  if (fs.existsSync(inputStarterDir)) {
+    starterDir = inputStarterDir;
+    starterPackageConfig = getStarterPackageConfig(starterDir);
+  } else {
+    const sName = await getStarterName(inputStarterName, starters);
+    starterDir = getLocalStarterDir(sName, registry);
+
+    if (fs.existsSync(starterDir)) {
+      starterPackageConfig = getStarterPackageConfig(starterDir);
+      const { name, version } = starterPackageConfig;
+      if (await checkStarterVersion(name, version, starters[name].version)) {
+        fsExtra.removeSync(starterDir);
+        await downloadStarter(name, starterDir, registry);
+      }
+    } else {
+      starterDir = await downloadStarter(sName, starterDir, registry);
+      starterPackageConfig = getStarterPackageConfig(starterDir);
+    }
+  }
+
+  return { starterDir, starterPackageConfig };
+}
+
 async function main({
-  args: [starterName = ''],
-  opts: { yes, target = '', starterDir: tmp, registry },
+  args: [inputStarterName = ''],
+  opts: { yes, target = '', starterDir: inputStarterDir, registry },
 }) {
   try {
     const starters = await getAllRemoteStarters(REMOTE_STARTER_URL);
@@ -316,27 +345,12 @@ async function main({
     const targetDir = await getTargetDir(target);
     debug('dest:', targetDir);
 
-    let starterDir = tmp;
-
-    let sName = '';
-    if (!starterDir || !fs.existsSync(starterDir)) {
-      sName = await getStarterName(starterName, starters);
-      starterDir = getLocalStarterDir(sName, registry);
-    }
-
-    let starterPackageConfig = null;
-    if (fs.existsSync(starterDir)) {
-      starterPackageConfig = getStarterPackageConfig(starterDir);
-      const { name, version } = starterPackageConfig;
-
-      if (await checkStarterVersion(name, version, starters[name].version)) {
-        fsExtra.removeSync(starterDir);
-        await downloadStarter(name, starterDir, registry);
-      }
-    } else {
-      await downloadStarter(sName, starterDir, registry);
-      starterPackageConfig = getStarterPackageConfig(starterDir);
-    }
+    const { starterDir, starterPackageConfig } = await getStarterConfig({
+      starters,
+      inputStarterName,
+      inputStarterDir,
+      registry,
+    });
 
     installNodeDependencies(starterDir, registry);
     debug('Starter dependencies installed...');

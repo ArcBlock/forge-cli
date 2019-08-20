@@ -150,7 +150,7 @@ function getStarter(starterDir, starterEntryPath) {
   if (!fs.existsSync(configFilePath)) {
     configFilePath = path.resolve(starterDir, starterEntryPath);
     if (!fs.existsSync(configFilePath)) {
-      throw new Error(`entry file: "${configFilePath}" is no exists`);
+      throw new Error(`starter config file: "${configFilePath}" does not exist`);
     }
   }
 
@@ -163,7 +163,7 @@ function getStarter(starterDir, starterEntryPath) {
 function getStarterPackageConfig(starterPath) {
   const packageJSONPath = path.join(starterPath, 'package.json');
   if (!fs.existsSync(packageJSONPath)) {
-    throw new Error('no package.json file in starter');
+    throw new Error(`package.json not found in starter directory ${starterPath}`);
   }
 
   const packageJSON = JSON.parse(fs.readFileSync(packageJSONPath).toString());
@@ -176,7 +176,7 @@ function installNodeDependencies(dir, registry) {
   let command = `${pm} install --color`;
   if (registry) {
     command = `${command} --registry=${registry}`;
-    debug('using registry:', registry);
+    printInfo(`Using registry: ${chalk.cyan(registry)}`);
   }
 
   return shell.exec(command, { cwd: dir });
@@ -210,7 +210,7 @@ async function downloadStarter(template, dest, registry = '') {
 async function getTargetDir(targetDirectory) {
   let result = targetDirectory;
   if (fs.existsSync(result) && fs.readdirSync(result).length) {
-    printWarning(`Target directory ${result} is exists, please choose other:`);
+    printWarning(`Target directory ${result} already exists and not empty, please choose other:`);
     result = '';
   }
   if (!result) {
@@ -274,7 +274,9 @@ async function checkStarterVersion(starterName, localVersion, remoteVersion) {
         type: 'confirm',
         name: 'confirm',
         default: false,
-        message: `${starterName}: new version ${remoteVersion} is available, upgrade?`,
+        message: chalk.yellow(
+          `${starterName}: New version ${remoteVersion} is available, upgrade?`
+        ),
       },
     ]);
 
@@ -379,7 +381,7 @@ async function main({
       Object.assign(config, answers);
     }
 
-    // sync files
+    // Sync files
     printInfo('application config:');
     print(prettyStringify(config));
     printInfo(`project folder: ${targetDir}`);
@@ -395,7 +397,7 @@ async function main({
       copyTemplateFiles(starterDir, starterPackageConfig.files, targetDir);
       debug('template file copied');
     } else {
-      // compatible code
+      // Compatible code
       copyFiles({ starterDir, blacklist: starter.blacklist, targetDir });
     }
 

@@ -1,10 +1,10 @@
 ## 0.37.0 (August 20, 2019)
 
-- chain:create, check is package exists
+- project:create, check is starter exists
 - project:create, support load from local
 - project:create, download starter from npm
 - refactor: make create project read some config from package.json
-- refact: capsulate copy file code to a function
+- refactor: capsulate copy file code to a function
 
 ## 0.36.8 (August 16, 2019)
 

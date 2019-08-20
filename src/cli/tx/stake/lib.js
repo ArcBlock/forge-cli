@@ -47,7 +47,7 @@ async function getQuestions(action) {
       } available)`,
       validate: input => {
         const value = Number(input);
-        if (value <= 1) {
+        if (value < 1) {
           return `The minimum amount to ${action} is 1 token`;
         }
 

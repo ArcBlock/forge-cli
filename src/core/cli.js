@@ -73,7 +73,7 @@ function initCli(program) {
       command.action(async (...params) => {
         const globalArgs = last(program.args).parent;
 
-        await setupEnv(globalArgs, x.requirements);
+        await setupEnv(globalArgs.args, x.requirements);
         await x.handler({
           args: params.filter(p => typeof p === 'string'),
           opts: Object.assign(globalArgs.opts(), command.opts()),

@@ -12,7 +12,7 @@ cli(
       forgeRelease: true,
       runningNode: true,
       rpcClient: true,
-      wallet: ({ _, address }) => !(_.includes('show') && address),
+      wallet: ([_, { address }]) => !_ || !_.includes('show') || !address,
     },
     options: [['-d, --address <addr>', 'Show stakes for `address`']],
     handlers: {

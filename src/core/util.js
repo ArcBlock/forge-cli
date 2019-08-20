@@ -9,6 +9,15 @@ const { symbols, hr } = require('./ui');
 const { DEFAULT_CHAIN_NAME } = require('../constant');
 const debug = require('./debug')('util');
 
+/**
+ * return json string with indent
+ * @param {object} json object
+ * @returns {string} stringified json
+ */
+function prettyStringify(json) {
+  return JSON.stringify(json, null, 4);
+}
+
 function prettyTime(ms) {
   let result = prettyMilliseconds(ms, { compact: true });
   if (result.startsWith('~')) {
@@ -51,6 +60,10 @@ function printWarning(...args) {
 
 function printError(...args) {
   debug(...args);
+  if (args.length && args[0] instanceof Error) {
+    args[0] = args[0].message;
+  }
+
   print.apply(null, [symbols.error, ...args]);
 }
 
@@ -154,11 +167,13 @@ const chainSortHandler = (xName, yName) => {
 };
 
 module.exports = {
+  chainSortHandler,
   getPort,
   getFreePort,
   makeRange,
   md5,
   parseTimeStrToMS,
+  prettyStringify,
   prettyTime,
   print,
   printLogo,
@@ -168,5 +183,4 @@ module.exports = {
   printSuccess,
   printWarning,
   sleep,
-  chainSortHandler,
 };

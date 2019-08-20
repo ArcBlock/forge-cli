@@ -1,3 +1,11 @@
+## 0.37.0 (August 20, 2019)
+
+- project:create, check is starter exists
+- project:create, support load from local
+- project:create, download starter from npm
+- refactor: make create project read some config from package.json
+- refactor: capsulate copy file code to a function
+
 ## 0.36.8 (August 16, 2019)
 
 - fix: forge config set will cause poke not working #156

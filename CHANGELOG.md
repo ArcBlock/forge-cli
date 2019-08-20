@@ -1,3 +1,7 @@
+## 0.37.1 (August 20, 2019)
+
+- fix: wallet requirements functions error
+
 ## 0.37.0 (August 20, 2019)
 
 - project:create, check is starter exists

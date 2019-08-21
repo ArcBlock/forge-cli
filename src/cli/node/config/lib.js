@@ -22,6 +22,8 @@ const debug = require('core/debug')('config:lib');
 const { getProfileDirectory, requiredDirs } = require('core/forge-fs');
 const { setFilePathOfConfig } = require('core/forge-config');
 
+const { generateDefaultAccount } = require('../../account/lib/index');
+
 function getModeratorSecretKey() {
   const sk = process.env.FORGE_MODERATOR_SK;
 
@@ -295,16 +297,22 @@ async function askUserConfigs(defaults, chainName = '', isCreate) {
         default: true,
       },
       {
+        type: 'list',
+        name: 'walletSourceType',
+        message: 'Input token holder address, or generate if do not have one?',
+        when: d => d.moderatorAsTokenHolder === false || !moderator,
+        choices: ['Input', 'Generate'],
+      },
+      {
         type: 'text',
         name: 'tokenHolderAddress',
-        message:
-          'Please input token holder address (run `forge wallet:create` to generate if do not have one)',
+        message: 'Please input token holder address',
         validate: v => {
           if (!v.trim()) return 'Token holder address should not be empty';
           if (!isValid(v.trim())) return 'Token holder address must be valid did';
           return true;
         },
-        when: d => d.moderatorAsTokenHolder === false || !moderator,
+        when: d => d.walletSourceType === 'Input',
         default: '',
       },
       {
@@ -320,11 +328,18 @@ async function askUserConfigs(defaults, chainName = '', isCreate) {
 
           return true;
         },
-        when: d => d.moderatorAsTokenHolder === false || !moderator,
+        when: d => d.walletSourceType === 'Input',
         default: '',
       },
     ]
   );
+
+  const answers = await inquirer.prompt(questions);
+  if (answers.walletSourceType) {
+    const wallet = generateDefaultAccount();
+    answers.tokenHolderAddress = wallet.address;
+    answers.tokenHolderPk = wallet.pk_base64_url;
+  }
 
   const {
     name = chainName,
@@ -346,7 +361,7 @@ async function askUserConfigs(defaults, chainName = '', isCreate) {
     moderatorAsTokenHolder,
     tokenHolderAddress,
     tokenHolderPk,
-  } = await inquirer.prompt(questions);
+  } = answers;
 
   defaults.tendermint.moniker = name;
   defaults.app.name = name;

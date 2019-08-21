@@ -1,3 +1,10 @@
+## 0.37.3 (August 21, 2019)
+
+- chore: add waiting effect during create project during fetching starters information from remote server. #165
+- add warning when remove the 'default' chain #152
+- feature: option to automatically create account during chain setup #134
+- chore: hidden current chain name when run 'forge chain:remove' #151
+
 ## 0.37.2 (August 21, 2019)
 
 - chore: show version in `forge protocol:ls`

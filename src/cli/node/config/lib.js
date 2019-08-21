@@ -17,7 +17,7 @@ const { bytesToHex, hexToBytes, isHexStrict } = require('@arcblock/forge-util');
 
 const { ensureConfigComment } = require('core/env');
 const { symbols, hr, pretty } = require('core/ui');
-const { printError, printSuccess } = require('core/util');
+const { print, printInfo, printError, printSuccess } = require('core/util');
 const debug = require('core/debug')('config:lib');
 const { getProfileDirectory, requiredDirs } = require('core/forge-fs');
 const { setFilePathOfConfig } = require('core/forge-config');
@@ -298,7 +298,7 @@ async function askUserConfigs(defaults, chainName = '', isCreate) {
       },
       {
         type: 'list',
-        name: 'walletSourceType',
+        name: 'accountSourceType',
         message: 'Input token holder address, or generate if do not have one?',
         when: d => d.moderatorAsTokenHolder === false || !moderator,
         choices: ['Input', 'Generate'],
@@ -312,7 +312,7 @@ async function askUserConfigs(defaults, chainName = '', isCreate) {
           if (!isValid(v.trim())) return 'Token holder address must be valid did';
           return true;
         },
-        when: d => d.walletSourceType === 'Input',
+        when: d => d.accountSourceType === 'Input',
         default: '',
       },
       {
@@ -328,14 +328,14 @@ async function askUserConfigs(defaults, chainName = '', isCreate) {
 
           return true;
         },
-        when: d => d.walletSourceType === 'Input',
+        when: d => d.accountSourceType === 'Input',
         default: '',
       },
     ]
   );
 
   const answers = await inquirer.prompt(questions);
-  if (answers.walletSourceType) {
+  if (answers.accountSourceType === 'Generate') {
     const wallet = generateDefaultAccount();
     answers.tokenHolderAddress = wallet.address;
     answers.tokenHolderPk = wallet.pk_base64_url;
@@ -437,11 +437,18 @@ async function askUserConfigs(defaults, chainName = '', isCreate) {
 
   const result = setFilePathOfConfig(defaults, name);
 
-  shell.echo(hr);
-  shell.echo('Config Preview');
-  shell.echo(hr);
-  shell.echo(pretty(result));
-  shell.echo(hr);
+  print(hr);
+  print('Config Preview');
+  print(hr);
+  print(pretty(result));
+  print(hr);
+
+  if (answers.accountSourceType === 'Generate') {
+    printInfo('Generated account:');
+    print('Holder address:', chalk.cyan(tokenHolderAddress));
+    print('Holder PK:', chalk.cyan(tokenHolderPk));
+    print(hr);
+  }
 
   return result;
 }

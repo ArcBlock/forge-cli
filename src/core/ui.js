@@ -78,6 +78,25 @@ const spinners = [
   'layer',
 ];
 
+const getSpinner = opts => {
+  const random = Math.floor(Math.random() * spinners.length);
+  const spinner = ora(Object.assign({ spinner: spinners[random] }, opts || {}));
+  if (typeof opts === 'string') {
+    spinner.text = opts;
+  }
+
+  return spinner;
+};
+
+const wrapSpinner = async (message = '', func, ...args) => {
+  const spinner = getSpinner(message);
+
+  spinner.start();
+  const result = await func(...args);
+  spinner.succeed();
+  return result;
+};
+
 module.exports = {
   symbols,
   hr: new inquirer.Separator().line,
@@ -90,12 +109,6 @@ module.exports = {
       barIncompleteChar: '\u2591',
       hideCursor: true,
     }),
-  getSpinner: opts => {
-    const random = Math.floor(Math.random() * spinners.length);
-    const spinner = ora(Object.assign({ spinner: spinners[random] }, opts || {}));
-    if (typeof opts === 'string') {
-      spinner.text = opts;
-    }
-    return spinner;
-  },
+  getSpinner,
+  wrapSpinner,
 };

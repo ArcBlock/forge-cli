@@ -17,10 +17,12 @@ const { bytesToHex, hexToBytes, isHexStrict } = require('@arcblock/forge-util');
 
 const { ensureConfigComment } = require('core/env');
 const { symbols, hr, pretty } = require('core/ui');
-const { printError, printSuccess } = require('core/util');
+const { print, printInfo, printError, printSuccess } = require('core/util');
 const debug = require('core/debug')('config:lib');
 const { getProfileDirectory, requiredDirs } = require('core/forge-fs');
 const { setFilePathOfConfig } = require('core/forge-config');
+
+const { generateDefaultAccount } = require('../../account/lib/index');
 
 function getModeratorSecretKey() {
   const sk = process.env.FORGE_MODERATOR_SK;
@@ -295,16 +297,22 @@ async function askUserConfigs(defaults, chainName = '', isCreate) {
         default: true,
       },
       {
+        type: 'list',
+        name: 'accountSourceType',
+        message: 'Input token holder address, or generate if do not have one?',
+        when: d => d.moderatorAsTokenHolder === false || !moderator,
+        choices: ['Input', 'Generate'],
+      },
+      {
         type: 'text',
         name: 'tokenHolderAddress',
-        message:
-          'Please input token holder address (run `forge wallet:create` to generate if do not have one)',
+        message: 'Please input token holder address',
         validate: v => {
           if (!v.trim()) return 'Token holder address should not be empty';
           if (!isValid(v.trim())) return 'Token holder address must be valid did';
           return true;
         },
-        when: d => d.moderatorAsTokenHolder === false || !moderator,
+        when: d => d.accountSourceType === 'Input',
         default: '',
       },
       {
@@ -320,11 +328,18 @@ async function askUserConfigs(defaults, chainName = '', isCreate) {
 
           return true;
         },
-        when: d => d.moderatorAsTokenHolder === false || !moderator,
+        when: d => d.accountSourceType === 'Input',
         default: '',
       },
     ]
   );
+
+  const answers = await inquirer.prompt(questions);
+  if (answers.accountSourceType === 'Generate') {
+    const wallet = generateDefaultAccount();
+    answers.tokenHolderAddress = wallet.address;
+    answers.tokenHolderPk = wallet.pk_base64_url;
+  }
 
   const {
     name = chainName,
@@ -346,7 +361,7 @@ async function askUserConfigs(defaults, chainName = '', isCreate) {
     moderatorAsTokenHolder,
     tokenHolderAddress,
     tokenHolderPk,
-  } = await inquirer.prompt(questions);
+  } = answers;
 
   defaults.tendermint.moniker = name;
   defaults.app.name = name;
@@ -422,11 +437,18 @@ async function askUserConfigs(defaults, chainName = '', isCreate) {
 
   const result = setFilePathOfConfig(defaults, name);
 
-  shell.echo(hr);
-  shell.echo('Config Preview');
-  shell.echo(hr);
-  shell.echo(pretty(result));
-  shell.echo(hr);
+  print(hr);
+  print('Config Preview');
+  print(hr);
+  print(pretty(result));
+  print(hr);
+
+  if (answers.accountSourceType === 'Generate') {
+    printInfo('Generated account:');
+    print('Holder address:', chalk.cyan(tokenHolderAddress));
+    print('Holder PK:', chalk.cyan(tokenHolderPk));
+    print(hr);
+  }
 
   return result;
 }

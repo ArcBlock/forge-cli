@@ -20,6 +20,7 @@ const ensureProtocols = async (client, op) => {
     const protocols = protocolsRaw.map(x => ({
       name: x.itx.name,
       address: x.itx.address,
+      version: x.itx.version,
       status: x.status,
     }));
 
@@ -56,13 +57,18 @@ async function main() {
   }
 
   const table = new Table({
-    head: ['Name', 'Address', 'Status'],
+    head: ['Name', 'Address', 'Status', 'Version'],
     style: { 'padding-left': 1, head: ['cyan', 'bold'], compact: true },
-    colWidths: [25, 50, 15],
+    colWidths: [25, 40, 15, 10],
   });
 
   protocols.forEach(x => {
-    table.push([x.name, x.address, messages.ProtocolStatus[x.status].toLowerCase()]);
+    table.push([
+      x.name,
+      x.address,
+      messages.ProtocolStatus[x.status].toLowerCase(),
+      `v${x.version}`,
+    ]);
   });
 
   shell.echo(table.toString());

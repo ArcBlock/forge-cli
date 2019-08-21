@@ -1,3 +1,7 @@
+## 0.37.2 (August 21, 2019)
+
+- chore: show version in `forge protocol:ls`
+
 ## 0.37.1 (August 20, 2019)
 
 - fix: wallet requirements functions error

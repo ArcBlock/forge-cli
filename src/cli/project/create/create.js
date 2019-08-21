@@ -13,7 +13,7 @@ const tar = require('tar'); // eslint-disable-line
 const { webUrl } = require('core/env');
 const debug = require('core/debug')('project:create');
 const { isDirectory } = require('core/forge-fs');
-const { symbols, hr } = require('core/ui');
+const { symbols, hr, wrapSpinner } = require('core/ui');
 const {
   prettyStringify,
   print,
@@ -34,7 +34,6 @@ debug('pm:', pm);
 const defaults = {
   chainHost: `${webUrl()}/api`,
 };
-
 debug('application defaults:', defaults);
 
 const questions = [
@@ -337,7 +336,12 @@ async function main({
   opts: { yes, target = '', starterDir: inputStarterDir, registry },
 }) {
   try {
-    const starters = await getAllRemoteStarters(REMOTE_STARTER_URL);
+    const starters = await wrapSpinner(
+      'Fetching starters information...',
+      getAllRemoteStarters,
+      REMOTE_STARTER_URL
+    );
+
     const templates = Object.keys(starters);
     if (templates.length === 0) {
       printError('No available starters, please check your network.');

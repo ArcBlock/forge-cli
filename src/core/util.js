@@ -166,6 +166,8 @@ const chainSortHandler = (xName, yName) => {
   return 0;
 };
 
+const strEqual = (strA = '', strB = '') => strA.toUpperCase() === strB.toUpperCase();
+
 module.exports = {
   chainSortHandler,
   getPort,
@@ -182,5 +184,6 @@ module.exports = {
   printInfo,
   printSuccess,
   printWarning,
+  strEqual,
   sleep,
 };

@@ -1,3 +1,7 @@
+## 0.37.5 (August 22, 2019)
+
+- add endpoints column in forge ps output #168
+
 ## 0.37.4 (August 22, 2019)
   - fix: shell.exec will return null if no output
 

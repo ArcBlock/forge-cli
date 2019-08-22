@@ -2,6 +2,8 @@ const shell = require('shelljs');
 const chalk = require('chalk');
 const { createRpcClient } = require('core/env');
 const { symbols, pretty, hr } = require('core/ui');
+const { getRunningProcessEndpoints } = require('core/forge-process');
+const { print, printSuccess } = require('core/util');
 
 function makeInfoReporter(method, title, key) {
   return async function reporter(client) {
@@ -31,8 +33,23 @@ const getValidatorsInfo = makeInfoReporter(
   'validatorsInfo'
 );
 
-async function main({ args: [type = 'chain'] }) {
+const printEndpoints = async chainName => {
+  const ports = await getRunningProcessEndpoints(chainName);
+
+  print(hr);
+  printSuccess(chalk.cyan('Endpoints'));
+  print(hr);
+
+  print(pretty(ports));
+};
+
+async function main({
+  args: [type = 'chain'],
+  opts: { chainName = process.env.FORGE_CURRENT_CHAIN },
+}) {
   const client = createRpcClient();
+
+  await printEndpoints(chainName);
 
   if (type === 'chain') {
     await getChainInfo(client);

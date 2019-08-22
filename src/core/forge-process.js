@@ -3,11 +3,13 @@ const assert = require('assert');
 const pidUsage = require('pidusage');
 const prettyBytes = require('pretty-bytes');
 const findProcess = require('find-process');
+const { get } = require('lodash');
 const shell = require('shelljs');
 
 const debug = require('./debug')('forge-process');
 const { getTendermintHomeDir, getAllChainNames } = require('./forge-fs');
-const { prettyTime, md5, sleep, chainSortHandler } = require('./util');
+const { readChainConfig } = require('./forge-config');
+const { prettyTime, md5, strEqual, sleep, chainSortHandler } = require('./util');
 
 const sortHandler = (x, y) => chainSortHandler(x.name, y.name);
 
@@ -107,15 +109,39 @@ async function getRunningProcessesStats(chainName = process.env.FORGE_CURRENT_CH
     })
   );
 
-  const processesStats = processesUsage.map(({ pid, name, usage }) => ({
-    name,
-    pid,
-    uptime: prettyTime(usage.elapsed, { compact: true }),
-    memory: prettyBytes(usage.memory),
-    cpu: `${usage.cpu.toFixed(2)} %`,
-  }));
+  const ports = await getRunningProcessEndpoints(chainName);
+  const processesStats = processesUsage.map(({ pid, name, usage }) => {
+    const port = ports[name] || '-';
+
+    return {
+      name,
+      pid,
+      uptime: prettyTime(usage.elapsed, { compact: true }),
+      memory: prettyBytes(usage.memory),
+      cpu: `${usage.cpu.toFixed(2)} %`,
+      port,
+    };
+  });
 
   return processesStats;
+}
+
+async function getRunningProcessEndpoints(chainName) {
+  const processes = await getRunningProcesses(chainName);
+  const cfg = readChainConfig(chainName);
+  const result = {};
+  processes.forEach(({ name }) => {
+    if (strEqual(name, 'web')) {
+      result[name] = `http://127.0.0.1:${get(cfg, 'forge.web.port')}`;
+    } else if (strEqual(name, 'forge')) {
+      const grpcUri = get(cfg, 'forge.sock_grpc', '');
+      result[name] = `${grpcUri}`;
+    } else if (strEqual(name, 'workshop')) {
+      result[name] = `http://127.0.0.1:${get(cfg, 'workshop.port')}`;
+    }
+  });
+
+  return result;
 }
 
 async function getAllRunningProcessStats() {
@@ -217,6 +243,7 @@ module.exports = {
   getForgeProcess,
   getForgeWebProcess,
   getForgeWorkshopProcess,
+  getRunningProcessEndpoints,
   getProcessTag,
   getSimulatorProcess,
   stopAllForgeProcesses,

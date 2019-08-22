@@ -21,6 +21,7 @@ const {
   getForgeVersionFromYaml,
   getProfileWorkshopDirectory,
   getProfileDirectory,
+  getProfileReleaseFilePath,
   requiredDirs,
 } = require('./forge-fs');
 const {
@@ -366,10 +367,15 @@ async function ensureForgeRelease(args, exitOn404 = true) {
   return cliConfig;
 }
 
+function readChainConfig(chainName) {
+  return TOML.parse(fs.readFileSync(getProfileReleaseFilePath(chainName)).toString());
+}
+
 module.exports = {
   copyReleaseConfig,
   ensureForgeRelease,
   getDefaultChainConfigs,
   setConfigToProfile,
   setFilePathOfConfig,
+  readChainConfig,
 };

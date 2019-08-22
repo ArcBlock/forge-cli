@@ -136,6 +136,8 @@ async function getRunningProcessEndpoints(chainName) {
     } else if (strEqual(name, 'forge')) {
       const grpcUri = get(cfg, 'forge.sock_grpc', '');
       result[name] = `${grpcUri}`;
+    } else if (strEqual(name, 'workshop')) {
+      result[name] = `http://127.0.0.1:${get(cfg, 'workshop.port')}`;
     }
   });
 

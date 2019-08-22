@@ -17,7 +17,7 @@ const printAllProcesses = async () => {
     const table = new Table({
       head: ['Name', 'PID', 'Uptime', 'Memory', 'CPU', 'Endpoints'],
       style: { 'padding-left': 1, head: ['cyan', 'bold'] },
-      colWidths: [15, 10, 10, 10, 10, 25],
+      colWidths: [15, 10, 10, 10, 10, 30],
     });
 
     stats.forEach(x => table.push(Object.values(x)));

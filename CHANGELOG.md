@@ -1,3 +1,6 @@
+## 0.37.4 (August 22, 2019)
+  - fix: shell.exec will return null if no output
+
 ## 0.37.3 (August 21, 2019)
 
 - chore: add waiting effect during create project during fetching starters information from remote server. #165

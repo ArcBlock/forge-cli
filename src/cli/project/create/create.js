@@ -27,7 +27,7 @@ inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'))
 
 const STARTER_DIR = path.join(os.homedir(), '.forge_starter');
 
-const yarnCheckResult = shell.which('yarn');
+const yarnCheckResult = shell.which('yarn') || {};
 const pm = yarnCheckResult.stdout ? yarnCheckResult.stdout : 'npm';
 debug('pm:', pm);
 

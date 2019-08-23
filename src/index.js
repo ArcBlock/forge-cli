@@ -107,10 +107,7 @@ const run = async () => {
       '-f, --config-path <path>',
       'Forge config used when starting forge node and initializing gRPC clients'
     )
-    .option(
-      '-y, --yes',
-      'Assume that the answer to any confirm question which would be asked is yes'
-    )
+    .option('-y, --yes', 'Assume that the answer to any confirmation question is yes')
     .option('-d, --defaults', 'Run command using default values for all questions')
     .option(
       '-g, --socket-grpc <endpoint>',

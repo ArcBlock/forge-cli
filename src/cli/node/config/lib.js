@@ -9,7 +9,6 @@ const toml = require('@iarna/toml');
 const base64 = require('base64-url');
 const base64Img = require('base64-img');
 const kebabCase = require('lodash/kebabCase');
-const terminalImage = require('terminal-image');
 
 const { fromSecretKey } = require('@arcblock/forge-wallet');
 const { isValid, isFromPublicKey } = require('@arcblock/did');
@@ -371,13 +370,6 @@ async function askUserConfigs(defaults, chainName = '', isCreate) {
   // token config
   defaults.forge.token = tokenDefaults;
   if (customizeToken) {
-    if (tokenIcon !== iconFile) {
-      shell.echo(hr);
-      shell.echo('Token Icon');
-      shell.echo(hr);
-      shell.echo(await terminalImage.file(tokenIcon));
-    }
-
     defaults.forge.token.name = tokenName;
     defaults.forge.token.symbol = tokenSymbol;
     defaults.forge.token.icon = base64Img.base64Sync(tokenIcon);

@@ -72,6 +72,8 @@ Options:
   -c, --chain-name <chainName>                           Execute command use specific chain
   -r, --release-dir <dir>                                Forge release directory path (unzipped), use your own copy forge release
   -f, --config-path <path>                               Forge config used when starting forge node and initializing gRPC clients
+  -y, --yes                                              Assume that the answer to any confirmation question is yes
+  -d, --defaults                                         Run command using default values for all questions
   -g, --socket-grpc <endpoint>                           Socket gRPC endpoint to connect, with this you can use forge-cli with a remote node
   -h, --help                                             output usage information
 

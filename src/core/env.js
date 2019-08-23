@@ -6,6 +6,7 @@ const path = require('path');
 const getos = require('getos');
 const chalk = require('chalk');
 const shell = require('shelljs');
+const execa = require('execa');
 const semver = require('semver');
 const inquirer = require('inquirer');
 const isElevated = require('is-elevated');
@@ -22,10 +23,10 @@ const {
 } = require('core/forge-fs');
 const { ensureForgeRelease } = require('core/forge-config');
 const { isForgeStarted, getProcessTag } = require('./forge-process');
-const { printLogo } = require('./util');
+const { print, printSuccess, printLogo } = require('./util');
 
 const { version } = require('../../package.json');
-const { symbols, hr } = require('./ui');
+const { symbols, hr, wrapSpinner } = require('./ui');
 const debug = require('./debug')('env');
 
 const CURRENT_WORKING_PROFILE = getProfileDirectory(process.env.FORGE_CURRENT_CHAIN);
@@ -41,7 +42,7 @@ const config = { cli: { requiredDirs } }; // global shared forge-cli run time co
  * @param {*} args
  * @param {*} requirements
  */
-async function setupEnv(args, requirements) {
+async function setupEnv(args, requirements, opts = {}) {
   await ensureNonRoot();
 
   // Support evaluating requirements at runtime
@@ -52,7 +53,7 @@ async function setupEnv(args, requirements) {
   });
 
   ensureRequiredDirs();
-  checkUpdate();
+  await checkUpdate(opts.defaults);
 
   if (requirements.forgeRelease || requirements.runningNode) {
     const cliConfig = await ensureForgeRelease(args);
@@ -387,7 +388,7 @@ function readCache(key) {
   }
 }
 
-function checkUpdate() {
+async function checkUpdate(useDefaults) {
   const lastCheck = readCache('check-update');
   const now = Math.floor(Date.now() / 1000);
   const secondsOfDay = 24 * 60 * 60;
@@ -395,27 +396,38 @@ function checkUpdate() {
   if (lastCheck && lastCheck + secondsOfDay > now) {
     return;
   }
+
   writeCache('check-update', now);
 
-  const { stdout: latest } = shell.exec('npm view @arcblock/forge-cli version', { silent: true });
+  const { stdout: latest } = await wrapSpinner('Checking new version...', () =>
+    execa.command('npm view @arcblock/forge-cli version', { silent: true })); // prettier-ignore
   const installed = version;
   debug('check update', { latest, installed });
 
   if (semver.gt(latest.trim(), installed.trim())) {
-    shell.echo('');
-    shell.echo(
+    print(
       chalk.red(
         `${
           symbols.info
         } Latest forge-cli version is v${latest.trim()}, your local version v${installed.trim()}`
       )
     );
-    shell.echo(
-      chalk.red(
-        `${symbols.info} Please upgrade with ${chalk.cyan('npm install -g @arcblock/forge-cli')}`
-      )
-    );
-    shell.echo('');
+
+    if (!useDefaults) {
+      const { confirm } = await inquirer.prompt([
+        {
+          name: 'confirm',
+          type: 'confirm',
+          message: 'Upgrade?',
+          default: false,
+        },
+      ]);
+
+      if (confirm) {
+        printSuccess(`Updating to ${latest.trim()}...`);
+        execa.commandSync('npm install -g @arcblock/forge-cli', { stdio: [0, 1, 2] });
+      }
+    }
   }
 }
 

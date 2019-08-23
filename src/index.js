@@ -107,7 +107,7 @@ const run = async () => {
       '-f, --config-path <path>',
       'Forge config used when starting forge node and initializing gRPC clients'
     )
-    .option('-y, --yes', 'Execute command non-interactive')
+    .option('-y, --yes', 'Run command using default values for all questions')
     .option(
       '-g, --socket-grpc <endpoint>',
       'Socket gRPC endpoint to connect, with this you can use forge-cli with a remote node'

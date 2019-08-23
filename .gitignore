@@ -10,3 +10,4 @@ tmp
 yarn-debug.log
 yarn-error.log
 *.dump
+.package-lock.json

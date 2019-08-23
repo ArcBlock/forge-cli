@@ -396,7 +396,6 @@ async function checkUpdate() {
   if (lastCheck && lastCheck + secondsOfDay > now) {
     return;
   }
-  writeCache('check-update', now);
 
   const { stdout: latest } = await wrapSpinner('Checking new version...', () =>
     execa.command('npm view @arcblock/forge-cli version', { silent: true })); // prettier-ignore
@@ -424,6 +423,7 @@ async function checkUpdate() {
       execa.commandSync('npm install -g @arcblock/forge-cli', { stdio: [0, 1, 2] });
     }
   }
+  writeCache('check-update', now);
 }
 
 // Because some comments have special usage, we need to add it back

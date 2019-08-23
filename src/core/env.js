@@ -42,7 +42,7 @@ const config = { cli: { requiredDirs } }; // global shared forge-cli run time co
  * @param {*} args
  * @param {*} requirements
  */
-async function setupEnv(args, requirements) {
+async function setupEnv(args, requirements, opts = {}) {
   await ensureNonRoot();
 
   // Support evaluating requirements at runtime
@@ -53,7 +53,7 @@ async function setupEnv(args, requirements) {
   });
 
   ensureRequiredDirs();
-  await checkUpdate();
+  await checkUpdate(opts.yes);
 
   if (requirements.forgeRelease || requirements.runningNode) {
     const cliConfig = await ensureForgeRelease(args);
@@ -388,7 +388,7 @@ function readCache(key) {
   }
 }
 
-async function checkUpdate() {
+async function checkUpdate(silent = false) {
   const lastCheck = readCache('check-update');
   const now = Math.floor(Date.now() / 1000);
   const secondsOfDay = 24 * 60 * 60;
@@ -396,6 +396,8 @@ async function checkUpdate() {
   if (lastCheck && lastCheck + secondsOfDay > now) {
     return;
   }
+
+  writeCache('check-update', now);
 
   const { stdout: latest } = await wrapSpinner('Checking new version...', () =>
     execa.command('npm view @arcblock/forge-cli version', { silent: true })); // prettier-ignore
@@ -410,20 +412,23 @@ async function checkUpdate() {
         } Latest forge-cli version is v${latest.trim()}, your local version v${installed.trim()}`
       )
     );
-    const { confirm } = await inquirer.prompt([
-      {
-        name: 'confirm',
-        type: 'confirm',
-        message: 'Upgrade?',
-        default: false,
-      },
-    ]);
-    if (confirm) {
-      printSuccess(`Updating to ${latest.trim()}...`);
-      execa.commandSync('npm install -g @arcblock/forge-cli', { stdio: [0, 1, 2] });
+
+    if (!silent) {
+      const { confirm } = await inquirer.prompt([
+        {
+          name: 'confirm',
+          type: 'confirm',
+          message: 'Upgrade?',
+          default: false,
+        },
+      ]);
+
+      if (confirm) {
+        printSuccess(`Updating to ${latest.trim()}...`);
+        execa.commandSync('npm install -g @arcblock/forge-cli', { stdio: [0, 1, 2] });
+      }
     }
   }
-  writeCache('check-update', now);
 }
 
 // Because some comments have special usage, we need to add it back

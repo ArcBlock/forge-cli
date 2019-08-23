@@ -53,7 +53,7 @@ async function setupEnv(args, requirements, opts = {}) {
   });
 
   ensureRequiredDirs();
-  await checkUpdate(opts.yes);
+  await checkUpdate(opts.defaults);
 
   if (requirements.forgeRelease || requirements.runningNode) {
     const cliConfig = await ensureForgeRelease(args);
@@ -388,7 +388,7 @@ function readCache(key) {
   }
 }
 
-async function checkUpdate(silent = false) {
+async function checkUpdate(useDefaults) {
   const lastCheck = readCache('check-update');
   const now = Math.floor(Date.now() / 1000);
   const secondsOfDay = 24 * 60 * 60;
@@ -413,7 +413,7 @@ async function checkUpdate(silent = false) {
       )
     );
 
-    if (!silent) {
+    if (!useDefaults) {
       const { confirm } = await inquirer.prompt([
         {
           name: 'confirm',

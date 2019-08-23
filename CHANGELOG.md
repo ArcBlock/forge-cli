@@ -1,3 +1,7 @@
+## 0.37.7 (August 23, 2019)
+
+- feature: auto upgrade forge-cli if user confirm to upgrade #163
+
 ## 0.37.6 (August 23, 2019)
 
 - fix: should also restart forge web after upgrade forge core #160

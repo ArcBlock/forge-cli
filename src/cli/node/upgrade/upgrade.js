@@ -118,12 +118,9 @@ async function main() {
   spinner.stop();
 
   shell.exec(`forge use ${answers.version} --color always`);
-  shell.exec(`forge start ${chainName} --color always`);
-
-  // We need to restart forge-web here, because when forge crashed, forge-web is still alive
+  // We need to stop forge-web here, because when forge crashed, forge-web is still alive
   shell.exec(`forge web stop -c ${chainName}`, { silent: true });
-  await sleep(2000);
-  shell.exec(`forge web start -c ${chainName}`, { silent: true });
+  shell.exec(`forge start ${chainName} --color always`);
 
   print();
   printInfo('Version:');

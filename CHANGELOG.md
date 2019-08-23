@@ -1,3 +1,7 @@
+## 0.37.6 (August 23, 2019)
+
+- fix: should also restart forge web after upgrade forge core #160
+
 ## 0.37.5 (August 22, 2019)
 
 - add endpoints column in forge ps output #168

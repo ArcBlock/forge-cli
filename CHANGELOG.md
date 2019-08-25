@@ -1,3 +1,7 @@
+## 0.37.9 (August 25, 2019)
+
+- fix: each chain uses its own version configuration
+
 ## 0.37.8 (August 23, 2019)
 
 - remove terminal image package
@@ -15,7 +19,8 @@
 - add endpoints column in forge ps output #168
 
 ## 0.37.4 (August 22, 2019)
-  - fix: shell.exec will return null if no output
+
+- fix: shell.exec will return null if no output
 
 ## 0.37.3 (August 21, 2019)
 

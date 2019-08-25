@@ -1,3 +1,7 @@
+## 0.37.8 (August 23, 2019)
+
+- remove terminal image package
+
 ## 0.37.7 (August 23, 2019)
 
 - feature: auto upgrade forge-cli if user confirm to upgrade #163

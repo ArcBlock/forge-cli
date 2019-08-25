@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const shell = require('shelljs');
+const semver = require('semver');
 const yaml = require('yaml');
 
 const debug = require('core/debug')('forge-fs');
@@ -135,9 +136,35 @@ function getStorageEnginePath(version) {
 }
 
 function getForgeBinPath(version) {
-  debug('getForgeBinPath');
+  debug('getForgeBinPath, version:', version);
 
   return path.join(getForgeReleaseDirectory(), version, 'bin', 'forge');
+}
+
+/**
+ * Get installed forge cores
+ * Sorted by version desc
+ */
+function getInstalledForgeCores() {
+  const forgeReleasePath = getForgeReleaseDirectory();
+  const allVersions = fs
+    .readdirSync(forgeReleasePath)
+    .filter(x => isDirectory(path.join(forgeReleasePath, x)));
+
+  return allVersions.sort((x, y) => {
+    if (semver.gt(x, y)) {
+      return -1;
+    }
+    if (semver.lt(x, y)) {
+      return 1;
+    }
+    return 0;
+  });
+}
+
+function getLocalLatestVersion() {
+  const localCores = getInstalledForgeCores();
+  return localCores[0];
 }
 
 function isForgeBinExists(version) {
@@ -195,6 +222,7 @@ function createNewProfile(chainName = process.env.FORGE_CURRENT_CHAIN) {
 
   fs.mkdirSync(getDataDirectory(chainName), { recursive: true });
   fs.mkdirSync(path.join(profileDirectory, 'keys'), { recursive: true });
+  updateReleaseYaml('forge', getLocalLatestVersion(), chainName);
   print(`Initialized an empty storage space in ${profileDirectory}`);
 }
 
@@ -205,6 +233,7 @@ function ensureProfileDirectory(chainName = process.env.FORGE_CURRENT_CHAIN) {
     fs.mkdirSync(forgeProfileDir, { recursive: true });
     fs.mkdirSync(getDataDirectory(chainName), { recursive: true });
     fs.mkdirSync(path.join(forgeProfileDir, 'keys'), { recursive: true });
+    updateReleaseYaml('forge', getLocalLatestVersion(), chainName);
     print(`Initialized an empty storage space in ${forgeProfileDir}`);
   }
 
@@ -233,10 +262,32 @@ function getForgeVersionFromYaml(yamlPath) {
   }
 }
 
-function getCurrentForgeVersion() {
-  const filePath = path.join(getForgeReleaseDirectory(), 'release.yml');
+function getForgeReleaseFilePath(chainName = process.env.FORGE_CURRENT_CHAIN) {
+  return path.join(getProfileDirectory(chainName), 'release.yml');
+}
+
+function getCurrentForgeVersion(chainName = process.env.FORGE_CURRENT_CHAIN) {
+  const filePath = getForgeReleaseFilePath(chainName);
 
   return getForgeVersionFromYaml(filePath);
+}
+
+function updateReleaseYaml(asset, version, chainName = process.env.FORGE_CURRENT_CHAIN) {
+  try {
+    const filePath = getForgeReleaseFilePath(chainName);
+    shell.exec(`touch ${filePath}`, { silent: true });
+    debug('updateReleaseYaml', { asset, version, filePath });
+    const yamlObj = fs.existsSync(filePath)
+      ? yaml.parse(fs.readFileSync(filePath).toString()) || {}
+      : {};
+    if (yamlObj.current) {
+      yamlObj.old = yamlObj.current;
+    }
+    yamlObj.current = version;
+    fs.writeFileSync(filePath, yaml.stringify(yamlObj));
+  } catch (err) {
+    printError(err);
+  }
 }
 
 module.exports = {
@@ -249,13 +300,15 @@ module.exports = {
   getConsensusEnginBinPath,
   getCurrentReleaseFilePath,
   getCurrentForgeVersion,
+  getDataDirectory,
   getForgeBinPath,
   getProfileDirectory,
+  getForgeReleaseFilePath,
   getForgeSimulatorReleaseDirectory,
   getForgeWebReleaseDirectory,
   getForgeWorkshopReleaseDirectory,
+  getInstalledForgeCores,
   getProfileReleaseFilePath,
-  getDataDirectory,
   getProfileWorkshopDirectory,
   getLogfile,
   getRootConfigDirectory,
@@ -269,4 +322,5 @@ module.exports = {
   isDirectory,
   isFile,
   requiredDirs,
+  updateReleaseYaml,
 };

@@ -2,7 +2,6 @@
 /* eslint-disable consistent-return */
 const fs = require('fs');
 const path = require('path');
-const yaml = require('yaml');
 const shell = require('shelljs');
 const chalk = require('chalk');
 const semver = require('semver');
@@ -13,6 +12,7 @@ const { printError, printInfo } = require('core/util');
 const { debug, getPlatform, RELEASE_ASSETS, DEFAULT_MIRROR } = require('core/env');
 const { printLogo } = require('core/util');
 const { copyReleaseConfig } = require('core/forge-config');
+const { updateReleaseYaml } = require('core/forge-fs');
 const {
   requiredDirs,
   isForgeBinExists,
@@ -133,24 +133,6 @@ function expandReleaseTarball(filePath, subFolder, version) {
   shell.echo(`${symbols.success} Expand release asset ${filePath} to ${targetDir}`);
 }
 
-function updateReleaseYaml(asset, version) {
-  const filePath = path.join(requiredDirs.release, asset, 'release.yml');
-  try {
-    shell.exec(`touch ${filePath}`, { silent: true });
-    debug('updateReleaseYaml', { asset, version, filePath });
-    const yamlObj = fs.existsSync(filePath)
-      ? yaml.parse(fs.readFileSync(filePath).toString()) || {}
-      : {};
-    if (yamlObj.current) {
-      yamlObj.old = yamlObj.current;
-    }
-    yamlObj.current = version;
-    fs.writeFileSync(filePath, yaml.stringify(yamlObj));
-  } catch (err) {
-    debug.error(err);
-  }
-}
-
 async function main({ args: [userVersion], opts: { mirror, silent } }) {
   try {
     const platform = await getPlatform();
@@ -244,7 +226,7 @@ async function main({ args: [userVersion], opts: { mirror, silent } }) {
     shell.echo(`Now you can start a forge node with ${chalk.cyan('forge start')}`);
     shell.echo('');
   } catch (err) {
-    debug.error(err);
+    printError(err);
     shell.echo(`${symbols.error} Forge initialize failed, please try again later`);
   }
 }

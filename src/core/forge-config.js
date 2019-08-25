@@ -19,6 +19,7 @@ const {
   getCurrentReleaseFilePath,
   getOriginForgeReleaseFilePath,
   getForgeVersionFromYaml,
+  getForgeReleaseFilePath,
   getProfileWorkshopDirectory,
   getProfileDirectory,
   getProfileReleaseFilePath,
@@ -260,7 +261,11 @@ async function copyReleaseConfig(currentVersion, overwrite = true) {
  * @param {boolean} [exitOn404=true]
  * @returns
  */
-async function ensureForgeRelease(args, exitOn404 = true) {
+async function ensureForgeRelease(
+  args,
+  exitOn404 = true,
+  chainName = process.env.FORGE_CURRENT_CHAIN
+) {
   const cliConfig = {};
   const cliReleaseDir = requiredDirs.release;
 
@@ -271,7 +276,7 @@ async function ensureForgeRelease(args, exitOn404 = true) {
   }
 
   const releaseDir = argReleaseDir || envReleaseDir || cliReleaseDir;
-  const releaseYamlPath = path.join(releaseDir, './forge/release.yml');
+  const releaseYamlPath = getForgeReleaseFilePath(chainName);
   if (fs.existsSync(releaseDir)) {
     try {
       const currentVersion = getForgeVersionFromYaml(releaseYamlPath);

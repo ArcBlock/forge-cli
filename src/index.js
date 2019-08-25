@@ -41,20 +41,27 @@ process.on('uncaughtException', onError);
 
 const getCurrentChainENV = async (command, action, argsChainName) => {
   let chainName = process.env.FORGE_CURRENT_CHAIN || argsChainName || DEFAULT_CHAIN_NAME;
+  debug(
+    'getCurrentChainENV, init env:',
+    process.env.FORGE_CURRENT_CHAIN,
+    argsChainName,
+    DEFAULT_CHAIN_NAME
+  );
 
   const allProcesses = await getAllProcesses();
 
-  if (['start', 'stop', 'reset', 'chain:remove'].includes(command) && action) {
+  if (['start', 'stop', 'reset', 'chain:remove', 'upgrade'].includes(command) && action) {
     chainName = action;
   } else if (allProcesses.length >= 1 && !['start', 'join'].includes(command) && !argsChainName) {
     chainName = allProcesses[0].name;
   }
 
+  debug('getCurrentChainENV, current env:', chainName);
   return chainName;
 };
 
 const shouldPrintCurrentChain = (currentChainName, command) => {
-  if (['chain:remove'].includes(command)) {
+  if (['chain:remove', 'chain:create'].includes(command)) {
     return false;
   }
 
@@ -84,10 +91,10 @@ async function setupEnv() {
   if (
     chainName !== DEFAULT_CHAIN_NAME &&
     !fs.existsSync(getProfileDirectory(chainName)) &&
-    command !== 'create-chain'
+    (command !== 'create-chain' || command !== 'chain:create')
   ) {
     printError(`Chain ${chainName} does not exist`);
-    printInfo(`You can create by run ${chalk.cyan(`forge create-chain ${chainName}`)}`);
+    printInfo(`You can create by run ${chalk.cyan(`forge chain:create ${chainName}`)}`);
     process.exit(-1);
   }
 }

@@ -23,7 +23,7 @@ const {
 } = require('core/forge-fs');
 const { ensureForgeRelease } = require('core/forge-config');
 const { isForgeStarted, getProcessTag } = require('./forge-process');
-const { print, printSuccess, printLogo } = require('./util');
+const { print, printInfo, printSuccess, printLogo } = require('./util');
 
 const { version } = require('../../package.json');
 const { symbols, hr, wrapSpinner } = require('./ui');
@@ -56,7 +56,7 @@ async function setupEnv(args, requirements, opts = {}) {
   await checkUpdate(opts.defaults);
 
   if (requirements.forgeRelease || requirements.runningNode) {
-    const cliConfig = await ensureForgeRelease(args);
+    const cliConfig = await ensureForgeRelease(args, true, opts.chainName);
     Object.assign(config.cli, cliConfig);
   }
 
@@ -286,7 +286,7 @@ function createRpcClient() {
   const sockGrpc =
     process.env.FORGE_SOCK_GRPC || get(config, 'forge.sockGrpc') || get(config, 'forge.sock_grpc');
 
-  shell.echo(`${symbols.info} Connect to grpc endpoint: ${sockGrpc}`);
+  printInfo(`Connect to grpc endpoint: ${sockGrpc}`);
   client = new GRpcClient(sockGrpc);
   return client;
 }

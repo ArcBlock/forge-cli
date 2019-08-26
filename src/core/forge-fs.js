@@ -33,7 +33,7 @@ function clearDataDirectories(chainName = process.env.FORGE_CURRENT_CHAIN) {
   shell.exec(`rm -rf ${dir}`);
   printInfo(`rm -f ${dir}`);
 
-  printSuccess('Data chains cleaned!');
+  printSuccess('Chain data cleaned!');
 }
 
 function isDirectory(x) {
@@ -61,7 +61,7 @@ function getAllChainNames() {
 }
 
 function getCurrentWorkingDirectory() {
-  return process.env.CURRENT_WORKING_chain;
+  return process.env.CURRENT_WORKING_CHAIN;
 }
 
 function getDataDirectory(chainName = process.env.FORGE_CURRENT_CHAIN) {

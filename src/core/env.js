@@ -29,8 +29,8 @@ const { version } = require('../../package.json');
 const { symbols, hr, wrapSpinner } = require('./ui');
 const debug = require('./debug')('env');
 
-const CURRENT_WORKING_PROFILE = getChainDirectory(process.env.FORGE_CURRENT_CHAIN);
-process.env.CURRENT_WORKING_PROFILE = CURRENT_WORKING_PROFILE;
+const CURRENT_WORKING_CHAIN = getChainDirectory(process.env.FORGE_CURRENT_CHAIN);
+process.env.CURRENT_WORKING_CHAIN = CURRENT_WORKING_CHAIN;
 
 const config = { cli: { requiredDirs } }; // global shared forge-cli run time config
 

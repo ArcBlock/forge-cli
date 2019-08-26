@@ -63,7 +63,7 @@ async function getForgeProcessByTag(processName, chainName = process.env.FORGE_C
   return { name: processName, pid: forgeProcess ? forgeProcess.pid : 0 };
 }
 
-async function getForgeProcess(chainName = process.env.PROFILE_NAME) {
+async function getForgeProcess(chainName = process.env.CHAIN_NAME) {
   const forgeProcesses = await findProcess('name', 'forge');
 
   const forgeProcess = forgeProcesses.find(

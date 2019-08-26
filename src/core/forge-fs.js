@@ -223,7 +223,7 @@ function createNewProfile(chainName = process.env.FORGE_CURRENT_CHAIN) {
 
   fs.mkdirSync(getDataDirectory(chainName), { recursive: true });
   fs.mkdirSync(path.join(profileDirectory, 'keys'), { recursive: true });
-  updateReleaseYaml('forge', getLocalLatestVersion(), chainName);
+  updateChainConfig(chainName, { version: getLocalLatestVersion() });
   print(`Initialized an empty storage space in ${profileDirectory}`);
 }
 
@@ -234,7 +234,7 @@ function ensureProfileDirectory(chainName = process.env.FORGE_CURRENT_CHAIN) {
     fs.mkdirSync(forgeProfileDir, { recursive: true });
     fs.mkdirSync(getDataDirectory(chainName), { recursive: true });
     fs.mkdirSync(path.join(forgeProfileDir, 'keys'), { recursive: true });
-    updateReleaseYaml('forge', getLocalLatestVersion(), chainName);
+    updateChainConfig(chainName, getLocalLatestVersion());
     print(`Initialized an empty storage space in ${forgeProfileDir}`);
   }
 
@@ -245,37 +245,37 @@ function getLogfile(chainName = process.env.FORGE_CURRENT_CHAIN, fileName) {
   return path.join(getProfileReleaseDirectory(chainName), 'core', 'logs', fileName);
 }
 
-function getForgeVersionFromYaml(yamlPath) {
+function getForgeVersionFromYaml(yamlPath, key = 'current') {
   try {
     if (!fs.existsSync(yamlPath)) {
       return '';
     }
 
     const releaseYamlObj = yaml.parse(fs.readFileSync(yamlPath).toString());
-    if (!releaseYamlObj || !releaseYamlObj.current) {
+    if (!releaseYamlObj || !releaseYamlObj[key]) {
       throw new Error('no current forge release selected');
     }
 
-    return releaseYamlObj.current;
+    return releaseYamlObj[key];
   } catch (err) {
     debug.error(err);
     return '';
   }
 }
 
-function getForgeReleaseFilePath(chainName = process.env.FORGE_CURRENT_CHAIN) {
-  return path.join(getProfileDirectory(chainName), 'release.yml');
+function getChainConfigPath(chainName = process.env.FORGE_CURRENT_CHAIN) {
+  return path.join(getProfileDirectory(chainName), 'config.yml');
 }
 
 function getCurrentForgeVersion(chainName = process.env.FORGE_CURRENT_CHAIN) {
-  const filePath = getForgeReleaseFilePath(chainName);
+  const filePath = getChainConfigPath(chainName);
 
   return getForgeVersionFromYaml(filePath);
 }
 
-function updateReleaseYaml(asset, version, chainName = process.env.FORGE_CURRENT_CHAIN) {
+function updateReleaseYaml(asset, version) {
   try {
-    const filePath = getForgeReleaseFilePath(chainName);
+    const filePath = path.join(getReleaseDirectory(asset), 'release.yml');
     shell.exec(`touch ${filePath}`, { silent: true });
     debug('updateReleaseYaml', { asset, version, filePath });
     const yamlObj = fs.existsSync(filePath)
@@ -285,7 +285,21 @@ function updateReleaseYaml(asset, version, chainName = process.env.FORGE_CURRENT
       yamlObj.old = yamlObj.current;
     }
     yamlObj.current = version;
-    fs.writeFileSync(filePath, yaml.stringify(yamlObj));
+    fs.writeFileSync(filePath, yaml.stringify(yamlObj), { flag: 'w+' });
+  } catch (err) {
+    printError(err);
+  }
+}
+
+function updateChainConfig(chainName, config) {
+  try {
+    const filePath = getChainConfigPath(chainName);
+    shell.exec(`touch ${filePath}`, { silent: true });
+    debug('updateChainConfig', { chainName, config });
+    const yamlObj = fs.existsSync(filePath)
+      ? yaml.parse(fs.readFileSync(filePath).toString()) || {}
+      : {};
+    fs.writeFileSync(filePath, yaml.stringify(Object.assign(yamlObj, config)), { flag: 'w+' });
   } catch (err) {
     printError(err);
   }
@@ -304,7 +318,7 @@ module.exports = {
   getDataDirectory,
   getForgeBinPath,
   getProfileDirectory,
-  getForgeReleaseFilePath,
+  getChainConfigPath,
   getForgeSimulatorReleaseDirectory,
   getForgeWebReleaseDirectory,
   getForgeWorkshopReleaseDirectory,
@@ -324,4 +338,5 @@ module.exports = {
   isFile,
   requiredDirs,
   updateReleaseYaml,
+  updateChainConfig,
 };

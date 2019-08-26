@@ -26,7 +26,7 @@ async function main({
       return process.exit(1);
     }
 
-    const { forge, simulator } = listReleases();
+    const { forge } = listReleases();
     if (!forge.includes(version)) {
       shell.echo(
         `${
@@ -39,9 +39,6 @@ async function main({
     }
 
     updateReleaseYaml('forge', version);
-    if (simulator.includes(version)) {
-      updateReleaseYaml('starter', version);
-    }
 
     shell.echo(`${symbols.success} forge v${version} activated successfully!`);
     shell.echo('');

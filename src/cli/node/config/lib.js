@@ -99,7 +99,7 @@ async function askUserConfigs(defaults, chainName = '', isCreate) {
 
     if (fs.existsSync(getProfileDirectory(v))) {
       if (isCreate || (!isCreate && v !== chainName)) {
-        return `The chain ${chalk.cyan(v)} is exists, please use another one.`;
+        return `The chain ${chalk.cyan(v)} already exists, please use another name.`;
       }
     }
 

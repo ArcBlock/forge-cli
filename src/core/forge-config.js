@@ -4,7 +4,6 @@ const semver = require('semver');
 const path = require('path');
 const { get, set } = require('lodash');
 const TOML = require('@iarna/toml');
-const yaml = require('yaml');
 
 const {
   DEFAULT_CHAIN_NAME,
@@ -19,10 +18,11 @@ const {
   getCurrentReleaseFilePath,
   getOriginForgeReleaseFilePath,
   getForgeVersionFromYaml,
-  getForgeReleaseFilePath,
+  getChainConfigPath,
   getProfileWorkshopDirectory,
   getProfileDirectory,
   getProfileReleaseFilePath,
+  updateChainConfig,
   requiredDirs,
 } = require('./forge-fs');
 const {
@@ -53,9 +53,9 @@ async function getUsedPortsByForge() {
   const maxPortPerField = {
     forgeWebPort: 0,
     forgeGrpcPort: 0,
-    tendminRpcPort: 0,
-    tendmintGrpcPort: 0,
-    tendmintP2pPort: 0,
+    tendermintRpcPort: 0,
+    tenderminttGrpcPort: 0,
+    tenderminttP2pPort: 0,
     workshopPort: 0,
   };
 
@@ -75,9 +75,9 @@ async function getUsedPortsByForge() {
     const forgeWebPort = Number(get(cfg, 'forge.web.port'));
     const workshopPort = Number(get(cfg, 'workshop.port'));
     const forgeGrpcPort = getPortFromUri(get(cfg, 'forge.sock_grpc'));
-    const tendminRpcPort = getPortFromUri(get(cfg, 'tendermint.sock_rpc'));
-    const tendmintGrpcPort = getPortFromUri(get(cfg, 'tendermint.sock_grpc'));
-    const tendmintP2pPort = getPortFromUri(get(cfg, 'tendermint.sock_p2p'));
+    const tendermintRpcPort = getPortFromUri(get(cfg, 'tendermint.sock_rpc'));
+    const tendermintGrpcPort = getPortFromUri(get(cfg, 'tendermint.sock_grpc'));
+    const tendermintP2pPort = getPortFromUri(get(cfg, 'tendermint.sock_p2p'));
 
     if (forgeWebPort > maxPortPerField.forgeWebPort) {
       maxPortPerField.forgeWebPort = forgeWebPort;
@@ -91,15 +91,15 @@ async function getUsedPortsByForge() {
       maxPortPerField.forgeGrpcPort = forgeGrpcPort;
     }
 
-    if (tendminRpcPort > maxPortPerField.tendminRpcPort) {
-      maxPortPerField.tendminRpcPort = tendminRpcPort;
+    if (tendermintRpcPort > maxPortPerField.tendermintRpcPort) {
+      maxPortPerField.tendermintRpcPort = tendermintRpcPort;
     }
-    if (tendmintGrpcPort > maxPortPerField.tendmintGrpcPort) {
-      maxPortPerField.tendmintGrpcPort = tendmintGrpcPort;
+    if (tendermintGrpcPort > maxPortPerField.tendermintGrpcPort) {
+      maxPortPerField.tendermintGrpcPort = tendermintGrpcPort;
     }
 
-    if (tendmintP2pPort > maxPortPerField.tendmintP2pPort) {
-      maxPortPerField.tendmintP2pPort = tendmintP2pPort;
+    if (tendermintP2pPort > maxPortPerField.tendermintP2pPort) {
+      maxPortPerField.tendermintP2pPort = tendermintP2pPort;
     }
   });
 
@@ -110,9 +110,9 @@ async function getAvailablePort() {
   const {
     forgeWebPort,
     forgeGrpcPort,
-    tendminRpcPort,
-    tendmintGrpcPort,
-    tendmintP2pPort,
+    tendermintRpcPort,
+    tendermintGrpcPort,
+    tendermintP2pPort,
     workshopPort,
   } = await getUsedPortsByForge();
 
@@ -120,14 +120,14 @@ async function getAvailablePort() {
     forgeWebPort: forgeWebPort
       ? forgeWebPort + 1
       : await getPort({ port: getPort.makeRange(8211, 8300) }),
-    tendminRpcPort: tendminRpcPort
-      ? tendminRpcPort + 1
+    tendermintRpcPort: tendermintRpcPort
+      ? tendermintRpcPort + 1
       : await getPort({ port: getPort.makeRange(32001, 34000) }),
-    tendmintGrpcPort: tendmintGrpcPort
-      ? tendmintGrpcPort + 1
+    tendermintGrpcPort: tendermintGrpcPort
+      ? tendermintGrpcPort + 1
       : await getPort({ port: getPort.makeRange(36001, 37000) }),
-    tendmintP2pPort: tendmintP2pPort
-      ? tendmintP2pPort + 1
+    tendermintP2pPort: tendermintP2pPort
+      ? tendermintP2pPort + 1
       : await getPort({ port: getPort.makeRange(37001, 38000) }),
     forgeGrpcPort: forgeGrpcPort
       ? forgeGrpcPort + 1
@@ -143,15 +143,22 @@ async function getAvailablePort() {
 function setConfig(
   configs,
   chainName,
-  { forgeWebPort, forgeGrpcPort, tendminRpcPort, tendmintGrpcPort, tendmintP2pPort, workshopPort }
+  {
+    forgeWebPort,
+    forgeGrpcPort,
+    tendermintRpcPort,
+    tendermintGrpcPort,
+    tendermintP2pPort,
+    workshopPort,
+  }
 ) {
   let content = JSON.parse(JSON.stringify(configs));
 
   set(content, 'forge.web.port', forgeWebPort);
   set(content, 'forge.sock_grpc', `tcp://127.0.0.1:${forgeGrpcPort}`);
-  set(content, 'tendermint.sock_rpc', `tcp://127.0.0.1:${tendminRpcPort}`);
-  set(content, 'tendermint.sock_grpc', `tcp://127.0.0.1:${tendmintGrpcPort}`);
-  set(content, 'tendermint.sock_p2p', `tcp://0.0.0.0:${tendmintP2pPort}`);
+  set(content, 'tendermint.sock_rpc', `tcp://127.0.0.1:${tendermintRpcPort}`);
+  set(content, 'tendermint.sock_grpc', `tcp://127.0.0.1:${tendermintGrpcPort}`);
+  set(content, 'tendermint.sock_p2p', `tcp://0.0.0.0:${tendermintP2pPort}`);
   set(content, 'workshop.port', workshopPort);
   set(content, 'workshop.local_forge', `tcp://127.0.0.1:${forgeGrpcPort}`);
 
@@ -181,18 +188,18 @@ async function setConfigToProfile(configs, chainName) {
   const {
     forgeWebPort,
     forgeGrpcPort,
-    tendminRpcPort,
-    tendmintGrpcPort,
-    tendmintP2pPort,
+    tendermintRpcPort,
+    tendermintGrpcPort,
+    tendermintP2pPort,
     workshopPort,
   } = await getAvailablePort();
 
   return setConfig(configs, chainName, {
     forgeWebPort,
     forgeGrpcPort,
-    tendminRpcPort,
-    tendmintGrpcPort,
-    tendmintP2pPort,
+    tendermintRpcPort,
+    tendermintGrpcPort,
+    tendermintP2pPort,
     workshopPort,
   });
 }
@@ -219,16 +226,16 @@ async function getDefaultChainConfigs(configs) {
     throw new Error('Can not find free port');
   }
 
-  const tendminRpcPort = await getPort({ port: getPort.makeRange(22001, 24000) });
-  const tendmintGrpcPort = await getPort({ port: getPort.makeRange(26001, 27000) });
-  const tendmintP2pPort = await getPort({ port: getPort.makeRange(27001, 28000) });
+  const tendermintRpcPort = await getPort({ port: getPort.makeRange(22001, 24000) });
+  const tendermintGrpcPort = await getPort({ port: getPort.makeRange(26001, 27000) });
+  const tendermintP2pPort = await getPort({ port: getPort.makeRange(27001, 28000) });
 
   return setConfig(configs, DEFAULT_CHAIN_NAME, {
     forgeWebPort,
     forgeGrpcPort,
-    tendminRpcPort,
-    tendmintGrpcPort,
-    tendmintP2pPort,
+    tendermintRpcPort,
+    tendermintGrpcPort,
+    tendermintP2pPort,
     workshopPort,
   });
 }
@@ -276,18 +283,32 @@ async function ensureForgeRelease(
   }
 
   const releaseDir = argReleaseDir || envReleaseDir || cliReleaseDir;
-  const releaseYamlPath = getForgeReleaseFilePath(chainName);
+  const releaseYamlPath = path.join(releaseDir, './forge/release.yml');
   if (fs.existsSync(releaseDir)) {
+    // Try use chain-wise-version
     try {
-      const currentVersion = getForgeVersionFromYaml(releaseYamlPath);
-      const releaseYamlObj = yaml.parse(fs.readFileSync(releaseYamlPath).toString());
-      if (!releaseYamlObj || !releaseYamlObj.current) {
-        throw new Error('no current forge release selected');
-      }
+      const chainConfigPath = getChainConfigPath(chainName);
+      const currentVersion = getForgeVersionFromYaml(chainConfigPath, 'version');
+      if (semver.valid(currentVersion)) {
+        cliConfig.currentVersion = currentVersion;
 
-      cliConfig.currentVersion = currentVersion;
+        // FIXME: this should work out of box
+        // cliConfig.configPath = getForgeVersionFromYaml(chainConfigPath, 'config');
+
+        debug('ensureForgeRelease.readChainConfig', chainConfigPath);
+      } else {
+        // Then use global release version
+        const curVersion = getForgeVersionFromYaml(releaseYamlPath, 'current');
+        if (!semver.valid(curVersion)) {
+          throw new Error(`no valid version field found in release config ${releaseYamlPath}`);
+        }
+        cliConfig.currentVersion = curVersion;
+
+        // Then write chain-wise config to use global version
+        updateChainConfig(chainName, { version: cliConfig.currentVersion });
+      }
     } catch (err) {
-      debug.error(err);
+      debug.error('ensureForgeRelease.readConfig.error', err);
       if (exitOn404) {
         printError(`config file ${releaseYamlPath} invalid`);
         process.exit(1);

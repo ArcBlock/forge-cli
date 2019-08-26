@@ -237,4 +237,3 @@ exports.fetchReleaseVersion = fetchReleaseVersion;
 exports.fetchAssetInfo = fetchAssetInfo;
 exports.downloadAsset = downloadAsset;
 exports.expandReleaseTarball = expandReleaseTarball;
-exports.updateReleaseYaml = updateReleaseYaml;

@@ -54,8 +54,8 @@ async function getUsedPortsByForge() {
     forgeWebPort: 0,
     forgeGrpcPort: 0,
     tendermintRpcPort: 0,
-    tenderminttGrpcPort: 0,
-    tenderminttP2pPort: 0,
+    tendermintGrpcPort: 0,
+    tendermintP2pPort: 0,
     workshopPort: 0,
   };
 

@@ -149,6 +149,7 @@ function getInstalledForgeCores() {
   const forgeReleasePath = getForgeReleaseDirectory();
   const allVersions = fs
     .readdirSync(forgeReleasePath)
+    .filter(x => semver.valid(x))
     .filter(x => isDirectory(path.join(forgeReleasePath, x)));
 
   return allVersions.sort((x, y) => {

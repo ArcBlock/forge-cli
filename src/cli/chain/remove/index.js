@@ -13,7 +13,6 @@ cli('chain:remove [<chainName>]', 'Remove chains', input => action(execute, run,
     rpcClient: false,
     wallet: false,
   },
-  options: [['-y, --yes', 'Use default value for all options']],
   handlers: {
     '--help': () => {
       print(`

@@ -4,7 +4,7 @@ const chalk = require('chalk');
 const semver = require('semver');
 const { symbols } = require('core/ui');
 const { getPlatform, RELEASE_ASSETS } = require('core/env');
-const { isForgeBinExists, getCurrentForgeVersion } = require('core/forge-fs');
+const { isForgeBinExists, getGlobalForgeVersion } = require('core/forge-fs');
 const debug = require('core/debug')('download');
 const {
   fetchAssetInfo,
@@ -22,7 +22,7 @@ async function main({ args: [userVersion], opts: { mirror } }) {
     const userVer =
       userVersion && semver.coerce(userVersion) ? semver.coerce(userVersion).version : '';
     const version = userVer || fetchReleaseVersion(mirror);
-    const currentVersion = getCurrentForgeVersion();
+    const currentVersion = getGlobalForgeVersion();
     if (isForgeBinExists(currentVersion)) {
       if (version === currentVersion) {
         return process.exit(1);

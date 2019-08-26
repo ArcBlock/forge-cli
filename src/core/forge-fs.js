@@ -56,7 +56,8 @@ function getAllAppDirectories() {
 function getAllChainNames() {
   return getAllAppDirectories()
     .map(name => name.slice(name.indexOf('_') + 1))
-    .sort(chainSortHandler);
+    .sort(chainSortHandler)
+    .map(x => [x, getProfileConfig(x)]);
 }
 
 function getCurrentWorkingDirectory() {
@@ -206,7 +207,7 @@ function createNewProfile(chainName = process.env.FORGE_CURRENT_CHAIN) {
 
   fs.mkdirSync(getDataDirectory(chainName), { recursive: true });
   fs.mkdirSync(path.join(profileDirectory, 'keys'), { recursive: true });
-  updateChainConfig(chainName, { version: getGlobalForgeVersion() });
+  updateProfileConfig(chainName, { version: getGlobalForgeVersion() });
   print(`Initialized an empty storage space in ${profileDirectory}`);
 }
 
@@ -217,7 +218,7 @@ function ensureProfileDirectory(chainName = process.env.FORGE_CURRENT_CHAIN) {
     fs.mkdirSync(forgeProfileDir, { recursive: true });
     fs.mkdirSync(getDataDirectory(chainName), { recursive: true });
     fs.mkdirSync(path.join(forgeProfileDir, 'keys'), { recursive: true });
-    updateChainConfig(chainName, { version: getGlobalForgeVersion() });
+    updateProfileConfig(chainName, { version: getGlobalForgeVersion() });
     print(`Initialized an empty storage space in ${forgeProfileDir}`);
   }
 
@@ -246,15 +247,6 @@ function getForgeVersionFromYaml(yamlPath, key = 'current') {
   }
 }
 
-function getChainConfigPath(chainName) {
-  return path.join(getProfileDirectory(chainName), 'config.yml');
-}
-
-function getCurrentForgeVersion() {
-  const filePath = path.join(getReleaseDirectory('forge'), 'release.yml');
-  return getForgeVersionFromYaml(filePath);
-}
-
 function updateReleaseYaml(asset, version) {
   try {
     const filePath = path.join(getReleaseDirectory(asset), 'release.yml');
@@ -273,11 +265,25 @@ function updateReleaseYaml(asset, version) {
   }
 }
 
-function updateChainConfig(chainName, config) {
+function getProfileConfigPath(chainName) {
+  return path.join(getProfileDirectory(chainName), 'config.yml');
+}
+
+function getProfileConfig(chainName) {
+  const filePath = path.join(getProfileDirectory(chainName), 'config.yml');
   try {
-    const filePath = getChainConfigPath(chainName);
+    return fs.existsSync(filePath) ? yaml.parse(fs.readFileSync(filePath).toString()) || {} : {};
+  } catch (err) {
+    // Do nothing
+    return {};
+  }
+}
+
+function updateProfileConfig(chainName, config) {
+  try {
+    const filePath = getProfileConfigPath(chainName);
     shell.exec(`touch ${filePath}`, { silent: true });
-    debug('updateChainConfig', { chainName, config });
+    debug('updateProfileConfig', { chainName, config });
     const yamlObj = fs.existsSync(filePath)
       ? yaml.parse(fs.readFileSync(filePath).toString()) || {}
       : {};
@@ -296,11 +302,11 @@ module.exports = {
   getCliDirectory,
   getConsensusEnginBinPath,
   getCurrentReleaseFilePath,
-  getCurrentForgeVersion,
   getDataDirectory,
   getForgeBinPath,
   getProfileDirectory,
-  getChainConfigPath,
+  getProfileConfigPath,
+  getProfileConfig,
   getForgeSimulatorReleaseDirectory,
   getForgeWebReleaseDirectory,
   getForgeWorkshopReleaseDirectory,
@@ -319,5 +325,5 @@ module.exports = {
   isFile,
   requiredDirs,
   updateReleaseYaml,
-  updateChainConfig,
+  updateProfileConfig,
 };

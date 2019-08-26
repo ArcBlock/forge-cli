@@ -16,7 +16,7 @@ const { updateReleaseYaml } = require('core/forge-fs');
 const {
   requiredDirs,
   isForgeBinExists,
-  getCurrentForgeVersion,
+  getGlobalForgeVersion,
   getAllChainNames,
 } = require('core/forge-fs');
 const { isForgeStarted } = require('core/forge-process');
@@ -144,7 +144,7 @@ async function main({ args: [userVersion], opts: { mirror, silent } }) {
     const userVer = semver.coerce(userVersion) ? semver.coerce(userVersion).version : '';
     const version = userVer || fetchReleaseVersion(mirror);
 
-    const currentVersion = getCurrentForgeVersion();
+    const currentVersion = getGlobalForgeVersion();
     if (isForgeBinExists(version)) {
       printInfo(`already initialized version: ${version}`);
 

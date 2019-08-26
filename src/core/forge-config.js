@@ -18,11 +18,11 @@ const {
   getCurrentReleaseFilePath,
   getOriginForgeReleaseFilePath,
   getForgeVersionFromYaml,
-  getChainConfigPath,
+  getProfileConfigPath,
   getProfileWorkshopDirectory,
   getProfileDirectory,
   getProfileReleaseFilePath,
-  updateChainConfig,
+  updateProfileConfig,
   requiredDirs,
 } = require('./forge-fs');
 const {
@@ -294,7 +294,7 @@ async function ensureForgeRelease(
       cliConfig.globalVersion = curVersion;
 
       // Read chain-wise version
-      const chainConfigPath = getChainConfigPath(chainName);
+      const chainConfigPath = getProfileConfigPath(chainName);
       const currentVersion = getForgeVersionFromYaml(chainConfigPath, 'version');
       if (semver.valid(currentVersion)) {
         cliConfig.currentVersion = currentVersion;
@@ -305,7 +305,7 @@ async function ensureForgeRelease(
       } else {
         // Write chain-wise config to use global version
         cliConfig.currentVersion = cliConfig.globalVersion;
-        updateChainConfig(chainName, { version: cliConfig.globalVersion });
+        updateProfileConfig(chainName, { version: cliConfig.globalVersion });
       }
     } catch (err) {
       debug.error('ensureForgeRelease.readConfig.error', err);

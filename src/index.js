@@ -33,7 +33,7 @@ const onError = error => {
     command += ' -v';
   }
 
-  printInfo(`run ${chalk.cyan(`forge ${command}`)} to get detail infomation`);
+  printInfo(`run ${chalk.cyan(`forge ${command}`)} to get detail information`);
 };
 
 process.on('unhandledRejection', onError);

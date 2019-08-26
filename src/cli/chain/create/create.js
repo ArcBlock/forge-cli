@@ -11,12 +11,12 @@ const {
 } = require('core/forge-fs');
 const { askUserConfigs, writeConfigs } = require('../../node/config/lib');
 
-async function main({ args: [chainName = ''] }) {
+async function main({ args: [chainName = ''], opts: { defaults } }) {
   try {
     let configs = toml.parse(
       fs.readFileSync(getOriginForgeReleaseFilePath(config.get('cli').currentVersion)).toString()
     );
-    configs = await askUserConfigs(configs, chainName, true);
+    configs = await askUserConfigs(configs, chainName, { interactive: !defaults, isCreate: true });
 
     const {
       app: { name },

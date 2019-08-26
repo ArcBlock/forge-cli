@@ -14,7 +14,7 @@ const { askUserConfigs, writeConfigs } = require('./lib');
 
 async function main({
   args: [action = 'get'],
-  opts: { peer, chainName = process.env.FORGE_CURRENT_CHAIN },
+  opts: { peer, defaults, chainName = process.env.FORGE_CURRENT_CHAIN },
 }) {
   if (action === 'get') {
     if (peer) {
@@ -58,8 +58,11 @@ async function main({
     }
 
     const originConfigFilePath = getProfileReleaseFilePath(chainName);
-    const defaults = toml.parse(fs.readFileSync(originConfigFilePath).toString());
-    const configs = await askUserConfigs(defaults, chainName, false);
+    const defaultConfig = toml.parse(fs.readFileSync(originConfigFilePath).toString());
+    const configs = await askUserConfigs(defaultConfig, chainName, {
+      isCreate: false,
+      interactive: !defaults,
+    });
 
     await writeConfigs(getProfileReleaseFilePath(chainName), configs, true);
     printInfo('you need to restart the chain to load the new config!');

@@ -75,7 +75,11 @@ function initCli(program) {
 
       command.action(async (...params) => {
         const globalArgs = last(program.args).parent;
-        const globalOpts = Object.assign({}, globalConfig, globalArgs.opts());
+        const globalOpts = Object.assign(
+          { allowMultiChain: true },
+          globalConfig,
+          globalArgs.opts()
+        );
         if (globalOpts.registry === undefined) {
           globalOpts.registry = registryUrl();
         }

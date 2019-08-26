@@ -11,7 +11,11 @@ const {
 } = require('core/forge-fs');
 const { askUserConfigs, writeConfigs } = require('../../node/config/lib');
 
-async function main({ args: [chainName = ''], opts: { defaults } }) {
+async function main({ args: [chainName = ''], opts: { defaults, allowMultiChain = false } }) {
+  if (allowMultiChain === false) {
+    printError('Forge CLI is configured to work with single chain only, abort!');
+    process.exit(0);
+  }
   try {
     let configs = toml.parse(
       fs.readFileSync(getOriginForgeReleaseFilePath(config.get('cli').currentVersion)).toString()

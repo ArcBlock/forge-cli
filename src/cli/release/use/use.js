@@ -11,7 +11,7 @@ const { listReleases } = require('cli/release/list/list');
 // eslint-disable-next-line consistent-return
 async function main({
   args: [userVersion],
-  opts: { chainName = process.env.FORGE_CURRENT_CHAIN },
+  opts: { chainName = process.env.FORGE_CURRENT_CHAIN, allowMultiChain = false },
 }) {
   try {
     const version =
@@ -21,9 +21,11 @@ async function main({
       return process.exit(1);
     }
 
-    if (await isForgeStarted()) {
-      shell.echo(`${symbols.warning} Please stop forge before activate another version`);
-      return process.exit(1);
+    if (allowMultiChain === false) {
+      if (await isForgeStarted()) {
+        shell.echo(`${symbols.warning} Please stop forge before activate another version`);
+        return process.exit(1);
+      }
     }
 
     const { forge } = listReleases();

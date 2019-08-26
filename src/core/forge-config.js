@@ -285,27 +285,27 @@ async function ensureForgeRelease(
   const releaseDir = argReleaseDir || envReleaseDir || cliReleaseDir;
   const releaseYamlPath = path.join(releaseDir, './forge/release.yml');
   if (fs.existsSync(releaseDir)) {
-    // Try use chain-wise-version
     try {
+      // Read global release version
+      const curVersion = getForgeVersionFromYaml(releaseYamlPath, 'current');
+      if (!semver.valid(curVersion)) {
+        throw new Error(`no valid version field found in release config ${releaseYamlPath}`);
+      }
+      cliConfig.globalVersion = curVersion;
+
+      // Read chain-wise version
       const chainConfigPath = getChainConfigPath(chainName);
       const currentVersion = getForgeVersionFromYaml(chainConfigPath, 'version');
       if (semver.valid(currentVersion)) {
         cliConfig.currentVersion = currentVersion;
 
-        // FIXME: this should work out of box
+        // FIXME: make this work
         // cliConfig.configPath = getForgeVersionFromYaml(chainConfigPath, 'config');
-
         debug('ensureForgeRelease.readChainConfig', chainConfigPath);
       } else {
-        // Then use global release version
-        const curVersion = getForgeVersionFromYaml(releaseYamlPath, 'current');
-        if (!semver.valid(curVersion)) {
-          throw new Error(`no valid version field found in release config ${releaseYamlPath}`);
-        }
-        cliConfig.currentVersion = curVersion;
-
-        // Then write chain-wise config to use global version
-        updateChainConfig(chainName, { version: cliConfig.currentVersion });
+        // Write chain-wise config to use global version
+        cliConfig.currentVersion = cliConfig.globalVersion;
+        updateChainConfig(chainName, { version: cliConfig.globalVersion });
       }
     } catch (err) {
       debug.error('ensureForgeRelease.readConfig.error', err);

@@ -73,11 +73,15 @@ function initCli(program) {
 
       command.action(async (...params) => {
         const globalArgs = last(program.args).parent;
+        const globalOpts = globalArgs.opts();
+        if (globalOpts.registry === undefined) {
+          globalOpts.registry = registryUrl();
+        }
 
-        await setupEnv(globalArgs.args, x.requirements, globalArgs.opts());
+        await setupEnv(globalArgs.args, x.requirements, globalOpts);
         await x.handler({
           args: params.filter(p => typeof p === 'string'),
-          opts: Object.assign({ registry: registryUrl() }, globalArgs.opts(), command.opts()),
+          opts: Object.assign(globalOpts, command.opts()),
         });
       });
     });

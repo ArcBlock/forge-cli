@@ -1,11 +1,13 @@
 /* eslint no-console:"off" */
 const path = require('path');
 const last = require('lodash/last');
+const rcfile = require('rcfile');
 const registryUrl = require('registry-url');
 
 const { setupEnv } = require('./env');
 
 const allCommands = [];
+const globalConfig = rcfile('forge');
 
 /**
  * create a cli
@@ -73,7 +75,7 @@ function initCli(program) {
 
       command.action(async (...params) => {
         const globalArgs = last(program.args).parent;
-        const globalOpts = globalArgs.opts();
+        const globalOpts = Object.assign({}, globalConfig, globalArgs.opts());
         if (globalOpts.registry === undefined) {
           globalOpts.registry = registryUrl();
         }

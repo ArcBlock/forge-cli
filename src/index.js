@@ -13,7 +13,7 @@ const chalk = require('chalk');
 const shell = require('shelljs');
 const program = require('commander');
 const fs = require('fs');
-const { getProfileDirectory, ensureProfileDirectory } = require('./core/forge-fs');
+const { getChainDirectory, ensureChainDirectory } = require('./core/forge-fs');
 const { getAllProcesses } = require('./core/forge-process');
 
 const { printError, printInfo, printLogo, printCurrentChain } = require('./core/util');
@@ -90,7 +90,7 @@ async function setupEnv() {
 
   if (
     chainName !== DEFAULT_CHAIN_NAME &&
-    !fs.existsSync(getProfileDirectory(chainName)) &&
+    !fs.existsSync(getChainDirectory(chainName)) &&
     (command !== 'create-chain' || command !== 'chain:create')
   ) {
     printError(`Chain ${chainName} does not exist`);
@@ -100,7 +100,7 @@ async function setupEnv() {
 }
 
 const run = async () => {
-  ensureProfileDirectory(DEFAULT_CHAIN_NAME);
+  ensureChainDirectory(DEFAULT_CHAIN_NAME);
 
   program
     .version(version)

@@ -3,7 +3,7 @@ const semver = require('semver');
 const shell = require('shelljs');
 const { print, printError, printInfo, printSuccess, printWarning, sleep } = require('core/util');
 const { config, makeNativeCommandRunner } = require('core/env');
-const { getProfileReleaseFilePath } = require('core/forge-fs');
+const { getChainReleaseFilePath } = require('core/forge-fs');
 const { getForgeWorkshopProcess } = require('core/forge-process');
 const { symbols } = require('core/ui');
 const { DEFAULT_WORKSHOP_PORT } = require('../../../constant');
@@ -38,7 +38,7 @@ function checkForgeVersion(version) {
 async function main({ args: [action = 'none'] }) {
   const { pid } = await getForgeWorkshopProcess();
 
-  const configPath = getProfileReleaseFilePath(process.env.FORGE_CURRENT_CHAIN);
+  const configPath = getChainReleaseFilePath(process.env.FORGE_CURRENT_CHAIN);
   const startWorkshop = makeNativeCommandRunner('workshopBinPath', 'workshop', {
     env: `WORKSHOP_CONFIG=${configPath}`,
   })('daemon', { silent: true });

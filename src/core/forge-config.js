@@ -18,11 +18,11 @@ const {
   getCurrentReleaseFilePath,
   getOriginForgeReleaseFilePath,
   getForgeVersionFromYaml,
-  getProfileConfigPath,
-  getProfileWorkshopDirectory,
-  getProfileDirectory,
-  getProfileReleaseFilePath,
-  updateProfileConfig,
+  getChainConfigPath,
+  getChainWorkshopDirectory,
+  getChainDirectory,
+  getChainReleaseFilePath,
+  updateChainConfig,
   requiredDirs,
 } = require('./forge-fs');
 const {
@@ -172,19 +172,19 @@ function setFilePathOfConfig(configs, chainName) {
   const releaseDirectory = getDataDirectory(chainName);
 
   set(content, 'forge.path', path.join(releaseDirectory, 'core'));
-  set(content, 'tendermint.keypath', path.join(getProfileDirectory(chainName), 'keys'));
+  set(content, 'tendermint.keypath', path.join(getChainDirectory(chainName), 'keys'));
   set(content, 'tendermint.path', path.join(releaseDirectory, 'tendermint'));
 
   set(content, 'ipfs.path', path.join(releaseDirectory, 'ipfs'));
   set(content, 'cache.path', path.join(releaseDirectory, 'cache', 'mnesia_data_dir'));
 
-  set(content, 'workshop.path', getProfileWorkshopDirectory(chainName));
+  set(content, 'workshop.path', getChainWorkshopDirectory(chainName));
   set(content, 'workshop.db', 'sqlite://workshop.sqlite3');
 
   return content;
 }
 
-async function setConfigToProfile(configs, chainName) {
+async function setConfigToChain(configs, chainName) {
   const {
     forgeWebPort,
     forgeGrpcPort,
@@ -294,7 +294,7 @@ async function ensureForgeRelease(
       cliConfig.globalVersion = curVersion;
 
       // Read chain-wise version
-      const chainConfigPath = getProfileConfigPath(chainName);
+      const chainConfigPath = getChainConfigPath(chainName);
       const currentVersion = getForgeVersionFromYaml(chainConfigPath, 'version');
       if (semver.valid(currentVersion)) {
         cliConfig.currentVersion = currentVersion;
@@ -305,7 +305,7 @@ async function ensureForgeRelease(
       } else {
         // Write chain-wise config to use global version
         cliConfig.currentVersion = cliConfig.globalVersion;
-        updateProfileConfig(chainName, { version: cliConfig.globalVersion });
+        updateChainConfig(chainName, { version: cliConfig.globalVersion });
       }
     } catch (err) {
       debug.error('ensureForgeRelease.readConfig.error', err);
@@ -394,14 +394,14 @@ async function ensureForgeRelease(
 }
 
 function readChainConfig(chainName) {
-  return TOML.parse(fs.readFileSync(getProfileReleaseFilePath(chainName)).toString());
+  return TOML.parse(fs.readFileSync(getChainReleaseFilePath(chainName)).toString());
 }
 
 module.exports = {
   copyReleaseConfig,
   ensureForgeRelease,
   getDefaultChainConfigs,
-  setConfigToProfile,
+  setConfigToChain,
   setFilePathOfConfig,
   readChainConfig,
 };

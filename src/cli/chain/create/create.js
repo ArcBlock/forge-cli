@@ -2,12 +2,12 @@ const chalk = require('chalk');
 const fs = require('fs');
 const toml = require('@iarna/toml');
 const { config } = require('core/env');
-const { setConfigToProfile } = require('core/forge-config');
+const { setConfigToChain } = require('core/forge-config');
 const { printInfo, printError } = require('core/util');
 const {
-  createNewProfile,
+  createNewChain,
   getOriginForgeReleaseFilePath,
-  getProfileReleaseFilePath,
+  getChainReleaseFilePath,
 } = require('core/forge-fs');
 const { askUserConfigs, writeConfigs } = require('../../node/config/lib');
 
@@ -21,9 +21,9 @@ async function main({ args: [chainName = ''], opts: { defaults } }) {
     const {
       app: { name },
     } = configs;
-    configs = await setConfigToProfile(configs, name);
-    createNewProfile(name);
-    await writeConfigs(getProfileReleaseFilePath(name), configs);
+    configs = await setConfigToChain(configs, name);
+    createNewChain(name);
+    await writeConfigs(getChainReleaseFilePath(name), configs);
     printInfo(`Run ${chalk.cyan(`forge start ${name}`)} to start the chain`);
   } catch (error) {
     printError('Create new chain failed:');

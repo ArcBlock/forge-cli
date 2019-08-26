@@ -7,7 +7,7 @@ const shell = require('shelljs');
 const TOML = require('@iarna/toml');
 
 const debug = require('../debug')('update-0350');
-const { ensureProfileDirectory, getProfileReleaseFilePath } = require('../forge-fs');
+const { ensureChainDirectory, getChainReleaseFilePath } = require('../forge-fs');
 
 const { setFilePathOfConfig } = require('../forge-config');
 
@@ -42,11 +42,11 @@ const check = async () => {
     let oldConfigs = TOML.parse(fs.readFileSync(configPath).toString());
     oldConfigs = await setFilePathOfConfig(oldConfigs, chainName);
 
-    const forgeProfileDir = ensureProfileDirectory(chainName);
-    shell.exec(`rm -rf ${path.join(forgeProfileDir, 'forge_release')}`);
-    shell.exec(`mv ${dataPath} ${path.join(forgeProfileDir, 'forge_release')}`);
-    shell.exec(`mv ${configPath} ${keyFilePath} ${forgeProfileDir}`);
-    fs.writeFileSync(getProfileReleaseFilePath(chainName), TOML.stringify(oldConfigs));
+    const forgeChainDir = ensureChainDirectory(chainName);
+    shell.exec(`rm -rf ${path.join(forgeChainDir, 'forge_release')}`);
+    shell.exec(`mv ${dataPath} ${path.join(forgeChainDir, 'forge_release')}`);
+    shell.exec(`mv ${configPath} ${keyFilePath} ${forgeChainDir}`);
+    fs.writeFileSync(getChainReleaseFilePath(chainName), TOML.stringify(oldConfigs));
     console.log('migration: done!');
   } catch (error) {
     debug('check failed:');

@@ -18,7 +18,7 @@ const { ensureConfigComment } = require('core/env');
 const { symbols, hr, pretty } = require('core/ui');
 const { print, printInfo, printError, printSuccess } = require('core/util');
 const debug = require('core/debug')('config:lib');
-const { getProfileDirectory, requiredDirs } = require('core/forge-fs');
+const { getChainDirectory, requiredDirs } = require('core/forge-fs');
 const { setFilePathOfConfig } = require('core/forge-config');
 
 const { generateDefaultAccount } = require('../../account/lib/index');
@@ -104,7 +104,7 @@ async function askUserConfigs(
       return 'The chain name should start with a letter, only contain 0-9,a-z,A-Z, and length between 4~24';
     }
 
-    if (fs.existsSync(getProfileDirectory(v))) {
+    if (fs.existsSync(getChainDirectory(v))) {
       if (isCreate || (!isCreate && v !== chainName)) {
         return `The chain ${chalk.cyan(v)} already exists, please use another name.`;
       }

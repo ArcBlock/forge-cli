@@ -16,9 +16,9 @@ const GRpcClient = require('@arcblock/grpc-client');
 const { parse } = require('@arcblock/forge-config');
 
 const {
-  getProfileDirectory,
+  getChainDirectory,
   isDirectory,
-  getProfileReleaseFilePath,
+  getChainReleaseFilePath,
   requiredDirs,
 } = require('core/forge-fs');
 const { ensureForgeRelease } = require('core/forge-config');
@@ -29,7 +29,7 @@ const { version } = require('../../package.json');
 const { symbols, hr, wrapSpinner } = require('./ui');
 const debug = require('./debug')('env');
 
-const CURRENT_WORKING_PROFILE = getProfileDirectory(process.env.FORGE_CURRENT_CHAIN);
+const CURRENT_WORKING_PROFILE = getChainDirectory(process.env.FORGE_CURRENT_CHAIN);
 process.env.CURRENT_WORKING_PROFILE = CURRENT_WORKING_PROFILE;
 
 const config = { cli: { requiredDirs } }; // global shared forge-cli run time config
@@ -98,7 +98,7 @@ async function ensureRunningNode() {
  */
 function ensureRpcClient(args) {
   const socketGrpc = args.socketGrpc || process.env.FORGE_SOCK_GRPC;
-  const configPath = getProfileReleaseFilePath();
+  const configPath = getChainReleaseFilePath();
 
   if (socketGrpc) {
     shell.echo(

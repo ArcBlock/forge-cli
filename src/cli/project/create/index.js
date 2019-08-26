@@ -18,7 +18,6 @@ cli(
     options: [
       ['--target <target>', 'Target directory, default is current directory'],
       ['--starterDir <starterDir>', 'Local boilerplate directory'],
-      ['--registry <registry>', 'Only for npm package'],
     ],
     handlers: {
       '--help': () => {

@@ -1,6 +1,7 @@
 /* eslint no-console:"off" */
 const path = require('path');
 const last = require('lodash/last');
+const registryUrl = require('registry-url');
 
 const { setupEnv } = require('./env');
 
@@ -76,7 +77,7 @@ function initCli(program) {
         await setupEnv(globalArgs.args, x.requirements, globalArgs.opts());
         await x.handler({
           args: params.filter(p => typeof p === 'string'),
-          opts: Object.assign(globalArgs.opts(), command.opts()),
+          opts: Object.assign({ registry: registryUrl() }, globalArgs.opts(), command.opts()),
         });
       });
     });

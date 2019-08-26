@@ -53,7 +53,7 @@ async function setupEnv(args, requirements, opts = {}) {
   });
 
   ensureRequiredDirs();
-  await checkUpdate(opts.defaults);
+  await checkUpdate(opts.defaults, opts);
 
   if (requirements.forgeRelease || requirements.runningNode) {
     const cliConfig = await ensureForgeRelease(args, true, opts.chainName);
@@ -388,7 +388,7 @@ function readCache(key) {
   }
 }
 
-async function checkUpdate(useDefaults) {
+async function checkUpdate(useDefaults, opts) {
   const lastCheck = readCache('check-update');
   const now = Math.floor(Date.now() / 1000);
   const secondsOfDay = 24 * 60 * 60;
@@ -399,8 +399,14 @@ async function checkUpdate(useDefaults) {
 
   writeCache('check-update', now);
 
-  const { stdout: latest } = await wrapSpinner('Checking new version...', () =>
-    execa.command('npm view @arcblock/forge-cli version', { silent: true })); // prettier-ignore
+  const { stdout: latest } = await wrapSpinner('Checking new version...', () => {
+    let cmd = 'npm view @arcblock/forge-cli version';
+    if (opts.registry) {
+      cmd = `${cmd} --registry=${opts.registry}`;
+    }
+    debug('check update command', cmd);
+    return execa.command(cmd, { silent: true });
+  });
   const installed = version;
   debug('check update', { latest, installed });
 

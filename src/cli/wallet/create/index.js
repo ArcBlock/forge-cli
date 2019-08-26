@@ -14,7 +14,6 @@ cli(
       rpcClient: false,
       wallet: false,
     },
-    options: [['-d, --defaults', 'Use default account type']],
     handlers: {
       '--help': () => {
         shell.echo(`

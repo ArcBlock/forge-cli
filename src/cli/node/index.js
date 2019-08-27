@@ -11,3 +11,4 @@ exports.stop = require('./stop');
 exports.upgrade = require('./upgrade');
 exports.web = require('./web');
 exports.workshop = require('./workshop');
+exports.remote = require('./remote');

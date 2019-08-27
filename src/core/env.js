@@ -388,7 +388,7 @@ function readCache(key) {
   }
 }
 
-async function checkUpdate({ defaults, registry, autoUpgrade }) {
+async function checkUpdate({ defaults, npmRegistry: registry, autoUpgrade }) {
   if (autoUpgrade === false) {
     return;
   }

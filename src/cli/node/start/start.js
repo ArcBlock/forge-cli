@@ -12,7 +12,7 @@ const { isForgeStarted, getProcessTag, getAllRunningProcesses } = require('core/
 
 const { printAllProcesses } = require('../ps/ps');
 const { stop } = require('../stop/stop');
-const { start: startWeb } = require('../web/web');
+const { start: startWeb } = require('../../tools/web/web');
 
 async function main({
   opts: { dryRun, allowMultiChain = false },

@@ -7,22 +7,33 @@ const { symbols, hr, getSpinner } = require('core/ui');
 const { config } = require('core/env');
 const debug = require('core/debug')('start');
 const { getLogfile } = require('core/forge-fs');
-const { sleep, print, printInfo } = require('core/util');
-const { isForgeStarted, getProcessTag } = require('core/forge-process');
+const { sleep, print, printError, printInfo } = require('core/util');
+const { isForgeStarted, getProcessTag, getAllRunningProcesses } = require('core/forge-process');
 
 const { printAllProcesses } = require('../ps/ps');
 const { stop } = require('../stop/stop');
 const { start: startWeb } = require('../web/web');
 
-async function main({ opts: { dryRun }, args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
-  const tmp = await start(chainName, dryRun);
+async function main({
+  opts: { dryRun, allowMultiChain = false },
+  args: [chainName = process.env.FORGE_CURRENT_CHAIN],
+}) {
+  const tmp = await start(chainName, dryRun, allowMultiChain);
   process.exit(tmp ? 0 : 1);
 }
 
-async function start(chainName, dryRun = false) {
-  const startAt = Date.now();
+async function start(chainName, dryRun = false, allowMultiChain) {
+  if (allowMultiChain === false) {
+    const runningChains = await getAllRunningProcesses();
+    if (runningChains.length > 0) {
+      printError('Forge CLI is configured to work with single chain only, abort!');
+      await printAllProcesses();
+      process.exit(0);
+    }
+  }
+
   if (await isForgeStarted(chainName)) {
-    shell.echo(`${symbols.info} Chain ${chalk.cyan(chalk.cyan(chainName))} is already started!`);
+    printInfo(`Chain ${chalk.cyan(chalk.cyan(chainName))} is already started!`);
     return;
   }
 
@@ -55,6 +66,7 @@ async function start(chainName, dryRun = false) {
     shell.exec(command);
     await waitUntilStarted(chainName, 40000);
     await sleep(6000);
+    const startAt = Date.now();
     const errMessage = await checkError(chainName, startAt);
     if (errMessage) {
       throw new Error(errMessage);

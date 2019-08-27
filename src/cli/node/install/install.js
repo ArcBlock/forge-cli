@@ -38,6 +38,7 @@ function fetchReleaseVersion({ mirror, releaseDir }) {
       });
 
     if (versions.length) {
+      printSuccess(`Latest forge release version: v${versions[0]}`);
       return versions[0];
     }
   }
@@ -121,7 +122,7 @@ function downloadAsset({ asset }) {
 
     if (fs.existsSync(asset.url)) {
       shell.exec(`cp ${asset.url} ${assetOutput}`);
-      printSuccess(`Copied release asset ${asset.url} to ${assetOutput}`);
+      printSuccess(`Copied release asset ${asset.url}`);
       return resolve(assetOutput);
     }
 
@@ -172,7 +173,7 @@ function expandReleaseTarball(filePath, subFolder, version) {
 
 async function main({
   args: [userVersion],
-  opts: { mirror = DEFAULT_MIRROR, releaseDir, silent },
+  opts: { mirror = DEFAULT_MIRROR, allowMultiChain, releaseDir, silent },
 }) {
   try {
     const platform = await getPlatform();
@@ -189,7 +190,7 @@ async function main({
 
     const currentVersion = getGlobalForgeVersion();
     if (isForgeBinExists(version)) {
-      printInfo(`already initialized version: ${version}`);
+      printInfo(`forge v${version} is already installed`);
 
       if (semver.eq(version, currentVersion)) {
         shell.echo(hr);
@@ -202,18 +203,20 @@ async function main({
     }
 
     // Ensure forge is stopped, because init on an running node may cause some mess
-    const isStarted = await isForgeStarted();
-    if (isStarted) {
-      printError('Forge is running, reinitialize will break things!');
-      printInfo(`To reinitialize, please run ${chalk.cyan('forge stop')} first!`);
-      return process.exit(1);
+    if (allowMultiChain === false) {
+      const isStarted = await isForgeStarted();
+      if (isStarted) {
+        printError('Forge is running, install will break things!');
+        printInfo(`To install a new forge release, please run ${chalk.cyan('forge stop')} first!`);
+        return process.exit(1);
+      }
     }
 
     printLogo();
 
     // Start download and unzip
     for (const asset of RELEASE_ASSETS) {
-      const assetInfo = fetchAssetInfo({ platform, version, asset, mirror, releaseDir });
+      const assetInfo = fetchAssetInfo({ platform, version, key: asset, mirror, releaseDir });
       debug(asset, assetInfo);
       // eslint-disable-next-line no-await-in-loop
       const assetTarball = await downloadAsset({ asset: assetInfo, releaseDir });

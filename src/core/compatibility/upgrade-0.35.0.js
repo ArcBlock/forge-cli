@@ -5,7 +5,7 @@ const shell = require('shelljs');
 const TOML = require('@iarna/toml');
 
 const debug = require('../debug')('update-0350');
-const { ensureProfileDirectory, getProfileReleaseFilePath } = require('../forge-fs');
+const { ensureChainDirectory, getChainReleaseFilePath } = require('../forge-fs');
 
 const { getDefaultChainConfigs } = require('../forge-config');
 
@@ -38,9 +38,9 @@ const check = async () => {
     let oldConfigs = TOML.parse(fs.readFileSync(configPath).toString());
     oldConfigs = await getDefaultChainConfigs(oldConfigs, chainName);
 
-    const forgeProfileDir = ensureProfileDirectory(chainName);
-    shell.exec(`mv ${configPath} ${keyFilePath} ${dataPath} ${forgeProfileDir}`);
-    fs.writeFileSync(getProfileReleaseFilePath(chainName), TOML.stringify(oldConfigs));
+    const forgeChainDir = ensureChainDirectory(chainName);
+    shell.exec(`mv ${configPath} ${keyFilePath} ${dataPath} ${forgeChainDir}`);
+    fs.writeFileSync(getChainReleaseFilePath(chainName), TOML.stringify(oldConfigs));
   } catch (error) {
     debug('check failed:');
     debug(error);

@@ -14,7 +14,6 @@ cli(
       rpcClient: true,
       wallet: false,
     },
-    options: [['-y, --yes', 'Join a network without interactive confirm']],
     handlers: {
       '--help': () => {
         shell.echo(`

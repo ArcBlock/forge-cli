@@ -16,21 +16,21 @@ const GRpcClient = require('@arcblock/grpc-client');
 const { parse } = require('@arcblock/forge-config');
 
 const {
-  getProfileDirectory,
+  getChainDirectory,
   isDirectory,
-  getProfileReleaseFilePath,
+  getChainReleaseFilePath,
   requiredDirs,
 } = require('core/forge-fs');
 const { ensureForgeRelease } = require('core/forge-config');
 const { isForgeStarted, getProcessTag } = require('./forge-process');
-const { print, printSuccess, printLogo } = require('./util');
+const { print, printInfo, printSuccess, printLogo } = require('./util');
 
 const { version } = require('../../package.json');
 const { symbols, hr, wrapSpinner } = require('./ui');
 const debug = require('./debug')('env');
 
-const CURRENT_WORKING_PROFILE = getProfileDirectory(process.env.FORGE_CURRENT_CHAIN);
-process.env.CURRENT_WORKING_PROFILE = CURRENT_WORKING_PROFILE;
+const CURRENT_WORKING_CHAIN = getChainDirectory(process.env.FORGE_CURRENT_CHAIN);
+process.env.CURRENT_WORKING_CHAIN = CURRENT_WORKING_CHAIN;
 
 const config = { cli: { requiredDirs } }; // global shared forge-cli run time config
 
@@ -53,10 +53,10 @@ async function setupEnv(args, requirements, opts = {}) {
   });
 
   ensureRequiredDirs();
-  await checkUpdate(opts.defaults);
+  await checkUpdate(opts.defaults, opts.registry);
 
   if (requirements.forgeRelease || requirements.runningNode) {
-    const cliConfig = await ensureForgeRelease(args);
+    const cliConfig = await ensureForgeRelease(args, true, opts.chainName);
     Object.assign(config.cli, cliConfig);
   }
 
@@ -98,7 +98,7 @@ async function ensureRunningNode() {
  */
 function ensureRpcClient(args) {
   const socketGrpc = args.socketGrpc || process.env.FORGE_SOCK_GRPC;
-  const configPath = getProfileReleaseFilePath();
+  const configPath = getChainReleaseFilePath();
 
   if (socketGrpc) {
     shell.echo(
@@ -286,7 +286,7 @@ function createRpcClient() {
   const sockGrpc =
     process.env.FORGE_SOCK_GRPC || get(config, 'forge.sockGrpc') || get(config, 'forge.sock_grpc');
 
-  shell.echo(`${symbols.info} Connect to grpc endpoint: ${sockGrpc}`);
+  printInfo(`Connect to grpc endpoint: ${sockGrpc}`);
   client = new GRpcClient(sockGrpc);
   return client;
 }
@@ -388,7 +388,7 @@ function readCache(key) {
   }
 }
 
-async function checkUpdate(useDefaults) {
+async function checkUpdate(useDefaults, registry) {
   const lastCheck = readCache('check-update');
   const now = Math.floor(Date.now() / 1000);
   const secondsOfDay = 24 * 60 * 60;
@@ -399,8 +399,14 @@ async function checkUpdate(useDefaults) {
 
   writeCache('check-update', now);
 
-  const { stdout: latest } = await wrapSpinner('Checking new version...', () =>
-    execa.command('npm view @arcblock/forge-cli version', { silent: true })); // prettier-ignore
+  const { stdout: latest } = await wrapSpinner('Checking new version...', () => {
+    let cmd = 'npm view @arcblock/forge-cli version';
+    if (registry) {
+      cmd = `${cmd} --registry=${registry}`;
+    }
+    debug('check update command', cmd);
+    return execa.command(cmd, { silent: true });
+  });
   const installed = version;
   debug('check update', { latest, installed });
 

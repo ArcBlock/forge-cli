@@ -5,11 +5,15 @@ const { symbols } = require('core/ui');
 const { config } = require('core/env');
 const { isForgeStarted } = require('core/forge-process');
 const debug = require('core/debug')('release:use');
-const { updateReleaseYaml } = require('cli/node/install/install');
+const { updateReleaseYaml, updateChainConfig } = require('core/forge-fs');
+const { print, printError, printSuccess } = require('core/util');
 const { listReleases } = require('cli/release/list/list');
 
 // eslint-disable-next-line consistent-return
-async function main({ args: [userVersion] }) {
+async function main({
+  args: [userVersion],
+  opts: { chainName = process.env.FORGE_CURRENT_CHAIN, allowMultiChain = false },
+}) {
   try {
     const version =
       userVersion && semver.coerce(userVersion) ? semver.coerce(userVersion).version : '';
@@ -18,12 +22,14 @@ async function main({ args: [userVersion] }) {
       return process.exit(1);
     }
 
-    if (await isForgeStarted()) {
-      shell.echo(`${symbols.warning} Please stop forge before activate another version`);
-      return process.exit(1);
+    if (allowMultiChain === false) {
+      if (await isForgeStarted()) {
+        shell.echo(`${symbols.warning} Please stop forge before activate another version`);
+        return process.exit(1);
+      }
     }
 
-    const { forge, simulator } = listReleases();
+    const { forge } = listReleases();
     if (!forge.includes(version)) {
       shell.echo(
         `${
@@ -36,17 +42,16 @@ async function main({ args: [userVersion] }) {
     }
 
     updateReleaseYaml('forge', version);
-    if (simulator.includes(version)) {
-      updateReleaseYaml('starter', version);
-    }
+    updateChainConfig(chainName, { version });
+    debug(`'${chainName}' chain version updated:`, version);
 
-    shell.echo(`${symbols.success} forge v${version} activated successfully!`);
-    shell.echo('');
-    shell.echo(`Now you can start forge with ${chalk.cyan('forge start')}`);
-    shell.echo('');
+    printSuccess(`forge v${version} activated successfully!`);
+    print('');
+    print(`Now you can start forge with ${chalk.cyan(`forge start ${chainName}`)}`);
+    print('');
   } catch (err) {
     debug.error(err);
-    shell.echo(`${symbols.error} Forge release activate failed`);
+    printError('Forge release activate failed');
   }
 }
 

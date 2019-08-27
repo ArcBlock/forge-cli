@@ -13,7 +13,7 @@ const chalk = require('chalk');
 const shell = require('shelljs');
 const program = require('commander');
 const fs = require('fs');
-const { getProfileDirectory, ensureProfileDirectory } = require('./core/forge-fs');
+const { getChainDirectory, ensureChainDirectory } = require('./core/forge-fs');
 const { getAllProcesses } = require('./core/forge-process');
 
 const { printError, printInfo, printLogo, printCurrentChain } = require('./core/util');
@@ -33,7 +33,7 @@ const onError = error => {
     command += ' -v';
   }
 
-  printInfo(`run ${chalk.cyan(`forge ${command}`)} to get detail infomation`);
+  printInfo(`run ${chalk.cyan(`forge ${command}`)} to get detail information`);
 };
 
 process.on('unhandledRejection', onError);
@@ -41,20 +41,27 @@ process.on('uncaughtException', onError);
 
 const getCurrentChainENV = async (command, action, argsChainName) => {
   let chainName = process.env.FORGE_CURRENT_CHAIN || argsChainName || DEFAULT_CHAIN_NAME;
+  debug(
+    'getCurrentChainENV, init env:',
+    process.env.FORGE_CURRENT_CHAIN,
+    argsChainName,
+    DEFAULT_CHAIN_NAME
+  );
 
   const allProcesses = await getAllProcesses();
 
-  if (['start', 'stop', 'reset', 'chain:remove'].includes(command) && action) {
+  if (['start', 'stop', 'reset', 'chain:remove', 'upgrade'].includes(command) && action) {
     chainName = action;
   } else if (allProcesses.length >= 1 && !['start', 'join'].includes(command) && !argsChainName) {
     chainName = allProcesses[0].name;
   }
 
+  debug('getCurrentChainENV, current env:', chainName);
   return chainName;
 };
 
 const shouldPrintCurrentChain = (currentChainName, command) => {
-  if (['chain:remove'].includes(command)) {
+  if (['chain:remove', 'chain:create'].includes(command)) {
     return false;
   }
 
@@ -83,17 +90,17 @@ async function setupEnv() {
 
   if (
     chainName !== DEFAULT_CHAIN_NAME &&
-    !fs.existsSync(getProfileDirectory(chainName)) &&
-    command !== 'create-chain'
+    !fs.existsSync(getChainDirectory(chainName)) &&
+    (command !== 'create-chain' || command !== 'chain:create')
   ) {
     printError(`Chain ${chainName} does not exist`);
-    printInfo(`You can create by run ${chalk.cyan(`forge create-chain ${chainName}`)}`);
+    printInfo(`You can create by run ${chalk.cyan(`forge chain:create ${chainName}`)}`);
     process.exit(-1);
   }
 }
 
 const run = async () => {
-  ensureProfileDirectory(DEFAULT_CHAIN_NAME);
+  ensureChainDirectory(DEFAULT_CHAIN_NAME);
 
   program
     .version(version)
@@ -107,6 +114,7 @@ const run = async () => {
       '-f, --config-path <path>',
       'Forge config used when starting forge node and initializing gRPC clients'
     )
+    .option('-r, --registry <registry>', 'Specify a custom npm registry')
     .option('-y, --yes', 'Assume that the answer to any confirmation question is yes')
     .option('-d, --defaults', 'Run command using default values for all questions')
     .option(

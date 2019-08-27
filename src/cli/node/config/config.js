@@ -7,14 +7,14 @@ const { isForgeStarted } = require('core/forge-process');
 const GraphQLClient = require('@arcblock/graphql-client');
 const toml = require('@iarna/toml');
 
-const { getProfileReleaseFilePath } = require('core/forge-fs');
+const { getChainReleaseFilePath } = require('core/forge-fs');
 const { printInfo } = require('core/util');
 
 const { askUserConfigs, writeConfigs } = require('./lib');
 
 async function main({
   args: [action = 'get'],
-  opts: { peer, chainName = process.env.FORGE_CURRENT_CHAIN },
+  opts: { peer, defaults, chainName = process.env.FORGE_CURRENT_CHAIN },
 }) {
   if (action === 'get') {
     if (peer) {
@@ -25,7 +25,7 @@ async function main({
       shell.echo(hr);
       shell.echo(config);
     } else {
-      const forgeConfigPath = getProfileReleaseFilePath(chainName);
+      const forgeConfigPath = getChainReleaseFilePath(chainName);
       shell.echo(hr);
       shell.echo(`${symbols.info} config file path: ${forgeConfigPath}`);
       shell.echo(hr);
@@ -57,11 +57,14 @@ async function main({
       process.exit(1);
     }
 
-    const originConfigFilePath = getProfileReleaseFilePath(chainName);
-    const defaults = toml.parse(fs.readFileSync(originConfigFilePath).toString());
-    const configs = await askUserConfigs(defaults, chainName, false);
+    const originConfigFilePath = getChainReleaseFilePath(chainName);
+    const defaultConfig = toml.parse(fs.readFileSync(originConfigFilePath).toString());
+    const configs = await askUserConfigs(defaultConfig, chainName, {
+      isCreate: false,
+      interactive: !defaults,
+    });
 
-    await writeConfigs(getProfileReleaseFilePath(chainName), configs, true);
+    await writeConfigs(getChainReleaseFilePath(chainName), configs, true);
     printInfo('you need to restart the chain to load the new config!');
   }
 }

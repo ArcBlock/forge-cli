@@ -1,5 +1,5 @@
 const chalk = require('chalk');
-const os = require('os');
+const Table = require('cli-table-redemption');
 
 const { print } = require('core/util');
 const { getAllChainNames } = require('core/forge-fs');
@@ -18,13 +18,23 @@ async function printChains() {
     return acc;
   }, {});
 
-  print(`${os.EOL}All Chains:`);
-  chains.forEach(name => {
-    const message = processesMap[name]
-      ? `${chalk.cyan(`  ✓ ${name}  `)} [${chalk.green('running')}]`
-      : `  - ${name}`;
-    print(message);
+  print('All Chains:');
+
+  const table = new Table({
+    head: ['Name', 'Version', 'Status'],
+    style: { 'padding-left': 1, head: ['cyan', 'bold'], compact: true },
+    colWidths: [20, 15, 15],
   });
+
+  chains.forEach(([name, config]) => {
+    table.push([
+      name,
+      `v${config.version}`,
+      processesMap[name] ? chalk.green('running') : chalk.red('stopped'),
+    ]);
+  });
+
+  print(table.toString());
 }
 
 async function main() {

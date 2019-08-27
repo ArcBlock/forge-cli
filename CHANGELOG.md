@@ -1,3 +1,11 @@
+## 0.37.9 (August 25, 2019)
+
+- fix: each chain uses its own version configuration, the `version` is stored in `<chain config directory>/config.yml` #171
+- feature: add `~/.forgerc.yml` config to store forge cli config, current includes:
+  - registry: npm registry, `registry` in `~/.npmrc` has higher priority than `~/.forgerc.yml`
+  - allowMultiChain: boolean
+- refactor: rename *profile* to *config*, for consistency
+
 ## 0.37.8 (August 23, 2019)
 
 - remove terminal image package
@@ -15,7 +23,8 @@
 - add endpoints column in forge ps output #168
 
 ## 0.37.4 (August 22, 2019)
-  - fix: shell.exec will return null if no output
+
+- fix: shell.exec will return null if no output
 
 ## 0.37.3 (August 21, 2019)
 

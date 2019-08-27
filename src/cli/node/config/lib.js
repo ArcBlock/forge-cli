@@ -18,7 +18,7 @@ const { ensureConfigComment } = require('core/env');
 const { symbols, hr, pretty } = require('core/ui');
 const { print, printInfo, printError, printSuccess } = require('core/util');
 const debug = require('core/debug')('config:lib');
-const { getProfileDirectory, requiredDirs } = require('core/forge-fs');
+const { getChainDirectory, requiredDirs } = require('core/forge-fs');
 const { setFilePathOfConfig } = require('core/forge-config');
 
 const { generateDefaultAccount } = require('../../account/lib/index');
@@ -57,7 +57,11 @@ function getModerator() {
   return undefined;
 }
 
-async function askUserConfigs(defaults, chainName = '', isCreate) {
+async function askUserConfigs(
+  defaults,
+  chainName = '',
+  { isCreate = false, interactive = true } = {}
+) {
   const tokenDefaults = Object.assign(
     {
       name: 'ArcBlock',
@@ -74,12 +78,15 @@ async function askUserConfigs(defaults, chainName = '', isCreate) {
     defaults.forge.token || {}
   );
 
-  const pokeDefaults = {
-    address: 'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz',
-    balance: 4000000000,
-    daily_limit: 2500000,
-    amount: 25,
-  };
+  const pokeDefaults = Object.assign(
+    {
+      address: 'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz',
+      balance: 4000000000,
+      daily_limit: 2500000,
+      amount: 25,
+    },
+    defaults.forge.poke || {}
+  );
 
   // default icon file
   const iconFile = path.join(requiredDirs.tmp, 'token.png');
@@ -97,9 +104,9 @@ async function askUserConfigs(defaults, chainName = '', isCreate) {
       return 'The chain name should start with a letter, only contain 0-9,a-z,A-Z, and length between 4~24';
     }
 
-    if (fs.existsSync(getProfileDirectory(v))) {
+    if (fs.existsSync(getChainDirectory(v))) {
       if (isCreate || (!isCreate && v !== chainName)) {
-        return 'The chain name is exists, please use another one';
+        return `The chain ${chalk.cyan(v)} already exists, please use another name.`;
       }
     }
 
@@ -112,6 +119,9 @@ async function askUserConfigs(defaults, chainName = '', isCreate) {
       printSuccess(`chain name: ${chainName}`);
     } else {
       printError(chainNameValidateResult);
+      if (interactive === false) {
+        return process.exit(1);
+      }
 
       questions.push({
         type: 'text',
@@ -233,7 +243,7 @@ async function askUserConfigs(defaults, chainName = '', isCreate) {
         type: 'confirm',
         name: 'enablePoke',
         message: 'Do you want to enable "feel lucky" (poke) feature for this chain?',
-        default: defaults.forge.poke && defaults.forge.poke.amount,
+        default: typeof defaults.forge.poke === 'undefined' ? true : defaults.forge.poke.amount,
       },
       {
         type: 'confirm',
@@ -333,7 +343,16 @@ async function askUserConfigs(defaults, chainName = '', isCreate) {
     ]
   );
 
-  const answers = await inquirer.prompt(questions);
+  let answers = {};
+  if (interactive) {
+    answers = await inquirer.prompt(questions);
+  } else {
+    answers = questions.reduce((acc, x) => {
+      acc[x.name] = x.default;
+      return acc;
+    }, {});
+  }
+
   if (answers.accountSourceType === 'Generate') {
     const wallet = generateDefaultAccount();
     answers.tokenHolderAddress = wallet.address;
@@ -454,7 +473,7 @@ async function writeConfigs(targetPath, configs, overwrite = true) {
   fs.writeFileSync(targetPath, ensureConfigComment(toml.stringify(configs)));
   const docUrl = 'https://docs.arcblock.io/forge/latest/core/configuration.html!';
   shell.echo(`${symbols.success} config file ${chalk.cyan(targetPath)} is updated!`);
-  shell.echo(`${symbols.info} full configuration documentation: ${docUrl}`);
+  shell.echo(`${symbols.info} full configuration documentation: ${chalk.cyan(docUrl)}`);
   shell.echo(hr);
 }
 

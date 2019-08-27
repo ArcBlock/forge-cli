@@ -63,7 +63,7 @@ async function getForgeProcessByTag(processName, chainName = process.env.FORGE_C
   return { name: processName, pid: forgeProcess ? forgeProcess.pid : 0 };
 }
 
-async function getForgeProcess(chainName = process.env.PROFILE_NAME) {
+async function getForgeProcess(chainName = process.env.CHAIN_NAME) {
   const forgeProcesses = await findProcess('name', 'forge');
 
   const forgeProcess = forgeProcesses.find(
@@ -149,11 +149,11 @@ async function getAllRunningProcessStats() {
   const allChains = getAllChainNames();
 
   // eslint-disable-next-line
-  for (const name of allChains) {
+  for (const [name, config] of allChains) {
     // eslint-disable-next-line
     const tmp = await getRunningProcessesStats(name);
     if (tmp && tmp.length) {
-      processes.push({ name, value: tmp });
+      processes.push({ name, value: tmp, config });
     }
   }
 
@@ -165,11 +165,11 @@ async function getAllProcesses() {
   const allChains = getAllChainNames();
 
   // eslint-disable-next-line
-  for (const name of allChains) {
+  for (const [name, config] of allChains) {
     // eslint-disable-next-line
     const tmp = await getRunningProcesses(name);
     if (tmp && tmp.length) {
-      processes.push({ name, value: tmp });
+      processes.push({ name, value: tmp, config });
     }
   }
 

@@ -13,7 +13,7 @@ const { waitUntilStopped } = require('../stop/stop');
 const { ensureModerator } = require('../../protocol/deploy/deploy');
 const { listReleases } = require('../../release/list/list');
 
-async function main() {
+async function main({ args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
   const client = createRpcClient();
   const current = config.get('cli.currentVersion');
   const releases = listReleases()
@@ -106,9 +106,7 @@ async function main() {
   await sleep(waitMS);
   txSpinner.stop();
 
-  shell.exec(`forge tx ${hash}`);
-
-  const chainName = process.env.FORGE_CURRENT_CHAIN;
+  shell.exec(`forge tx ${hash} -c ${chainName}`);
 
   const spinner = getSpinner('Stopping forge...');
   spinner.start();
@@ -117,14 +115,14 @@ async function main() {
   debug('forge stopped');
   spinner.stop();
 
-  shell.exec(`forge use ${answers.version} --color always`);
+  shell.exec(`forge use ${answers.version} -c ${chainName} --color always`);
   // We need to stop forge-web here, because when forge crashed, forge-web is still alive
-  shell.exec(`forge web stop -c ${chainName}`, { silent: true });
+  shell.exec(`forge web stop -c ${chainName} --color always`, { silent: true });
   shell.exec(`forge start ${chainName} --color always`);
 
   print();
   printInfo('Version:');
-  shell.exec('forge version');
+  shell.exec(`forge version -c ${chainName}`);
   print();
   printSuccess('Upgrade success!');
 

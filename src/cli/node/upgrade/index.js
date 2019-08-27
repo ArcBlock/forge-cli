@@ -3,7 +3,7 @@ const { cli, action } = require('core/cli');
 const { execute, run } = require('./upgrade');
 
 cli(
-  'upgrade',
+  'upgrade [<chainName>]',
   'Upgrade chain node to new version without reset',
   input => action(execute, run, input),
   {

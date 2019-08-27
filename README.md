@@ -71,7 +71,7 @@ Options:
   -v, --verbose                                          Output runtime info when execute subcommand, useful for debug
   -c, --chain-name <chainName>                           Execute command use specific chain
   -f, --config-path <path>                               Forge config used when starting forge node and initializing gRPC clients
-  -r, --registry <registry>                              Specify a custom npm registry
+  -r, --npmRegistry <registry>                           Specify a custom npm registry
   -y, --yes                                              Assume that the answer to any confirmation question is yes
   -d, --defaults                                         Run command using default values for all questions
   -g, --socket-grpc <endpoint>                           Socket gRPC endpoint to connect, with this you can use forge-cli with a remote node

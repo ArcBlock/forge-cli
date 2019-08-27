@@ -70,7 +70,6 @@ Options:
   -V, --version                                          output the version number
   -v, --verbose                                          Output runtime info when execute subcommand, useful for debug
   -c, --chain-name <chainName>                           Execute command use specific chain
-  -r, --release-dir <dir>                                Forge release directory path (unzipped), use your own copy forge release
   -f, --config-path <path>                               Forge config used when starting forge node and initializing gRPC clients
   -r, --registry <registry>                              Specify a custom npm registry
   -y, --yes                                              Assume that the answer to any confirmation question is yes

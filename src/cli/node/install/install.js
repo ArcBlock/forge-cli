@@ -8,7 +8,7 @@ const semver = require('semver');
 const inquirer = require('inquirer');
 const { spawn } = require('child_process');
 const { symbols, hr, getSpinner, getProgress } = require('core/ui');
-const { printError, printInfo } = require('core/util');
+const { printError, printInfo, printSuccess } = require('core/util');
 const { debug, getPlatform, RELEASE_ASSETS, DEFAULT_MIRROR } = require('core/env');
 const { printLogo } = require('core/util');
 const { copyReleaseConfig } = require('core/forge-config');
@@ -21,7 +21,27 @@ const {
 } = require('core/forge-fs');
 const { isForgeStarted } = require('core/forge-process');
 
-function fetchReleaseVersion(mirror = DEFAULT_MIRROR) {
+function fetchReleaseVersion({ mirror, releaseDir }) {
+  if (releaseDir && fs.existsSync(releaseDir)) {
+    const versions = fs
+      .readdirSync(releaseDir)
+      .filter(x => semver.valid(x))
+      .sort((a, b) => {
+        if (semver.gt(a, b)) {
+          return -1;
+        }
+        if (semver.lt(b, a)) {
+          return 1;
+        }
+
+        return 0;
+      });
+
+    if (versions.length) {
+      return versions[0];
+    }
+  }
+
   const spinner = getSpinner('Fetching forge release version...');
   spinner.start();
 
@@ -42,9 +62,17 @@ function fetchReleaseVersion(mirror = DEFAULT_MIRROR) {
   process.exit(1);
 }
 
-function fetchAssetInfo(platform, version, key, mirror = DEFAULT_MIRROR) {
+function fetchAssetInfo({ platform, version, key, mirror, releaseDir }) {
   const name = `${key}_${platform}_amd64.tgz`;
-  const url = `${mirror}/forge/${version}/${name}`;
+
+  if (releaseDir) {
+    const assetPath = path.join(releaseDir, version, name);
+    if (fs.existsSync(assetPath)) {
+      printSuccess(`Release asset find ${assetPath}`);
+      return { key, name, url: assetPath, size: fs.statSync(assetPath).size, header: '' };
+    }
+  }
+
   const defaultSize = {
     forge: 28 * 1024 * 1024,
     forge_web: 28 * 1024 * 1024,
@@ -52,6 +80,7 @@ function fetchAssetInfo(platform, version, key, mirror = DEFAULT_MIRROR) {
     simulator: 9 * 1024 * 1024,
   };
 
+  const url = `${mirror}/forge/${version}/${name}`;
   const spinner = getSpinner(`Fetching release asset info: ${name}...`);
   spinner.start();
 
@@ -79,16 +108,24 @@ function fetchAssetInfo(platform, version, key, mirror = DEFAULT_MIRROR) {
   process.exit(1);
 }
 
-function downloadAsset(asset) {
+function downloadAsset({ asset }) {
   return new Promise((resolve, reject) => {
     debug('Download asset', asset);
+
     const assetOutput = path.join(requiredDirs.tmp, asset.name);
     try {
       shell.rm(assetOutput);
     } catch (err) {
       // Do nothing
     }
-    shell.echo(`${symbols.info} Start download ${asset.url}`);
+
+    if (fs.existsSync(asset.url)) {
+      shell.exec(`cp ${asset.url} ${assetOutput}`);
+      printSuccess(`Copied release asset ${asset.url} to ${assetOutput}`);
+      return resolve(assetOutput);
+    }
+
+    printInfo(`Start download ${asset.url}`);
     const progress = getProgress({
       title: `${symbols.info} Downloading ${asset.name}`,
       unit: 'MB',
@@ -113,11 +150,11 @@ function downloadAsset(asset) {
         progress.stop();
 
         if (code === 0) {
-          shell.echo(`${symbols.success} Downloaded ${asset.name} to ${assetOutput}`);
+          printSuccess(`Downloaded ${asset.name} to ${assetOutput}`);
           return resolve(assetOutput);
         }
 
-        shell.echo(`${symbols.error} ${stderr}`);
+        printError(stderr);
         reject(new Error(`${asset.name} download failed`));
       }
     );
@@ -130,19 +167,25 @@ function expandReleaseTarball(filePath, subFolder, version) {
   shell.exec(`mkdir -p ${targetDir}`);
   shell.exec(`cp ${filePath} ${targetDir}`);
   shell.exec(`cd ${targetDir} && tar -zxf ${fileName} && rm -f ${fileName}`);
-  shell.echo(`${symbols.success} Expand release asset ${filePath} to ${targetDir}`);
+  printSuccess(`Expand release asset ${filePath} to ${targetDir}`);
 }
 
-async function main({ args: [userVersion], opts: { mirror, silent } }) {
+async function main({
+  args: [userVersion],
+  opts: { mirror = DEFAULT_MIRROR, releaseDir, silent },
+}) {
   try {
     const platform = await getPlatform();
-    shell.echo(`${symbols.info} Detected platform is: ${platform}`);
+    printInfo(`Detected platform is: ${platform}`);
     if (mirror && mirror !== DEFAULT_MIRROR) {
-      shell.echo(`${symbols.info} ${chalk.yellow(`Using custom mirror: ${mirror}`)}`);
+      printInfo(`${chalk.yellow(`Using custom mirror: ${mirror}`)}`);
+    }
+    if (releaseDir && fs.existsSync(releaseDir)) {
+      printInfo(`${chalk.yellow(`Using local releaseDir: ${releaseDir}`)}`);
     }
 
     const userVer = semver.coerce(userVersion) ? semver.coerce(userVersion).version : '';
-    const version = userVer || fetchReleaseVersion(mirror);
+    const version = userVer || fetchReleaseVersion({ mirror, releaseDir });
 
     const currentVersion = getGlobalForgeVersion();
     if (isForgeBinExists(version)) {
@@ -170,10 +213,10 @@ async function main({ args: [userVersion], opts: { mirror, silent } }) {
 
     // Start download and unzip
     for (const asset of RELEASE_ASSETS) {
-      const assetInfo = fetchAssetInfo(platform, version, asset, mirror);
+      const assetInfo = fetchAssetInfo({ platform, version, asset, mirror, releaseDir });
       debug(asset, assetInfo);
       // eslint-disable-next-line no-await-in-loop
-      const assetTarball = await downloadAsset(assetInfo);
+      const assetTarball = await downloadAsset({ asset: assetInfo, releaseDir });
       expandReleaseTarball(assetTarball, asset, version);
       if (asset === 'forge') {
         // FIXME: copy the latest config as shared config on each release?
@@ -184,7 +227,7 @@ async function main({ args: [userVersion], opts: { mirror, silent } }) {
       }
     }
 
-    shell.echo(`${symbols.success} Congratulations! forge v${version} installed successfully!`);
+    printSuccess(`Congratulations! forge v${version} installed successfully!`);
     shell.echo('');
 
     if (!silent) {
@@ -227,7 +270,7 @@ async function main({ args: [userVersion], opts: { mirror, silent } }) {
     shell.echo('');
   } catch (err) {
     printError(err);
-    shell.echo(`${symbols.error} Forge initialize failed, please try again later`);
+    printError('Forge initialize failed, please try again later');
   }
 }
 

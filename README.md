@@ -72,6 +72,7 @@ Options:
   -c, --chain-name <chainName>                           Execute command use specific chain
   -r, --release-dir <dir>                                Forge release directory path (unzipped), use your own copy forge release
   -f, --config-path <path>                               Forge config used when starting forge node and initializing gRPC clients
+  -r, --registry <registry>                              Specify a custom npm registry
   -y, --yes                                              Assume that the answer to any confirmation question is yes
   -d, --defaults                                         Run command using default values for all questions
   -g, --socket-grpc <endpoint>                           Socket gRPC endpoint to connect, with this you can use forge-cli with a remote node
@@ -86,14 +87,14 @@ Commands:
   block [options] [height]                               Get the block info from the running node
   chain:create|create-chain [chainName]                  Create a new chain instance
   chain:ls|chains                                        List all chains
-  chain:remove|reset [options] [<chainName>]             Remove chains
+  chain:remove|reset [<chainName>]                       Remove chains
   checkin                                                Send a poke tx to the network to get tokens for test
   config [options] [action]                              Read/write chain/node config
   declare:node                                           Declare the current node to be a validator candidate
   download [options] [version]                           Download a forge release without activate it
   help <subcommand>                                      Show help of a sub command
   install|init [options] [version]                       Download and setup forge release on this machine
-  join [options] <endpoint>                              Join a network by providing a valid forge web graphql endpoint
+  join <endpoint>                                        Join a network by providing a valid forge web graphql endpoint
   logs [type]                                            Show logs for various forge components
   ls                                                     List forge releases installed locally
   project:create|create-project [options] [starterName]  Create a project from forge starter projects
@@ -114,10 +115,10 @@ Commands:
   tx:send                                                Send a signed tx to the network
   tx:sign                                                Sign a transaction (base64) according to sender’s wallet
   unstake                                                Revert stakes to various entities
-  upgrade                                                Upgrade chain node to new version without reset
+  upgrade [<chainName>]                                  Upgrade chain node to new version without reset
   use [version]                                          Activate an already downloaded forge release
   version                                                Output version for all forge components
-  wallet:create [options]                                Create a local wallet and dump its public/private key
+  wallet:create                                          Create a local wallet and dump its public/private key
   web [options] [action]                                 Start/stop the web interface of running forge chain/node
   workshop [action]                                      Start/stop the dApps workshop
 

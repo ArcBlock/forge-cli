@@ -1,3 +1,7 @@
+## 0.38.0 (August 27, 2019)
+
+- chore: chore: rename registry to npmRegistry
+
 ## 0.37.10 (August 27, 2019)
 
 - chore: respect autoUpgrade from global config

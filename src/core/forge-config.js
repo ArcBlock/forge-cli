@@ -264,27 +264,18 @@ async function copyReleaseConfig(currentVersion, overwrite = true) {
 /**
  * Ensure we have a forge release to work with, in which we find forge bin
  *
- * @param {*} args
  * @param {boolean} [exitOn404=true]
+ * @param {string} [chainName=process.env.FORGE_CURRENT_CHAIN]
  * @returns
  */
-async function ensureForgeRelease(
-  args,
+async function ensureForgeRelease({
   exitOn404 = true,
-  chainName = process.env.FORGE_CURRENT_CHAIN
-) {
+  chainName = process.env.FORGE_CURRENT_CHAIN,
+}) {
   const cliConfig = {};
   const cliReleaseDir = requiredDirs.release;
-
-  const envReleaseDir = process.env.FORGE_RELEASE_DIR; // deprecated?
-  const argReleaseDir = args.releaseDir; // deprecated?
-  if (envReleaseDir || argReleaseDir) {
-    printInfo(`${chalk.yellow(`Using custom release dir: ${envReleaseDir || argReleaseDir}`)}`);
-  }
-
-  const releaseDir = argReleaseDir || envReleaseDir || cliReleaseDir;
-  const releaseYamlPath = path.join(releaseDir, './forge/release.yml');
-  if (fs.existsSync(releaseDir)) {
+  const releaseYamlPath = path.join(cliReleaseDir, './forge/release.yml');
+  if (fs.existsSync(cliReleaseDir)) {
     try {
       // Read global release version
       const curVersion = getForgeVersionFromYaml(releaseYamlPath, 'current');
@@ -320,14 +311,19 @@ async function ensureForgeRelease(
     // simulator
     // eslint-disable-next-line prefer-destructuring
     const currentVersion = cliConfig.currentVersion;
-    const simulatorBinPath = path.join(releaseDir, 'simulator', currentVersion, './bin/simulator');
+    const simulatorBinPath = path.join(
+      cliReleaseDir,
+      'simulator',
+      currentVersion,
+      './bin/simulator'
+    );
     if (fs.existsSync(simulatorBinPath) && fs.statSync(simulatorBinPath).isFile()) {
       debug(`${symbols.success} Using simulator executable: ${simulatorBinPath}`);
       cliConfig.simulatorBinPath = simulatorBinPath;
     }
 
     // forge_web
-    const webBinPath = path.join(releaseDir, 'forge_web', currentVersion, './bin/forge_web');
+    const webBinPath = path.join(cliReleaseDir, 'forge_web', currentVersion, './bin/forge_web');
     if (fs.existsSync(webBinPath) && fs.statSync(webBinPath).isFile()) {
       debug(`${symbols.success} Using forge_web executable: ${webBinPath}`);
       cliConfig.webBinPath = webBinPath;
@@ -335,7 +331,7 @@ async function ensureForgeRelease(
 
     // forge_workshop
     const workshopBinPath = path.join(
-      releaseDir,
+      cliReleaseDir,
       'forge_workshop',
       currentVersion,
       './bin/forge_workshop'
@@ -346,12 +342,12 @@ async function ensureForgeRelease(
     }
 
     // forge_kernel
-    const forgeBinPath = path.join(releaseDir, 'forge', currentVersion, './bin/forge');
+    const forgeBinPath = path.join(cliReleaseDir, 'forge', currentVersion, './bin/forge');
     if (fs.existsSync(forgeBinPath) && fs.statSync(forgeBinPath).isFile()) {
-      cliConfig.releaseDir = releaseDir;
+      cliConfig.releaseDir = cliReleaseDir;
       cliConfig.forgeBinPath = forgeBinPath;
-      cliConfig.forgeReleaseDir = path.join(releaseDir, 'forge');
-      debug(`${symbols.success} Using forge release dir: ${releaseDir}`);
+      cliConfig.forgeReleaseDir = path.join(cliReleaseDir, 'forge');
+      debug(`${symbols.success} Using forge release dir: ${cliReleaseDir}`);
       debug(`${symbols.success} Using forge executable: ${forgeBinPath}`);
 
       if (semver.satisfies(currentVersion, engines.forge)) {

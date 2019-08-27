@@ -53,10 +53,10 @@ async function setupEnv(args, requirements, opts = {}) {
   });
 
   ensureRequiredDirs();
-  await checkUpdate(opts.defaults, opts.registry);
+  await checkUpdate(opts);
 
   if (requirements.forgeRelease || requirements.runningNode) {
-    const cliConfig = await ensureForgeRelease(args, true, opts.chainName);
+    const cliConfig = await ensureForgeRelease({ exitOn404: true, chainName: opts.chainName });
     Object.assign(config.cli, cliConfig);
   }
 
@@ -388,7 +388,11 @@ function readCache(key) {
   }
 }
 
-async function checkUpdate(useDefaults, registry) {
+async function checkUpdate({ defaults, registry, autoUpgrade }) {
+  if (autoUpgrade === false) {
+    return;
+  }
+
   const lastCheck = readCache('check-update');
   const now = Math.floor(Date.now() / 1000);
   const secondsOfDay = 24 * 60 * 60;
@@ -419,7 +423,7 @@ async function checkUpdate(useDefaults, registry) {
       )
     );
 
-    if (!useDefaults) {
+    if (!defaults) {
       const { confirm } = await inquirer.prompt([
         {
           name: 'confirm',

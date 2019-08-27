@@ -1,10 +1,18 @@
+## 0.37.10 (August 27, 2019)
+
+- chore: respect autoUpgrade from global config
+- chore: reorganize files
+- feat: basic support of using local release dir #182
+- chore：remove `--release-dir` as command line arguments
+- fix: forge account xxx is broken
+
 ## 0.37.9 (August 25, 2019)
 
 - fix: each chain uses its own version configuration, the `version` is stored in `<chain config directory>/config.yml` #171
 - feature: add `~/.forgerc.yml` config to store forge cli config, current includes:
   - registry: npm registry, `registry` in `~/.npmrc` has higher priority than `~/.forgerc.yml`
   - allowMultiChain: boolean
-- refactor: rename *profile* to *config*, for consistency
+- refactor: rename _profile_ to _config_, for consistency
 
 ## 0.37.8 (August 23, 2019)
 

@@ -83,6 +83,9 @@ function initCli(program) {
         if (globalOpts.registry === undefined) {
           globalOpts.registry = registryUrl();
         }
+        if (globalOpts.autoUpgrade === undefined) {
+          globalOpts.autoUpgrade = true;
+        }
 
         await setupEnv(globalArgs.args, x.requirements, globalOpts);
         await x.handler({

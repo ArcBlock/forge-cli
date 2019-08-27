@@ -56,7 +56,7 @@ async function setupEnv(args, requirements, opts = {}) {
   await checkUpdate(opts.defaults, opts.registry);
 
   if (requirements.forgeRelease || requirements.runningNode) {
-    const cliConfig = await ensureForgeRelease(args, true, opts.chainName);
+    const cliConfig = await ensureForgeRelease({ exitOn404: true, chainName: opts.chainName });
     Object.assign(config.cli, cliConfig);
   }
 

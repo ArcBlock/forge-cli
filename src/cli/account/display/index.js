@@ -9,7 +9,7 @@ cli('account <address>', 'Get an account info by address', input => action(execu
     runningNode: true,
     rpcClient: true,
     wallet: args => {
-      if (args && args.args[0] === 'me') {
+      if (args && args[0] === 'me') {
         return true;
       }
       return false;

@@ -310,6 +310,7 @@ module.exports = {
   getForgeSimulatorReleaseDirectory,
   getForgeWebReleaseDirectory,
   getForgeWorkshopReleaseDirectory,
+  getGlobalForgeVersion,
   getChainReleaseFilePath,
   getChainWorkshopDirectory,
   getLogfile,

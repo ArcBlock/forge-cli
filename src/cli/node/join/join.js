@@ -91,7 +91,7 @@ async function main({ args: [endpoint = ''], opts: { yes, chainName } }) {
           shell.exec(`mv ${oldDir} ${bakDir}`);
 
           const keyDataPath = getChainKeyFilePath(chainName);
-          debug(` rm -rf ${getChainKeyFilePath(chainName)}`);
+          debug(` rm -rf ${keyDataPath}`);
           shell.exec(`rm -rf ${keyDataPath}`);
         } else {
           shell.echo(`${symbols.info} User abort, nothing changed!`);

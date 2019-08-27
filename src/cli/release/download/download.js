@@ -45,7 +45,7 @@ async function main({ args: [userVersion], opts: { mirror = DEFAULT_MIRROR, rele
       const assetInfo = fetchAssetInfo({ platform, version, key: asset, mirror, releaseDir });
       debug(asset, assetInfo);
       // eslint-disable-next-line no-await-in-loop
-      const assetTarball = await downloadAsset({ asset: assetInfo, releaseDir });
+      const assetTarball = await downloadAsset({ asset: assetInfo });
       expandReleaseTarball(assetTarball, asset, version);
     }
 

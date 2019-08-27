@@ -219,7 +219,7 @@ async function main({
       const assetInfo = fetchAssetInfo({ platform, version, key: asset, mirror, releaseDir });
       debug(asset, assetInfo);
       // eslint-disable-next-line no-await-in-loop
-      const assetTarball = await downloadAsset({ asset: assetInfo, releaseDir });
+      const assetTarball = await downloadAsset({ asset: assetInfo });
       expandReleaseTarball(assetTarball, asset, version);
       if (asset === 'forge') {
         // FIXME: copy the latest config as shared config on each release?

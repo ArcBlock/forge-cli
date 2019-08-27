@@ -1,6 +1,6 @@
 ## 0.37.9 (August 25, 2019)
 
-- fix: each chain uses its own version configuration, the `version` is stored in `<chain config directory>/config.yml`
+- fix: each chain uses its own version configuration, the `version` is stored in `<chain config directory>/config.yml` #171
 - feature: add `~/.forgerc.yml` config to store forge cli config, current includes:
   - registry: npm registry, `registry` in `~/.npmrc` has higher priority than `~/.forgerc.yml`
   - allowMultiChain: boolean

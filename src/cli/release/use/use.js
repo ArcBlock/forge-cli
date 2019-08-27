@@ -5,7 +5,8 @@ const { symbols } = require('core/ui');
 const { config } = require('core/env');
 const { isForgeStarted } = require('core/forge-process');
 const debug = require('core/debug')('release:use');
-const { updateReleaseYaml } = require('core/forge-fs');
+const { updateReleaseYaml, updateChainConfig } = require('core/forge-fs');
+const { print, printError, printSuccess } = require('core/util');
 const { listReleases } = require('cli/release/list/list');
 
 // eslint-disable-next-line consistent-return
@@ -41,14 +42,16 @@ async function main({
     }
 
     updateReleaseYaml('forge', version);
+    updateChainConfig(chainName, { version });
+    debug(`'${chainName}' chain version updated:`, version);
 
-    shell.echo(`${symbols.success} forge v${version} activated successfully!`);
-    shell.echo('');
-    shell.echo(`Now you can start forge with ${chalk.cyan(`forge start ${chainName}`)}`);
-    shell.echo('');
+    printSuccess(`forge v${version} activated successfully!`);
+    print('');
+    print(`Now you can start forge with ${chalk.cyan(`forge start ${chainName}`)}`);
+    print('');
   } catch (err) {
     debug.error(err);
-    shell.echo(`${symbols.error} Forge release activate failed`);
+    printError('Forge release activate failed');
   }
 }
 

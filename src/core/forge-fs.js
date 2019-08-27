@@ -279,15 +279,26 @@ function getChainConfig(chainName) {
   }
 }
 
-function updateChainConfig(chainName, config) {
+/**
+ * Read config from yaml file.
+ * @param {string} filePath
+ * @returns {json} return config of json format, if config is empty, return empty json object.
+ */
+function readYamlConfig(filePath) {
+  const yamlObj = fs.existsSync(filePath)
+    ? yaml.parse(fs.readFileSync(filePath).toString()) || {}
+    : {};
+
+  return yamlObj;
+}
+
+function updateChainConfig(chainName, config = {}) {
   try {
     const filePath = getChainConfigPath(chainName);
-    shell.exec(`touch ${filePath}`, { silent: true });
     debug('updateChainConfig', { chainName, config });
-    const yamlObj = fs.existsSync(filePath)
-      ? yaml.parse(fs.readFileSync(filePath).toString()) || {}
-      : {};
-    fs.writeFileSync(filePath, yaml.stringify(Object.assign(yamlObj, config)), { flag: 'w+' });
+
+    const chainConfig = readYamlConfig(filePath);
+    fs.writeFileSync(filePath, yaml.stringify(Object.assign(chainConfig, config)), { flag: 'w+' });
   } catch (err) {
     printError(err);
   }

@@ -333,7 +333,7 @@ async function getStarterConfig({ starters, inputStarterName, inputStarterDir, r
 
 async function main({
   args: [inputStarterName = ''],
-  opts: { yes, target = '', starterDir: inputStarterDir, registry },
+  opts: { yes, target = '', starterDir: inputStarterDir, npmRegistry: registry },
 }) {
   try {
     const starters = await wrapSpinner(

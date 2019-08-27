@@ -75,14 +75,20 @@ function initCli(program) {
 
       command.action(async (...params) => {
         const globalArgs = last(program.args).parent;
-        const globalOpts = Object.assign(
-          { allowMultiChain: true },
-          globalConfig,
-          globalArgs.opts()
-        );
-        if (globalOpts.registry === undefined) {
-          globalOpts.registry = registryUrl();
+        let argsOpts = globalArgs.opts();
+        argsOpts = Object.keys(argsOpts).reduce((acc, item) => {
+          if (typeof argsOpts[item] !== 'undefined') {
+            acc[item] = argsOpts[item];
+          }
+
+          return acc;
+        }, {});
+        const globalOpts = Object.assign({ allowMultiChain: true }, globalConfig, argsOpts);
+
+        if (globalOpts.npmRegistry === undefined) {
+          globalOpts.npmRegistry = registryUrl();
         }
+
         if (globalOpts.autoUpgrade === undefined) {
           globalOpts.autoUpgrade = true;
         }

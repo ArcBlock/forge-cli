@@ -12,16 +12,16 @@ const tar = require('tar');
 const inquirer = require('inquirer');
 const { spawn } = require('child_process');
 const { symbols, hr, getSpinner, getProgress } = require('core/ui');
-const { printError, printInfo, printSuccess } = require('core/util');
+const { print, printError, printInfo, printSuccess } = require('core/util');
 const { debug, getPlatform, RELEASE_ASSETS, DEFAULT_MIRROR } = require('core/env');
 const { printLogo } = require('core/util');
 const { copyReleaseConfig } = require('core/forge-config');
-const { updateReleaseYaml } = require('core/forge-fs');
 const {
   requiredDirs,
-  isForgeBinExists,
   getGlobalForgeVersion,
   getAllChainNames,
+  updateReleaseYaml,
+  isReleaseBinExists,
 } = require('core/forge-fs');
 const { isForgeStarted } = require('core/forge-process');
 
@@ -83,7 +83,52 @@ function getAssetInfo({ platform, version, key, mirror, releaseDir }) {
   return { url, name };
 }
 
-function downloadAsset({ platform, version, key, mirror, releaseDir }) {
+/**
+ *
+ * @param {array} assets to be downloaded assets
+ * @param {object} download meta info
+ */
+async function downloadAsset(assets, { platform, version, mirror, releaseDir }) {
+  const downloadFailedQueue = [];
+
+  // Start download and unzip
+  for (const asset of assets) {
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      const assetTarball = await download({
+        platform,
+        version,
+        key: asset,
+        mirror,
+        releaseDir,
+      });
+      // eslint-disable-next-line no-await-in-loop
+      await expandReleaseTarball(assetTarball, asset, version);
+      if (asset === 'forge') {
+        // FIXME: copy the latest config as shared config on each release?
+        await copyReleaseConfig(version); // eslint-disable-line
+      }
+
+      if (asset === 'forge' || asset === 'simulator') {
+        updateReleaseYaml(asset, version);
+      }
+    } catch (error) {
+      printError(error);
+      downloadFailedQueue.push(asset);
+    }
+  }
+
+  if (downloadFailedQueue.length > 0) {
+    print();
+    printError('Failed to download:');
+    downloadFailedQueue.forEach(x => printInfo(x));
+    return false;
+  }
+
+  return true;
+}
+
+function download({ platform, version, key, mirror, releaseDir }) {
   return new Promise((resolve, reject) => {
     const asset = getAssetInfo({ platform, version, key, mirror, releaseDir });
     debug('Download asset', asset.uri);
@@ -155,6 +200,7 @@ async function main({
     if (mirror && mirror !== DEFAULT_MIRROR) {
       printInfo(`${chalk.yellow(`Using custom mirror: ${mirror}`)}`);
     }
+
     if (releaseDir && fs.existsSync(releaseDir)) {
       printInfo(`${chalk.yellow(`Using local releaseDir: ${releaseDir}`)}`);
     }
@@ -163,7 +209,9 @@ async function main({
     const version = userVer || fetchReleaseVersion({ mirror, releaseDir });
 
     const currentVersion = getGlobalForgeVersion();
-    if (isForgeBinExists(version)) {
+    const unDownloadAssets = RELEASE_ASSETS.filter(x => !isReleaseBinExists(x, version));
+
+    if (unDownloadAssets.length === 0) {
       printInfo(`forge v${version} is already installed`);
 
       if (semver.eq(version, currentVersion)) {
@@ -173,7 +221,7 @@ async function main({
         shell.exec('forge version');
       }
 
-      return process.exit(1);
+      return process.exit(0);
     }
 
     // Ensure forge is stopped, because init on an running node may cause some mess
@@ -188,34 +236,20 @@ async function main({
 
     printLogo();
 
-    // Start download and unzip
-    for (const asset of RELEASE_ASSETS) {
-      try {
-        // eslint-disable-next-line no-await-in-loop
-        const assetTarball = await downloadAsset({
-          platform,
-          version,
-          key: asset,
-          mirror,
-          releaseDir,
-        });
-        // eslint-disable-next-line no-await-in-loop
-        await expandReleaseTarball(assetTarball, asset, version);
-        if (asset === 'forge') {
-          // FIXME: copy the latest config as shared config on each release?
-          await copyReleaseConfig(version); // eslint-disable-line
-        }
+    const isSuccess = await downloadAsset(unDownloadAssets, {
+      platform,
+      version,
+      mirror,
+      releaseDir,
+    });
 
-        if (asset === 'forge' || asset === 'simulator') {
-          updateReleaseYaml(asset, version);
-        }
-      } catch (error) {
-        printError(error);
-      }
+    if (!isSuccess) {
+      printError('Please check your assets version or mirror address is correct and try again.');
+      process.exit(1);
     }
 
     printSuccess(`Congratulations! forge v${version} installed successfully!`);
-    shell.echo('');
+    print();
 
     if (!silent) {
       const chainsCount = getAllChainNames().length;

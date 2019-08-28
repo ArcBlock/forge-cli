@@ -152,9 +152,13 @@ function getGlobalForgeVersion() {
   return '';
 }
 
+function isReleaseBinExists(releaseName, version) {
+  const releaseBinPath = path.join(getReleaseDirectory(releaseName), version, 'bin', releaseName);
+  return fs.existsSync(releaseBinPath);
+}
+
 function isForgeBinExists(version) {
-  const tmp = getForgeBinPath(version);
-  return fs.existsSync(tmp);
+  return isReleaseBinExists('forge', version);
 }
 
 function getTendermintHomeDir(chainName) {
@@ -333,6 +337,7 @@ module.exports = {
   getStorageEnginePath,
   getChainKeyFilePath,
   isForgeBinExists,
+  isReleaseBinExists,
   isDirectory,
   isFile,
   requiredDirs,

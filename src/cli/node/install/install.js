@@ -127,7 +127,7 @@ async function downloadAssets(assets, { platform, version, mirror, releaseDir })
 
 function download(assetInfo) {
   return new Promise((resolve, reject) => {
-    debug('Download asset', assetInfo.uri);
+    debug('Download asset', assetInfo.url);
 
     const assetDest = path.join(os.tmpdir(), assetInfo.name);
     if (fs.existsSync(assetDest)) {

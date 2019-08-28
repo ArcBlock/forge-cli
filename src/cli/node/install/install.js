@@ -1,25 +1,30 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable consistent-return */
-const fs = require('fs');
-const path = require('path');
-const shell = require('shelljs');
+const axios = require('axios');
 const chalk = require('chalk');
+const fs = require('fs');
+const fsExtra = require('fs-extra');
+const path = require('path');
+const os = require('os');
+const shell = require('shelljs');
 const semver = require('semver');
+const tar = require('tar');
 const inquirer = require('inquirer');
 const { spawn } = require('child_process');
 const { symbols, hr, getSpinner, getProgress } = require('core/ui');
-const { printError, printInfo, printSuccess } = require('core/util');
-const { debug, getPlatform, RELEASE_ASSETS, DEFAULT_MIRROR } = require('core/env');
+const { print, printError, printInfo, printSuccess } = require('core/util');
+const { debug, getPlatform } = require('core/env');
 const { printLogo } = require('core/util');
-const { copyReleaseConfig } = require('core/forge-config');
-const { updateReleaseYaml } = require('core/forge-fs');
 const {
   requiredDirs,
-  isForgeBinExists,
   getGlobalForgeVersion,
   getAllChainNames,
+  updateReleaseYaml,
+  isReleaseBinExists,
 } = require('core/forge-fs');
 const { isForgeStarted } = require('core/forge-process');
+
+const { DEFAULT_MIRROR, RELEASE_ASSETS } = require('../../../constant');
 
 function fetchReleaseVersion({ mirror, releaseDir }) {
   if (releaseDir && fs.existsSync(releaseDir)) {
@@ -63,112 +68,119 @@ function fetchReleaseVersion({ mirror, releaseDir }) {
   process.exit(1);
 }
 
-function fetchAssetInfo({ platform, version, key, mirror, releaseDir }) {
+function getAssetInfo({ platform, version, key, mirror, releaseDir }) {
   const name = `${key}_${platform}_amd64.tgz`;
 
   if (releaseDir) {
     const assetPath = path.join(releaseDir, version, name);
     if (fs.existsSync(assetPath)) {
       printSuccess(`Release asset find ${assetPath}`);
-      return { key, name, url: assetPath, size: fs.statSync(assetPath).size, header: '' };
+      return { name, url: assetPath };
     }
   }
-
-  const defaultSize = {
-    forge: 28 * 1024 * 1024,
-    forge_web: 28 * 1024 * 1024,
-    forge_workshop: 13 * 1024 * 1024,
-    simulator: 9 * 1024 * 1024,
-  };
 
   const url = `${mirror}/forge/${version}/${name}`;
-  const spinner = getSpinner(`Fetching release asset info: ${name}...`);
-  spinner.start();
 
-  try {
-    const { code, stdout, stderr } = shell.exec(`curl -I --silent "${url}"`, { silent: true });
-    debug('fetchAssetInfo', { url, platform, version, code, stdout, stderr });
-    if (code === 0 && stdout) {
-      const notFound = stdout
-        .split('\r\n')
-        .find(x => x.indexOf('HTTP/1.1 404') === 0 || x.indexOf('HTTP/2 404') === 0);
-      if (notFound) {
-        spinner.fail(`Release asset "${url}" not found`);
-        process.exit(1);
-      }
-      spinner.succeed(`Release asset info fetch success ${name}`);
-      const header = stdout.split('\r\n').find(x => x.indexOf('Content-Length:') === 0);
-      const size = header ? Number(header.split(':').pop().trim()) : defaultSize[key]; // prettier-ignore
-      return { key, name, url, size, header };
-    }
-    spinner.fail(`Release asset info error: ${stderr}`);
-  } catch (err) {
-    spinner.fail(`Release asset info error: ${err.message}`);
-  }
-
-  process.exit(1);
+  return { url, name };
 }
 
-function downloadAsset({ asset }) {
-  return new Promise((resolve, reject) => {
-    debug('Download asset', asset);
+/**
+ *
+ * @param {array} assets to be downloaded assets
+ * @param {object} download meta info
+ */
+async function downloadAssets(assets, { platform, version, mirror, releaseDir }) {
+  const downloadFailedQueue = [];
 
-    const assetOutput = path.join(requiredDirs.tmp, asset.name);
+  // Start download and unzip
+  for (const asset of assets) {
     try {
-      shell.rm(assetOutput);
-    } catch (err) {
-      // Do nothing
+      const assetInfo = getAssetInfo({ platform, version, key: asset, mirror, releaseDir });
+      // eslint-disable-next-line no-await-in-loop
+      const assetTarball = await download(assetInfo);
+      // eslint-disable-next-line no-await-in-loop
+      await expandReleaseTarball(assetTarball, asset, version);
+      fsExtra.removeSync(assetTarball);
+
+      if (asset === 'forge' || asset === 'simulator') {
+        updateReleaseYaml(asset, version);
+      }
+    } catch (error) {
+      printError(error);
+      downloadFailedQueue.push(asset);
+    }
+  }
+
+  if (downloadFailedQueue.length > 0) {
+    print();
+    printError('Failed to download:');
+    downloadFailedQueue.forEach(x => printInfo(x));
+    return false;
+  }
+
+  return true;
+}
+
+function download(assetInfo) {
+  return new Promise((resolve, reject) => {
+    debug('Download asset', assetInfo.url);
+
+    const assetDest = path.join(os.tmpdir(), assetInfo.name);
+    if (fs.existsSync(assetDest)) {
+      shell.rm(assetDest);
     }
 
-    if (fs.existsSync(asset.url)) {
-      shell.exec(`cp ${asset.url} ${assetOutput}`);
-      printSuccess(`Copied release asset ${asset.url}`);
-      return resolve(assetOutput);
+    if (fs.existsSync(assetInfo.url)) {
+      fsExtra.copySync(assetInfo.url, assetDest);
+      printSuccess(`Copied release asset ${assetInfo.url}`);
+      return resolve(assetDest);
     }
 
-    printInfo(`Start download ${asset.url}`);
-    const progress = getProgress({
-      title: `${symbols.info} Downloading ${asset.name}`,
-      unit: 'MB',
-    });
-    const total = (asset.size / 1024 / 1024).toFixed(2);
-    progress.start(total, 0);
+    printInfo(`Start download ${assetInfo.url}`);
 
-    // update progress bar
-    const timer = setInterval(() => {
-      if (fs.existsSync(assetOutput)) {
-        const stat = fs.statSync(assetOutput);
-        progress.update((stat.size / 1024 / 1024).toFixed(2));
-      }
-    }, 500);
+    axios
+      .get(assetInfo.url, {
+        responseType: 'stream',
+      })
+      .then(response => {
+        const progress = getProgress({
+          title: `${symbols.info} Downloading ${assetInfo.name}`,
+          unit: 'MB',
+        });
 
-    shell.exec(
-      `curl ${asset.url} --silent --out ${assetOutput}`,
-      { async: true, silent: true },
-      (code, _, stderr) => {
-        clearInterval(timer);
-        progress.update(total);
-        progress.stop();
+        const totalSize = Number(response.headers['content-length']);
+        const bufferArray = [];
+        progress.start((totalSize / 1024 / 1024).toFixed(2), 0);
 
-        if (code === 0) {
-          printSuccess(`Downloaded ${asset.name} to ${assetOutput}`);
-          return resolve(assetOutput);
-        }
+        let downloadedLength = 0;
+        response.data.on('data', data => {
+          bufferArray.push(data);
+          downloadedLength += Buffer.byteLength(data);
+          progress.update((downloadedLength / 1024 / 1024).toFixed(2));
+        });
 
-        printError(stderr);
-        reject(new Error(`${asset.name} download failed`));
-      }
-    );
+        response.data.on('end', () => {
+          const buffer = Buffer.concat(bufferArray);
+          fs.writeFileSync(assetDest, buffer);
+          debug(`${assetInfo.name} download success: ${assetDest}`);
+          progress.stop();
+          return resolve(assetDest);
+        });
+
+        response.data.on('error', err => {
+          progress.stop();
+          reject(err);
+        });
+      })
+      .catch(reject);
   });
 }
 
-function expandReleaseTarball(filePath, subFolder, version) {
-  const fileName = path.basename(filePath);
+async function expandReleaseTarball(filePath, subFolder, version) {
   const targetDir = path.join(requiredDirs.release, subFolder, version);
-  shell.exec(`mkdir -p ${targetDir}`);
-  shell.exec(`cp ${filePath} ${targetDir}`);
-  shell.exec(`cd ${targetDir} && tar -zxf ${fileName} && rm -f ${fileName}`);
-  printSuccess(`Expand release asset ${filePath} to ${targetDir}`);
+  fs.mkdirSync(targetDir, { recursive: true });
+  await tar.x({ file: filePath, C: targetDir, strip: 1 });
+  debug(`Expand release asset ${filePath} to ${targetDir}`);
 }
 
 async function main({
@@ -181,6 +193,7 @@ async function main({
     if (mirror && mirror !== DEFAULT_MIRROR) {
       printInfo(`${chalk.yellow(`Using custom mirror: ${mirror}`)}`);
     }
+
     if (releaseDir && fs.existsSync(releaseDir)) {
       printInfo(`${chalk.yellow(`Using local releaseDir: ${releaseDir}`)}`);
     }
@@ -189,7 +202,9 @@ async function main({
     const version = userVer || fetchReleaseVersion({ mirror, releaseDir });
 
     const currentVersion = getGlobalForgeVersion();
-    if (isForgeBinExists(version)) {
+    const unDownloadAssets = RELEASE_ASSETS.filter(x => !isReleaseBinExists(x, version));
+
+    if (unDownloadAssets.length === 0) {
       printInfo(`forge v${version} is already installed`);
 
       if (semver.eq(version, currentVersion)) {
@@ -199,7 +214,7 @@ async function main({
         shell.exec('forge version');
       }
 
-      return process.exit(1);
+      return process.exit(0);
     }
 
     // Ensure forge is stopped, because init on an running node may cause some mess
@@ -214,30 +229,26 @@ async function main({
 
     printLogo();
 
-    // Start download and unzip
-    for (const asset of RELEASE_ASSETS) {
-      const assetInfo = fetchAssetInfo({ platform, version, key: asset, mirror, releaseDir });
-      debug(asset, assetInfo);
-      // eslint-disable-next-line no-await-in-loop
-      const assetTarball = await downloadAsset({ asset: assetInfo });
-      expandReleaseTarball(assetTarball, asset, version);
-      if (asset === 'forge') {
-        // FIXME: copy the latest config as shared config on each release?
-        await copyReleaseConfig(version); // eslint-disable-line
-      }
-      if (asset === 'forge' || asset === 'simulator') {
-        updateReleaseYaml(asset, version);
-      }
+    const isSuccess = await downloadAssets(unDownloadAssets, {
+      platform,
+      version,
+      mirror,
+      releaseDir,
+    });
+
+    if (!isSuccess) {
+      printError('Please check your assets version or mirror address is correct and try again.');
+      process.exit(1);
     }
 
     printSuccess(`Congratulations! forge v${version} installed successfully!`);
-    shell.echo('');
+    print();
 
     if (!silent) {
       const chainsCount = getAllChainNames().length;
       if (chainsCount > 0) {
         printInfo(`If you want to custom the config, run: ${chalk.cyan('forge config set')}`);
-        return;
+        process.exit(0);
       }
 
       const questions = [
@@ -280,6 +291,7 @@ async function main({
 exports.run = main;
 exports.execute = main;
 exports.fetchReleaseVersion = fetchReleaseVersion;
-exports.fetchAssetInfo = fetchAssetInfo;
-exports.downloadAsset = downloadAsset;
+exports.getAssetInfo = getAssetInfo;
+exports.downloadAssets = downloadAssets;
+exports.download = download;
 exports.expandReleaseTarball = expandReleaseTarball;

@@ -4,10 +4,11 @@ const shell = require('shelljs');
 const chalk = require('chalk');
 const yaml = require('yaml');
 const { symbols, getSpinner } = require('core/ui');
-const { DEFAULT_MIRROR } = require('core/env');
 const debug = require('core/debug')('compile');
 const { isFile, isDirectory, requiredDirs } = require('core/forge-fs');
-const { downloadAsset } = require('../../node/install/install');
+const { download } = require('../../node/install/install');
+
+const { DEFAULT_MIRROR } = require('../../../constant');
 
 // eslint-disable-next-line consistent-return
 function fetchCompilerVersion(mirror = DEFAULT_MIRROR) {
@@ -77,7 +78,7 @@ async function ensureForgeCompiler() {
   // Download forge-compiler binary
   const version = fetchCompilerVersion();
   const asset = fetchCompilerInfo(version);
-  const compilerPath = await downloadAsset(asset);
+  const compilerPath = await download(asset);
   debug('download compiler to: ', compilerPath);
   shell.mv(compilerPath, targetPath);
   shell.exec(`chmod a+x ${targetPath}`);

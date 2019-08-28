@@ -1,3 +1,8 @@
+## 0.38.1 (August 28, 2019)
+
+- feature: optimize way to judge forge-* downloaded #185
+- refactor: replace curl with axios when download assets
+
 ## 0.38.0 (August 27, 2019)
 
 - chore: chore: rename registry to npmRegistry

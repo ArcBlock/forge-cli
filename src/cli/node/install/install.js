@@ -153,18 +153,19 @@ function download(assetInfo) {
         });
 
         const totalSize = Number(response.headers['content-length']);
-        let total = Buffer.alloc(0);
+        const bufferArray = [];
         progress.start((totalSize / 1024 / 1024).toFixed(2), 0);
 
         let downloadedLength = 0;
         response.data.on('data', data => {
+          bufferArray.push(data);
           downloadedLength += Buffer.byteLength(data);
           progress.update((downloadedLength / 1024 / 1024).toFixed(2));
-          total = Buffer.concat([total, data]);
         });
 
         response.data.on('end', () => {
-          fs.writeFileSync(assetDest, total);
+          const buffer = Buffer.concat(bufferArray);
+          fs.writeFileSync(assetDest, buffer);
           debug(`${assetInfo.name} download success: ${assetDest}`);
           progress.stop();
           return resolve(assetDest);

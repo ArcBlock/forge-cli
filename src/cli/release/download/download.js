@@ -8,7 +8,6 @@ const { isForgeBinExists, getGlobalForgeVersion } = require('core/forge-fs');
 const { printError, printInfo, printSuccess } = require('core/util');
 const debug = require('core/debug')('download');
 const {
-  fetchAssetInfo,
   downloadAsset,
   expandReleaseTarball,
   fetchReleaseVersion,
@@ -42,11 +41,16 @@ async function main({ args: [userVersion], opts: { mirror = DEFAULT_MIRROR, rele
 
     // Start download and unzip
     for (const asset of RELEASE_ASSETS) {
-      const assetInfo = fetchAssetInfo({ platform, version, key: asset, mirror, releaseDir });
-      debug(asset, assetInfo);
       // eslint-disable-next-line no-await-in-loop
-      const assetTarball = await downloadAsset({ asset: assetInfo });
-      expandReleaseTarball(assetTarball, asset, version);
+      const assetTarball = await downloadAsset({
+        platform,
+        version,
+        key: asset,
+        mirror,
+        releaseDir,
+      });
+      // eslint-disable-next-line no-await-in-loop
+      await expandReleaseTarball(assetTarball, asset, version);
     }
 
     printSuccess(`Congratulations! forge v${version} download successfully!`);

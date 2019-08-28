@@ -1,10 +1,14 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable consistent-return */
-const fs = require('fs');
-const path = require('path');
-const shell = require('shelljs');
+const axios = require('axios');
 const chalk = require('chalk');
+const fs = require('fs');
+const fsExtra = require('fs-extra');
+const path = require('path');
+const os = require('os');
+const shell = require('shelljs');
 const semver = require('semver');
+const tar = require('tar');
 const inquirer = require('inquirer');
 const { spawn } = require('child_process');
 const { symbols, hr, getSpinner, getProgress } = require('core/ui');
@@ -63,112 +67,82 @@ function fetchReleaseVersion({ mirror, releaseDir }) {
   process.exit(1);
 }
 
-function fetchAssetInfo({ platform, version, key, mirror, releaseDir }) {
+function getAssetInfo({ platform, version, key, mirror, releaseDir }) {
   const name = `${key}_${platform}_amd64.tgz`;
 
   if (releaseDir) {
     const assetPath = path.join(releaseDir, version, name);
     if (fs.existsSync(assetPath)) {
       printSuccess(`Release asset find ${assetPath}`);
-      return { key, name, url: assetPath, size: fs.statSync(assetPath).size, header: '' };
+      return { name, url: assetPath };
     }
   }
-
-  const defaultSize = {
-    forge: 28 * 1024 * 1024,
-    forge_web: 28 * 1024 * 1024,
-    forge_workshop: 13 * 1024 * 1024,
-    simulator: 9 * 1024 * 1024,
-  };
 
   const url = `${mirror}/forge/${version}/${name}`;
-  const spinner = getSpinner(`Fetching release asset info: ${name}...`);
-  spinner.start();
 
-  try {
-    const { code, stdout, stderr } = shell.exec(`curl -I --silent "${url}"`, { silent: true });
-    debug('fetchAssetInfo', { url, platform, version, code, stdout, stderr });
-    if (code === 0 && stdout) {
-      const notFound = stdout
-        .split('\r\n')
-        .find(x => x.indexOf('HTTP/1.1 404') === 0 || x.indexOf('HTTP/2 404') === 0);
-      if (notFound) {
-        spinner.fail(`Release asset "${url}" not found`);
-        process.exit(1);
-      }
-      spinner.succeed(`Release asset info fetch success ${name}`);
-      const header = stdout.split('\r\n').find(x => x.indexOf('Content-Length:') === 0);
-      const size = header ? Number(header.split(':').pop().trim()) : defaultSize[key]; // prettier-ignore
-      return { key, name, url, size, header };
-    }
-    spinner.fail(`Release asset info error: ${stderr}`);
-  } catch (err) {
-    spinner.fail(`Release asset info error: ${err.message}`);
-  }
-
-  process.exit(1);
+  return { url, name };
 }
 
-function downloadAsset({ asset }) {
+function downloadAsset({ platform, version, key, mirror, releaseDir }) {
   return new Promise((resolve, reject) => {
-    debug('Download asset', asset);
+    const asset = getAssetInfo({ platform, version, key, mirror, releaseDir });
+    debug('Download asset', asset.uri);
 
-    const assetOutput = path.join(requiredDirs.tmp, asset.name);
-    try {
-      shell.rm(assetOutput);
-    } catch (err) {
-      // Do nothing
+    const assetDest = path.join(os.tmpdir(), asset.name);
+    if (fs.existsSync(assetDest)) {
+      shell.rm(assetDest);
     }
 
     if (fs.existsSync(asset.url)) {
-      shell.exec(`cp ${asset.url} ${assetOutput}`);
+      fsExtra.copy(asset.url, assetDest);
       printSuccess(`Copied release asset ${asset.url}`);
-      return resolve(assetOutput);
+      return resolve(assetDest);
     }
 
     printInfo(`Start download ${asset.url}`);
-    const progress = getProgress({
-      title: `${symbols.info} Downloading ${asset.name}`,
-      unit: 'MB',
-    });
-    const total = (asset.size / 1024 / 1024).toFixed(2);
-    progress.start(total, 0);
 
-    // update progress bar
-    const timer = setInterval(() => {
-      if (fs.existsSync(assetOutput)) {
-        const stat = fs.statSync(assetOutput);
-        progress.update((stat.size / 1024 / 1024).toFixed(2));
-      }
-    }, 500);
+    axios
+      .get(asset.url, {
+        responseType: 'stream',
+      })
+      .then(response => {
+        const progress = getProgress({
+          title: `${symbols.info} Downloading ${asset.name}`,
+          unit: 'MB',
+        });
 
-    shell.exec(
-      `curl ${asset.url} --silent --out ${assetOutput}`,
-      { async: true, silent: true },
-      (code, _, stderr) => {
-        clearInterval(timer);
-        progress.update(total);
-        progress.stop();
+        const totalSize = Number(response.headers['content-length']);
+        let total = Buffer.alloc(0);
+        progress.start((totalSize / 1024 / 1024).toFixed(2), 0);
 
-        if (code === 0) {
-          printSuccess(`Downloaded ${asset.name} to ${assetOutput}`);
-          return resolve(assetOutput);
-        }
+        let downloadedLength = 0;
+        response.data.on('data', data => {
+          downloadedLength += Buffer.byteLength(data);
+          progress.update((downloadedLength / 1024 / 1024).toFixed(2));
+          total = Buffer.concat([total, data]);
+        });
 
-        printError(stderr);
-        reject(new Error(`${asset.name} download failed`));
-      }
-    );
+        response.data.on('end', () => {
+          fs.writeFileSync(assetDest, total);
+          debug(`${asset.name} download success: ${assetDest}`);
+          progress.stop();
+          return resolve(assetDest);
+        });
+
+        response.data.on('error', err => {
+          progress.stop();
+          reject(err);
+        });
+      })
+      .catch(reject);
   });
 }
 
-function expandReleaseTarball(filePath, subFolder, version) {
-  const fileName = path.basename(filePath);
+async function expandReleaseTarball(filePath, subFolder, version) {
   const targetDir = path.join(requiredDirs.release, subFolder, version);
-  shell.exec(`mkdir -p ${targetDir}`);
-  shell.exec(`cp ${filePath} ${targetDir}`);
-  shell.exec(`cd ${targetDir} && tar -zxf ${fileName} && rm -f ${fileName}`);
-  printSuccess(`Expand release asset ${filePath} to ${targetDir}`);
+  fs.mkdirSync(targetDir, { recursive: true });
+  await tar.x({ file: filePath, C: targetDir, strip: 1 });
+  debug(`Expand release asset ${filePath} to ${targetDir}`);
 }
 
 async function main({
@@ -216,17 +190,27 @@ async function main({
 
     // Start download and unzip
     for (const asset of RELEASE_ASSETS) {
-      const assetInfo = fetchAssetInfo({ platform, version, key: asset, mirror, releaseDir });
-      debug(asset, assetInfo);
-      // eslint-disable-next-line no-await-in-loop
-      const assetTarball = await downloadAsset({ asset: assetInfo });
-      expandReleaseTarball(assetTarball, asset, version);
-      if (asset === 'forge') {
-        // FIXME: copy the latest config as shared config on each release?
-        await copyReleaseConfig(version); // eslint-disable-line
-      }
-      if (asset === 'forge' || asset === 'simulator') {
-        updateReleaseYaml(asset, version);
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        const assetTarball = await downloadAsset({
+          platform,
+          version,
+          key: asset,
+          mirror,
+          releaseDir,
+        });
+        // eslint-disable-next-line no-await-in-loop
+        await expandReleaseTarball(assetTarball, asset, version);
+        if (asset === 'forge') {
+          // FIXME: copy the latest config as shared config on each release?
+          await copyReleaseConfig(version); // eslint-disable-line
+        }
+
+        if (asset === 'forge' || asset === 'simulator') {
+          updateReleaseYaml(asset, version);
+        }
+      } catch (error) {
+        printError(error);
       }
     }
 
@@ -237,7 +221,7 @@ async function main({
       const chainsCount = getAllChainNames().length;
       if (chainsCount > 0) {
         printInfo(`If you want to custom the config, run: ${chalk.cyan('forge config set')}`);
-        return;
+        process.exit(0);
       }
 
       const questions = [
@@ -280,6 +264,6 @@ async function main({
 exports.run = main;
 exports.execute = main;
 exports.fetchReleaseVersion = fetchReleaseVersion;
-exports.fetchAssetInfo = fetchAssetInfo;
+exports.getAssetInfo = getAssetInfo;
 exports.downloadAsset = downloadAsset;
 exports.expandReleaseTarball = expandReleaseTarball;

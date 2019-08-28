@@ -15,7 +15,6 @@ const { symbols, hr, getSpinner, getProgress } = require('core/ui');
 const { print, printError, printInfo, printSuccess } = require('core/util');
 const { debug, getPlatform } = require('core/env');
 const { printLogo } = require('core/util');
-const { copyReleaseConfig } = require('core/forge-config');
 const {
   requiredDirs,
   getGlobalForgeVersion,
@@ -102,11 +101,6 @@ async function downloadAssets(assets, { platform, version, mirror, releaseDir })
       // eslint-disable-next-line no-await-in-loop
       await expandReleaseTarball(assetTarball, asset, version);
       fsExtra.removeSync(assetTarball);
-
-      if (asset === 'forge') {
-        // FIXME: copy the latest config as shared config on each release?
-        await copyReleaseConfig(version); // eslint-disable-line
-      }
 
       if (asset === 'forge' || asset === 'simulator') {
         updateReleaseYaml(asset, version);

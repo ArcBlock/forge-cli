@@ -88,20 +88,15 @@ function getAssetInfo({ platform, version, key, mirror, releaseDir }) {
  * @param {array} assets to be downloaded assets
  * @param {object} download meta info
  */
-async function downloadAsset(assets, { platform, version, mirror, releaseDir }) {
+async function downloadAssets(assets, { platform, version, mirror, releaseDir }) {
   const downloadFailedQueue = [];
 
   // Start download and unzip
   for (const asset of assets) {
     try {
+      const assetInfo = getAssetInfo({ platform, version, key: asset, mirror, releaseDir });
       // eslint-disable-next-line no-await-in-loop
-      const assetTarball = await download({
-        platform,
-        version,
-        key: asset,
-        mirror,
-        releaseDir,
-      });
+      const assetTarball = await download(assetInfo);
       // eslint-disable-next-line no-await-in-loop
       await expandReleaseTarball(assetTarball, asset, version);
       fsExtra.removeSync(assetTarball);
@@ -130,31 +125,30 @@ async function downloadAsset(assets, { platform, version, mirror, releaseDir }) 
   return true;
 }
 
-function download({ platform, version, key, mirror, releaseDir }) {
+function download(assetInfo) {
   return new Promise((resolve, reject) => {
-    const asset = getAssetInfo({ platform, version, key, mirror, releaseDir });
-    debug('Download asset', asset.uri);
+    debug('Download asset', assetInfo.uri);
 
-    const assetDest = path.join(os.tmpdir(), asset.name);
+    const assetDest = path.join(os.tmpdir(), assetInfo.name);
     if (fs.existsSync(assetDest)) {
       shell.rm(assetDest);
     }
 
-    if (fs.existsSync(asset.url)) {
-      fsExtra.copySync(asset.url, assetDest);
-      printSuccess(`Copied release asset ${asset.url}`);
+    if (fs.existsSync(assetInfo.url)) {
+      fsExtra.copySync(assetInfo.url, assetDest);
+      printSuccess(`Copied release asset ${assetInfo.url}`);
       return resolve(assetDest);
     }
 
-    printInfo(`Start download ${asset.url}`);
+    printInfo(`Start download ${assetInfo.url}`);
 
     axios
-      .get(asset.url, {
+      .get(assetInfo.url, {
         responseType: 'stream',
       })
       .then(response => {
         const progress = getProgress({
-          title: `${symbols.info} Downloading ${asset.name}`,
+          title: `${symbols.info} Downloading ${assetInfo.name}`,
           unit: 'MB',
         });
 
@@ -171,7 +165,7 @@ function download({ platform, version, key, mirror, releaseDir }) {
 
         response.data.on('end', () => {
           fs.writeFileSync(assetDest, total);
-          debug(`${asset.name} download success: ${assetDest}`);
+          debug(`${assetInfo.name} download success: ${assetDest}`);
           progress.stop();
           return resolve(assetDest);
         });
@@ -238,7 +232,7 @@ async function main({
 
     printLogo();
 
-    const isSuccess = await downloadAsset(unDownloadAssets, {
+    const isSuccess = await downloadAssets(unDownloadAssets, {
       platform,
       version,
       mirror,
@@ -301,5 +295,6 @@ exports.run = main;
 exports.execute = main;
 exports.fetchReleaseVersion = fetchReleaseVersion;
 exports.getAssetInfo = getAssetInfo;
-exports.downloadAsset = downloadAsset;
+exports.downloadAssets = downloadAssets;
+exports.download = download;
 exports.expandReleaseTarball = expandReleaseTarball;

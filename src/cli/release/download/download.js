@@ -7,7 +7,7 @@ const { getPlatform, RELEASE_ASSETS, DEFAULT_MIRROR } = require('core/env');
 const { isReleaseBinExists, getGlobalForgeVersion } = require('core/forge-fs');
 const { printError, printInfo, printSuccess } = require('core/util');
 const debug = require('core/debug')('download');
-const { downloadAsset, fetchReleaseVersion } = require('cli/node/install/install');
+const { downloadAssets, fetchReleaseVersion } = require('cli/node/install/install');
 
 // eslint-disable-next-line consistent-return
 async function main({ args: [userVersion], opts: { mirror = DEFAULT_MIRROR, releaseDir } }) {
@@ -37,7 +37,7 @@ async function main({ args: [userVersion], opts: { mirror = DEFAULT_MIRROR, rele
       printInfo(`Download latest version: v${version}`);
     }
 
-    const isSuccess = await downloadAsset(unDownloadAssets, {
+    const isSuccess = await downloadAssets(unDownloadAssets, {
       platform,
       version,
       mirror,

@@ -104,6 +104,8 @@ async function downloadAsset(assets, { platform, version, mirror, releaseDir }) 
       });
       // eslint-disable-next-line no-await-in-loop
       await expandReleaseTarball(assetTarball, asset, version);
+      fsExtra.removeSync(assetTarball);
+
       if (asset === 'forge') {
         // FIXME: copy the latest config as shared config on each release?
         await copyReleaseConfig(version); // eslint-disable-line

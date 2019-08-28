@@ -139,7 +139,7 @@ function download({ platform, version, key, mirror, releaseDir }) {
     }
 
     if (fs.existsSync(asset.url)) {
-      fsExtra.copy(asset.url, assetDest);
+      fsExtra.copySync(asset.url, assetDest);
       printSuccess(`Copied release asset ${asset.url}`);
       return resolve(assetDest);
     }

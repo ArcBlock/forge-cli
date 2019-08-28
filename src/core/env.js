@@ -469,9 +469,6 @@ module.exports = {
     return `http://localhost:${get(config, 'forge.web.port') || 8210}`;
   },
 
-  DEFAULT_MIRROR: 'https://releases.arcblock.io',
-  RELEASE_ASSETS: ['forge', 'simulator', 'forge_web', 'forge_workshop'],
-
   debug,
   setupEnv,
   requiredDirs,

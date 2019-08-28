@@ -3,10 +3,12 @@ const path = require('path');
 const yaml = require('yaml');
 const chalk = require('chalk');
 const shell = require('shelljs');
-const { config, isEmptyDirectory, RELEASE_ASSETS } = require('core/env');
+const { config, isEmptyDirectory } = require('core/env');
 const debug = require('core/debug')('list');
 const { isDirectory } = require('core/forge-fs');
 const { symbols } = require('core/ui');
+
+const { RELEASE_ASSETS } = require('../../../constant');
 
 function printList(title, list, current) {
   shell.echo(`${title}:`);

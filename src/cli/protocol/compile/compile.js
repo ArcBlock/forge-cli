@@ -4,10 +4,11 @@ const shell = require('shelljs');
 const chalk = require('chalk');
 const yaml = require('yaml');
 const { symbols, getSpinner } = require('core/ui');
-const { DEFAULT_MIRROR } = require('core/env');
 const debug = require('core/debug')('compile');
 const { isFile, isDirectory, requiredDirs } = require('core/forge-fs');
 const { download } = require('../../node/install/install');
+
+const { DEFAULT_MIRROR } = require('../../../constant');
 
 // eslint-disable-next-line consistent-return
 function fetchCompilerVersion(mirror = DEFAULT_MIRROR) {

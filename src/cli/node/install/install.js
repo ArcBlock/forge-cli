@@ -13,7 +13,7 @@ const inquirer = require('inquirer');
 const { spawn } = require('child_process');
 const { symbols, hr, getSpinner, getProgress } = require('core/ui');
 const { print, printError, printInfo, printSuccess } = require('core/util');
-const { debug, getPlatform, RELEASE_ASSETS, DEFAULT_MIRROR } = require('core/env');
+const { debug, getPlatform } = require('core/env');
 const { printLogo } = require('core/util');
 const { copyReleaseConfig } = require('core/forge-config');
 const {
@@ -24,6 +24,8 @@ const {
   isReleaseBinExists,
 } = require('core/forge-fs');
 const { isForgeStarted } = require('core/forge-process');
+
+const { DEFAULT_MIRROR, RELEASE_ASSETS } = require('../../../constant');
 
 function fetchReleaseVersion({ mirror, releaseDir }) {
   if (releaseDir && fs.existsSync(releaseDir)) {

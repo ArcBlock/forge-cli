@@ -3,11 +3,13 @@ const fs = require('fs');
 const shell = require('shelljs');
 const chalk = require('chalk');
 const semver = require('semver');
-const { getPlatform, RELEASE_ASSETS, DEFAULT_MIRROR } = require('core/env');
+const { getPlatform } = require('core/env');
 const { isReleaseBinExists, getGlobalForgeVersion } = require('core/forge-fs');
 const { printError, printInfo, printSuccess } = require('core/util');
 const debug = require('core/debug')('download');
 const { downloadAssets, fetchReleaseVersion } = require('cli/node/install/install');
+
+const { DEFAULT_MIRROR, RELEASE_ASSETS } = require('../../../constant');
 
 // eslint-disable-next-line consistent-return
 async function main({ args: [userVersion], opts: { mirror = DEFAULT_MIRROR, releaseDir } }) {

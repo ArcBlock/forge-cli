@@ -3,13 +3,15 @@ const assert = require('assert');
 const pidUsage = require('pidusage');
 const prettyBytes = require('pretty-bytes');
 const findProcess = require('find-process');
+const pidTree = require('pidtree');
 const { get } = require('lodash');
-const shell = require('shelljs');
+const path = require('path');
 
 const debug = require('./debug')('forge-process');
 const { getTendermintHomeDir, getAllChainNames } = require('./forge-fs');
 const { readChainConfig } = require('./forge-config');
-const { prettyTime, md5, strEqual, sleep, chainSortHandler } = require('./util');
+const { printError, prettyTime, md5, strEqual, sleep, chainSortHandler } = require('./util');
+const { symbols } = require('./ui');
 
 const sortHandler = (x, y) => chainSortHandler(x.name, y.name);
 
@@ -43,9 +45,8 @@ async function findForgeEpmdDeamon() {
 }
 
 async function isForgeStarted(chainName = process.env.FORGE_CURRENT_CHAIN) {
-  const { pid } = await getTendermintProcess(chainName);
-
-  return !!pid;
+  const coreProcesses = await getCoreProcess(chainName);
+  return coreProcesses.every(({ pid }) => !!pid);
 }
 
 async function isForgeStopped(chainName = process.env.FORGE_CURRENT_CHAIN) {
@@ -85,15 +86,104 @@ async function getSimulatorProcess(chainName) {
   return getForgeProcessByTag('simulator', chainName);
 }
 
+async function getStarterProcess(chainName) {
+  return getForgeProcessByTag('starter', chainName);
+}
+
+/**
+ * Get processes that started by forge starter, current: forge/tendermint
+ * @param {string} chainName
+ */
+async function getChildProcessesOfStarter(chainName) {
+  const starterProcess = await getStarterProcess(chainName);
+  if (starterProcess.pid === 0) {
+    return { name: '', pid: 0 };
+  }
+
+  const starterChildProcesses = await pidTree(starterProcess.pid, { root: false });
+
+  const results = await Promise.all(
+    Object.values(starterChildProcesses).map(async pid => {
+      try {
+        const [info] = await findProcess('pid', pid);
+        debug(`${symbols.info} forge managed process info: `, pid);
+
+        if (!info) {
+          return { name: '', pid: 0 };
+        }
+
+        return info;
+      } catch (err) {
+        printError(`Error getting pid info: ${pid}`, err);
+        return { name: '', pid: 0 };
+      }
+    })
+  );
+
+  const getProcessName = x => {
+    if (
+      (x.cmd.indexOf('/forge/') > 0 && x.cmd.indexOf('/bin/beam.smp') > 0) ||
+      x.cmd === '(beam.smp)' // When the forge process is about to end, its cmd is `(beam.cmp)`
+    ) {
+      return 'forge';
+    }
+
+    if (x.cmd.indexOf('/tendermint/') > 0) {
+      return 'tendermint';
+    }
+
+    return x.name.replace(path.extname(x.name), '').replace(/^forge_/, '');
+  };
+
+  return results
+    .filter(x => /(forge|tendermint|beam.smp)/.test(x.name))
+    .map(x => ({
+      name: getProcessName(x),
+      pid: x.pid,
+    }));
+}
+
+/**
+ * `core processes` means `forge core`, `forge starter` and `tendermint` process.
+ * @param {*} chainName
+ */
+async function getCoreProcess(chainName) {
+  const processes = [];
+
+  const starterProcess = await getStarterProcess(chainName);
+  if (starterProcess && starterProcess.pid > 0) {
+    const coreProcesses = await getChildProcessesOfStarter(chainName);
+    processes.push(...coreProcesses, starterProcess);
+  } else {
+    const coreProcesses = await Promise.all([
+      getForgeProcess(chainName),
+      getTendermintProcess(chainName),
+    ]);
+    processes.push(...coreProcesses);
+  }
+
+  return processes;
+}
+
+async function isForgeStartedByStarter(chainName) {
+  const starterProcess = await getStarterProcess(chainName);
+  return starterProcess.pid > 0;
+}
+
+/**
+ * Get all running processes, includes `core processes` and `normal processes`;
+ * @param {*} chainName
+ */
 async function getRunningProcesses(chainName) {
   debug('get running processes');
   const processes = await Promise.all([
-    getForgeProcess(chainName),
     getForgeWebProcess(chainName),
-    getTendermintProcess(chainName),
     getSimulatorProcess(chainName),
     getForgeWorkshopProcess(chainName),
   ]);
+
+  const coreProcesses = await getCoreProcess(chainName);
+  processes.push(...coreProcesses);
 
   return processes.filter(({ pid }) => pid > 0);
 }
@@ -196,9 +286,8 @@ async function stopProcesses(runningProcesses = []) {
     return;
   }
 
-  const killCommand = `kill ${processIds.join(' ')}`;
-  debug(`kill command: "${killCommand}"`);
-  shell.exec(killCommand, { silent: true });
+  processIds.forEach(processId => process.kill(processId));
+  debug(`killed process ids: "${processIds}"`);
   await sleep(5000);
 
   return runningProcesses;
@@ -236,6 +325,7 @@ module.exports = {
   findServicePid,
   isForgeStopped,
   isForgeStarted,
+  isForgeStartedByStarter,
   getAllProcesses,
   getAllRunningProcesses,
   getAllRunningProcessStats,

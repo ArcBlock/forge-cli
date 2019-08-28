@@ -6,13 +6,21 @@ const shell = require('shelljs');
 const { symbols, hr, getSpinner } = require('core/ui');
 const { config } = require('core/env');
 const debug = require('core/debug')('start');
-const { getLogfile } = require('core/forge-fs');
+const { checkStartError } = require('core/forge-fs');
 const { sleep, print, printError, printInfo } = require('core/util');
 const { isForgeStarted, getProcessTag, getAllRunningProcesses } = require('core/forge-process');
 
 const { printAllProcesses } = require('../ps/ps');
 const { stop } = require('../stop/stop');
 const { start: startWeb } = require('../../tools/web/web');
+
+function getForgeReleaseEnv() {
+  if (process.env.FORGE_RELEASE && fs.existsSync(process.env.FORGE_RELEASE)) {
+    return process.env.FORGE_RELEASE;
+  }
+
+  return config.get('cli.forgeReleaseDir');
+}
 
 async function main({
   opts: { dryRun, allowMultiChain = false },
@@ -37,12 +45,19 @@ async function start(chainName, dryRun = false, allowMultiChain) {
     return;
   }
 
-  const { forgeBinPath, forgeConfigPath } = config.get('cli');
+  const { starterBinPath, forgeBinPath, forgeConfigPath } = config.get('cli');
 
   // add `-sname` parameter to enable start multiple forge processes
-  const startCommandPrefix = `ERL_AFLAGS="-sname ${getProcessTag(
-    'forge'
-  )}" FORGE_CONFIG=${forgeConfigPath} ${forgeBinPath}`;
+  let startCommandPrefix = '';
+  if (allowMultiChain) {
+    startCommandPrefix = `ERL_AFLAGS="-sname ${getProcessTag(
+      'forge'
+    )}" FORGE_CONFIG=${forgeConfigPath} ${forgeBinPath}`;
+  } else {
+    startCommandPrefix = `ERL_AFLAGS="-sname ${getProcessTag(
+      'starter'
+    )}" FORGE_CONFIG=${forgeConfigPath} FORGE_RELEASE=${getForgeReleaseEnv()} ${starterBinPath}`;
+  }
   const startType = 'daemon';
 
   if (dryRun) {
@@ -54,7 +69,6 @@ async function start(chainName, dryRun = false, allowMultiChain) {
     printInfo(
       `Please create an issue on ${chalk.cyan(url)} with output after running above command`
     );
-    return;
   }
 
   const command = `${startCommandPrefix} ${startType}`;
@@ -67,9 +81,9 @@ async function start(chainName, dryRun = false, allowMultiChain) {
     await waitUntilStarted(chainName, 40000);
     await sleep(6000);
     const startAt = Date.now();
-    const errMessage = await checkError(chainName, startAt);
+    const errMessage = await checkStartError(chainName, startAt);
     if (errMessage) {
-      throw new Error(errMessage);
+      throw new Error(`${errMessage.status}: ${errMessage.message}`);
     }
 
     spinner.succeed(`Chain ${chalk.yellow(chainName)} successfully started`);
@@ -124,20 +138,6 @@ async function start(chainName, dryRun = false, allowMultiChain) {
 
     return false;
   }
-}
-
-function checkError(chainName, startAtMs) {
-  return new Promise(resolve => {
-    const errorFilePath = getLogfile(chainName, 'exit_status.json');
-    fs.stat(errorFilePath, (err, stats) => {
-      if (!err && stats.ctimeMs > startAtMs) {
-        const { status, message } = JSON.parse(fs.readFileSync(errorFilePath).toString());
-        return resolve(`${status}: ${message}`);
-      }
-
-      resolve(null);
-    });
-  });
 }
 
 function waitUntilStarted(chainName, timeout = 30000) {

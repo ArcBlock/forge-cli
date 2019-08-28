@@ -322,6 +322,26 @@ async function ensureForgeRelease({
       cliConfig.simulatorBinPath = simulatorBinPath;
     }
 
+    // forge_starter
+    const starterBinPath = path.join(
+      cliReleaseDir,
+      'forge_starter',
+      currentVersion,
+      './bin/forge_starter'
+    );
+    if (fs.existsSync(starterBinPath) && fs.statSync(starterBinPath).isFile()) {
+      debug(`${symbols.success} Using forge_starter executable: ${starterBinPath}`);
+      cliConfig.starterBinPath = starterBinPath;
+    } else {
+      if (exitOn404) {
+        printError(
+          `forge_starter binary not found, please run ${chalk.cyan('forge install')} first`
+        );
+        process.exit(1);
+      }
+      return false;
+    }
+
     // forge_web
     const webBinPath = path.join(cliReleaseDir, 'forge_web', currentVersion, './bin/forge_web');
     if (fs.existsSync(webBinPath) && fs.statSync(webBinPath).isFile()) {

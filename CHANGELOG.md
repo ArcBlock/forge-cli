@@ -1,3 +1,7 @@
+## 0.38.2 (August 29, 2019)
+
+- feature: use forge-start to start forge when cli with `single chain` mode #170
+
 ## 0.38.1 (August 28, 2019)
 
 - feature: optimize way to judge forge-* downloaded #185

@@ -7,7 +7,7 @@ const { symbols, hr, getSpinner } = require('core/ui');
 const { config } = require('core/env');
 const debug = require('core/debug')('start');
 const { checkStartError } = require('core/forge-fs');
-const { sleep, print, printError, printInfo } = require('core/util');
+const { sleep, print, printInfo } = require('core/util');
 const { isForgeStarted, getProcessTag, getAllRunningProcesses } = require('core/forge-process');
 
 const { printAllProcesses } = require('../ps/ps');
@@ -34,7 +34,7 @@ async function start(chainName, dryRun = false, allowMultiChain) {
   if (allowMultiChain === false) {
     const runningChains = await getAllRunningProcesses();
     if (runningChains.length > 0) {
-      printError('Forge CLI is configured to work with single chain only, abort!');
+      printInfo(`Chain ${chalk.cyan(chalk.cyan(chainName))} is already started!`);
       await printAllProcesses();
       process.exit(0);
     }

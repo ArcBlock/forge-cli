@@ -144,9 +144,11 @@ async function main({ args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
 
     spinner.stop();
     await stop(chainName, true);
+    debug('forge stopped');
     spinner.succeed('Forge stopped');
   } else {
     await waitUntilStopped(chainName);
+    spinner.stop();
     await stop(chainName, false);
     debug('forge stopped');
     spinner.succeed('Forge stopped');

@@ -1,3 +1,7 @@
+## 0.38.3 (August 30, 2019)
+
+- fix: `forge ls` bug when forge package is missing
+
 ## 0.38.2 (August 29, 2019)
 
 - feature: use forge-start to start forge when cli with `single chain` mode #170

@@ -2,28 +2,33 @@ const fs = require('fs');
 const path = require('path');
 const yaml = require('yaml');
 const chalk = require('chalk');
-const shell = require('shelljs');
 const { config, isEmptyDirectory } = require('core/env');
 const debug = require('core/debug')('list');
 const { isDirectory } = require('core/forge-fs');
-const { symbols } = require('core/ui');
+const { print, printError } = require('core/util');
 
 const { RELEASE_ASSETS } = require('../../../constant');
 
-function printList(title, list, current) {
-  shell.echo(`${title}:`);
-  list.forEach(x => shell.echo(x === current ? chalk.cyan(`  ✓ ${x}`) : `  - ${x}`));
-  shell.echo('');
+function printList(title, list = [], current) {
+  print(`${title}:`);
+  if (list.length === 0) {
+    print('  -');
+  } else {
+    list.forEach(x => print(x === current ? chalk.cyan(`  ✓ ${x}`) : `  - ${x}`));
+  }
+  print();
 }
 
 function listReleases() {
   const { release } = config.get('cli').requiredDirs;
   return RELEASE_ASSETS.reduce((acc, x) => {
-    acc[x] = fs
-      .readdirSync(path.join(release, x))
-      .filter(
-        y => isDirectory(path.join(release, x, y)) && !isEmptyDirectory(path.join(release, x, y))
-      );
+    const dir = path.join(release, x);
+    if (fs.existsSync(dir)) {
+      acc[x] = fs
+        .readdirSync(dir)
+        .filter(y => isDirectory(path.join(dir, y)) && !isEmptyDirectory(path.join(dir, y)));
+    }
+
     return acc;
   }, {});
 }
@@ -33,9 +38,7 @@ function main() {
   try {
     const { release } = config.get('cli').requiredDirs;
     if (fs.existsSync(path.join(release, 'forge')) === false) {
-      shell.echo(
-        `${symbols.error} forge release not found, please run ${chalk.cyan('forge install')} first`
-      );
+      printError(`Forge release not found, please run ${chalk.cyan('forge install')} first`);
       process.exit(1);
       return;
     }
@@ -50,19 +53,28 @@ function main() {
   }
 
   try {
-    const { forge, simulator, forge_web: forgeWeb, forge_workshop: forgeWorkshop } = listReleases();
-    debug({ forge, simulator, current, forgeWeb, forgeWorkshop });
+    const {
+      forge,
+      simulator,
+      forge_starter: starter,
+      forge_web: forgeWeb,
+      forge_workshop: forgeWorkshop,
+    } = listReleases();
+    debug({ forge, starter, simulator, current, forgeWeb, forgeWorkshop });
 
     printList('Forge Kernel', forge, current);
     printList('Forge Web', forgeWeb, current);
     printList('Simulator', simulator, current);
+    printList('Starter', starter, current);
     printList('Workshop', forgeWorkshop, current);
   } catch (err) {
-    shell.echo(
-      `${symbols.error} cannot list installed forge releases, ensure you have run ${chalk.cyan(
-        'forge install'
+    debug(err);
+    printError(
+      `Cannot list installed forge releases, ensure you have run ${chalk.cyan(
+        'forge download'
       )} first`
     );
+
     process.exit(1);
   }
 }

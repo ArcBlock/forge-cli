@@ -101,10 +101,6 @@ async function downloadAssets(assets, { platform, version, mirror, releaseDir })
       // eslint-disable-next-line no-await-in-loop
       await expandReleaseTarball(assetTarball, asset, version);
       fsExtra.removeSync(assetTarball);
-
-      if (asset === 'forge' || asset === 'simulator') {
-        updateReleaseYaml(asset, version);
-      }
     } catch (error) {
       printError(error);
       downloadFailedQueue.push(asset);
@@ -235,6 +231,9 @@ async function main({
       mirror,
       releaseDir,
     });
+
+    updateReleaseYaml('forge', version);
+    updateReleaseYaml('simulator', version);
 
     if (!isSuccess) {
       printError('Please check your assets version or mirror address is correct and try again.');

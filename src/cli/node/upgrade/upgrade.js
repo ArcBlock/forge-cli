@@ -136,20 +136,21 @@ async function main({ args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
   debug('waiting forge stop');
 
   if (await isForgeStartedByStarter(chainName)) {
-    // check
     const forgeStopInfo = await isStoppedToUpgrade(chainName);
     if (forgeStopInfo !== true) {
       printError(forgeStopInfo);
       process.exit(1);
     }
 
+    spinner.stop();
     await stop(chainName, true);
+    spinner.succeed('Forge stopped');
   } else {
     await waitUntilStopped(chainName);
+    await stop(chainName, false);
     debug('forge stopped');
+    spinner.succeed('Forge stopped');
   }
-
-  spinner.stop();
 
   shell.exec(`forge use ${answers.version} -c ${chainName} --color always`);
   // We need to stop forge-web here, because when forge crashed, forge-web is still alive

@@ -51,11 +51,15 @@ async function start(chainName, dryRun = false, allowMultiChain) {
   let startCommandPrefix = '';
   if (allowMultiChain) {
     startCommandPrefix = `ERL_AFLAGS="-sname ${getProcessTag(
-      'forge'
+      'forge',
+      chainName,
+      allowMultiChain
     )}" FORGE_CONFIG=${forgeConfigPath} ${forgeBinPath}`;
   } else {
     startCommandPrefix = `ERL_AFLAGS="-sname ${getProcessTag(
-      'starter'
+      'starter',
+      chainName,
+      allowMultiChain
     )}" FORGE_CONFIG=${forgeConfigPath} FORGE_RELEASE=${getForgeReleaseEnv()} ${starterBinPath}`;
   }
   const startType = 'daemon';

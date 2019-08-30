@@ -15,7 +15,15 @@ const { symbols } = require('./ui');
 
 const sortHandler = (x, y) => chainSortHandler(x.name, y.name);
 
-const getProcessTag = (name, chainName = process.env.FORGE_CURRENT_CHAIN) => {
+const getProcessTag = (
+  name,
+  chainName = process.env.FORGE_CURRENT_CHAIN,
+  allowMultiChain = true
+) => {
+  if (!allowMultiChain && (strEqual(name, 'forge') || !name)) {
+    return 'forge';
+  }
+
   if (!name) {
     return `forge-${md5(chainName)}`;
   }

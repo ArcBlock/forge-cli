@@ -315,7 +315,10 @@ function makeNativeCommandRunner(executable, name, { env } = {}) {
       const sockGrpc =
         process.env.FORGE_SOCK_GRPC || get(config, 'forge.sockGrpc') || 'tcp://127.0.0.1:28210';
 
-      const erlAflagsParam = `ERL_AFLAGS="-sname ${getProcessTag(name)}"`;
+      const erlAflagsParam = `ERL_AFLAGS="-sname ${getProcessTag(
+        name,
+        process.env.FORGE_CURRENT_CHAIN
+      )}"`;
       let command = `${erlAflagsParam} FORGE_CONFIG=${forgeConfigPath} ${binPath} ${subCommand}`;
 
       if (['webBinPath', 'simulatorBinPath'].includes(executable)) {
@@ -476,7 +479,6 @@ module.exports = {
   ensureRequiredDirs,
   ensureRpcClient,
   makeNativeCommandRunner,
-  runNativeForgeCommand: makeNativeCommandRunner('forgeBinPath'),
   runNativeWebCommand: makeNativeCommandRunner('webBinPath', 'web'),
   runNativeWorkshopCommand: makeNativeCommandRunner('workshopBinPath', 'workshop'),
   runNativeSimulatorCommand: makeNativeCommandRunner('simulatorBinPath', 'simulator'),

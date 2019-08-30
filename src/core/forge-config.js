@@ -271,6 +271,7 @@ async function copyReleaseConfig(currentVersion, overwrite = true) {
 async function ensureForgeRelease({
   exitOn404 = true,
   chainName = process.env.FORGE_CURRENT_CHAIN,
+  allowMultiChain,
 }) {
   const cliConfig = {};
   const cliReleaseDir = requiredDirs.release;
@@ -322,24 +323,26 @@ async function ensureForgeRelease({
       cliConfig.simulatorBinPath = simulatorBinPath;
     }
 
-    // forge_starter
-    const starterBinPath = path.join(
-      cliReleaseDir,
-      'forge_starter',
-      currentVersion,
-      './bin/forge_starter'
-    );
-    if (fs.existsSync(starterBinPath) && fs.statSync(starterBinPath).isFile()) {
-      debug(`${symbols.success} Using forge_starter executable: ${starterBinPath}`);
-      cliConfig.starterBinPath = starterBinPath;
-    } else {
-      if (exitOn404) {
-        printError(
-          `forge_starter binary not found, please run ${chalk.cyan('forge install')} first`
-        );
-        process.exit(1);
+    // only single chain mode need forge_starter
+    if (allowMultiChain === false) {
+      const starterBinPath = path.join(
+        cliReleaseDir,
+        'forge_starter',
+        currentVersion,
+        './bin/forge_starter'
+      );
+      if (fs.existsSync(starterBinPath) && fs.statSync(starterBinPath).isFile()) {
+        debug(`${symbols.success} Using forge_starter executable: ${starterBinPath}`);
+        cliConfig.starterBinPath = starterBinPath;
+      } else {
+        if (exitOn404) {
+          printError(
+            `forge_starter binary not found, please run ${chalk.cyan('forge install')} first`
+          );
+          process.exit(1);
+        }
+        return false;
       }
-      return false;
     }
 
     // forge_web

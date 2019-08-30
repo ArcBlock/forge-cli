@@ -320,8 +320,13 @@ function checkStartError(chainName, startAtMs = Date.now()) {
     const errorFilePath = getLogfile(chainName, 'exit_status.json');
     fs.stat(errorFilePath, (err, stats) => {
       if (!err && stats.ctimeMs > startAtMs) {
-        const { status, message } = JSON.parse(fs.readFileSync(errorFilePath).toString());
-        return resolve({ status, message });
+        try {
+          const { status, message } = JSON.parse(fs.readFileSync(errorFilePath).toString());
+          return resolve({ status, message });
+        } catch (error) {
+          printError(error);
+          return resolve({ status: 'read_log_error', message: error.message });
+        }
       }
 
       return resolve(null);

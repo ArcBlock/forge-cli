@@ -6,12 +6,35 @@ const chalk = require('chalk');
 const { config, createRpcClient } = require('core/env');
 const { hr, getSpinner } = require('core/ui');
 const { print, printError, printInfo, printSuccess } = require('core/util');
-const { sleep, parseTimeStrToMS } = require('core/util');
+const { sleep, parseTimeStrToMS, strEqual } = require('core/util');
+const { checkStartError } = require('core/forge-fs');
+const { isForgeStartedByStarter } = require('core/forge-process');
 const debug = require('core/debug')('upgrade');
 
-const { waitUntilStopped } = require('../stop/stop');
+const { stop, waitUntilStopped } = require('../stop/stop');
 const { ensureModerator } = require('../../protocol/deploy/deploy');
 const { listReleases } = require('../../release/list/list');
+
+function isStoppedToUpgrade(chainName) {
+  return new Promise(resolve => {
+    const startTime = Date.now();
+    const timer = setInterval(async () => {
+      const err = await checkStartError(chainName, startTime);
+
+      if (err) {
+        clearInterval(timer);
+
+        if (strEqual(err.status, 'version_mismatch') || strEqual(err.status, 'stop_for_upgrade')) {
+          return resolve(true);
+        }
+
+        return resolve(`${err.status}: ${err.message}`);
+      }
+
+      return null;
+    }, 800);
+  });
+}
 
 async function main({ args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
   const client = createRpcClient();
@@ -111,9 +134,23 @@ async function main({ args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
   const spinner = getSpinner('Stopping forge...');
   spinner.start();
   debug('waiting forge stop');
-  await waitUntilStopped();
-  debug('forge stopped');
-  spinner.stop();
+
+  if (await isForgeStartedByStarter(chainName)) {
+    const forgeStopInfo = await isStoppedToUpgrade(chainName);
+    if (forgeStopInfo !== true) {
+      printError(forgeStopInfo);
+      process.exit(1);
+    }
+
+    spinner.stop();
+    await stop(chainName, true);
+    spinner.succeed('Forge stopped');
+  } else {
+    await waitUntilStopped(chainName);
+    await stop(chainName, false);
+    debug('forge stopped');
+    spinner.succeed('Forge stopped');
+  }
 
   shell.exec(`forge use ${answers.version} -c ${chainName} --color always`);
   // We need to stop forge-web here, because when forge crashed, forge-web is still alive

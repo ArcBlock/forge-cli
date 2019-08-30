@@ -56,7 +56,11 @@ async function setupEnv(args, requirements, opts = {}) {
   await checkUpdate(opts);
 
   if (requirements.forgeRelease || requirements.runningNode) {
-    const cliConfig = await ensureForgeRelease({ exitOn404: true, chainName: opts.chainName });
+    const cliConfig = await ensureForgeRelease({
+      exitOn404: true,
+      chainName: opts.chainName,
+      allowMultiChain: opts.allowMultiChain,
+    });
     Object.assign(config.cli, cliConfig);
   }
 
@@ -315,7 +319,10 @@ function makeNativeCommandRunner(executable, name, { env } = {}) {
       const sockGrpc =
         process.env.FORGE_SOCK_GRPC || get(config, 'forge.sockGrpc') || 'tcp://127.0.0.1:28210';
 
-      const erlAflagsParam = `ERL_AFLAGS="-sname ${getProcessTag(name)}"`;
+      const erlAflagsParam = `ERL_AFLAGS="-sname ${getProcessTag(
+        name,
+        process.env.FORGE_CURRENT_CHAIN
+      )}"`;
       let command = `${erlAflagsParam} FORGE_CONFIG=${forgeConfigPath} ${binPath} ${subCommand}`;
 
       if (['webBinPath', 'simulatorBinPath'].includes(executable)) {
@@ -476,7 +483,6 @@ module.exports = {
   ensureRequiredDirs,
   ensureRpcClient,
   makeNativeCommandRunner,
-  runNativeForgeCommand: makeNativeCommandRunner('forgeBinPath'),
   runNativeWebCommand: makeNativeCommandRunner('webBinPath', 'web'),
   runNativeWorkshopCommand: makeNativeCommandRunner('workshopBinPath', 'workshop'),
   runNativeSimulatorCommand: makeNativeCommandRunner('simulatorBinPath', 'simulator'),

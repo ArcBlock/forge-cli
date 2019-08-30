@@ -308,8 +308,35 @@ function updateChainConfig(chainName, config = {}) {
   }
 }
 
+/**
+ * Check if exit_status.json exists, if it exists, and is less than the startup
+ * time (startAtMs), then the content in the file is considered to be the cause
+ * of this startup error.
+ * @param {*} chainName
+ * @param {*} startAtMs
+ */
+function checkStartError(chainName, startAtMs = Date.now()) {
+  return new Promise(resolve => {
+    const errorFilePath = getLogfile(chainName, 'exit_status.json');
+    fs.stat(errorFilePath, (err, stats) => {
+      if (!err && stats.ctimeMs > startAtMs) {
+        try {
+          const { status, message } = JSON.parse(fs.readFileSync(errorFilePath).toString());
+          return resolve({ status, message });
+        } catch (error) {
+          printError(error);
+          return resolve({ status: 'read_log_error', message: error.message });
+        }
+      }
+
+      return resolve(null);
+    });
+  });
+}
+
 module.exports = {
   clearDataDirectories,
+  checkStartError,
   createNewChain,
   ensureChainDirectory,
   getAllAppDirectories,

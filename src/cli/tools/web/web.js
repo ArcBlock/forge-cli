@@ -88,7 +88,7 @@ async function main({ args: [action = 'none'], opts }) {
       spinner.start();
       const succeed = await startForgeWeb(20000);
       if (!succeed) {
-        spinner.fail(`forge web start, failed, please retry with ${chalk.cyan('forge web start')}`);
+        spinner.fail(`forge web start failed, please retry with ${chalk.cyan('forge web start')}`);
         break;
       }
 

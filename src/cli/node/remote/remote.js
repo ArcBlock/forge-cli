@@ -21,7 +21,7 @@ const getAppReleaseDirectory = {
 
 async function main({
   args: [appName = 'forge'],
-  opts: { chainName = process.env.FORGE_CURRENT_CHAIN },
+  opts: { chainName = process.env.FORGE_CURRENT_CHAIN, allowMultiChain },
 }) {
   const currentVersion = config.get('cli.currentVersion');
   const handler = getAppReleaseDirectory[appName];
@@ -41,7 +41,7 @@ async function main({
   --boot start_clean
   --boot-var RELEASE_LIB .
   --sname forge-${Date.now()}
-  --remsh ${getProcessTag(appName, chainName)}
+  --remsh ${getProcessTag(appName, chainName, allowMultiChain)}
   --cookie ${shelljs.cat(cookieFilePath)}`
     .split(/\s+/)
     .filter(Boolean);

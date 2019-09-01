@@ -4,9 +4,16 @@ const shell = require('shelljs');
 const chalk = require('chalk');
 
 const { config, createRpcClient } = require('core/env');
-const { hr, getSpinner } = require('core/ui');
-const { print, printError, printInfo, printSuccess } = require('core/util');
-const { sleep, parseTimeStrToMS, strEqual } = require('core/util');
+const { hr, getSpinner, symbols } = require('core/ui');
+const {
+  sleep,
+  parseTimeStrToMS,
+  print,
+  printError,
+  printInfo,
+  printSuccess,
+  strEqual,
+} = require('core/util');
 const { checkStartError } = require('core/forge-fs');
 const { isForgeStartedByStarter } = require('core/forge-process');
 const debug = require('core/debug')('upgrade');
@@ -44,10 +51,9 @@ async function main({ args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
     .sort((v1, v2) => semver.gt(v2, v1));
 
   if (!releases.length) {
-    printError('Abort because no available newer version to upgrade!');
-    printInfo(`run ${chalk.cyan('forge download')} to install a new version`);
-    process.exit(1);
-    return;
+    print(`${symbols.success} Abort because no available newer version to upgrade!`);
+    printInfo(`Run ${chalk.cyan('forge download')} to install a new version.`);
+    process.exit(0);
   }
 
   const moderator = await ensureModerator(client);
@@ -120,7 +126,7 @@ async function main({ args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
     wallet: moderator,
   });
 
-  printSuccess('upgrade node transaction sent');
+  printSuccess('Upgrade node transaction sent');
   print(hr);
 
   const txSpinner = getSpinner('Waiting for transaction commit...');
@@ -144,9 +150,11 @@ async function main({ args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
 
     spinner.stop();
     await stop(chainName, true);
+    debug('forge stopped');
     spinner.succeed('Forge stopped');
   } else {
     await waitUntilStopped(chainName);
+    spinner.stop();
     await stop(chainName, false);
     debug('forge stopped');
     spinner.succeed('Forge stopped');

@@ -1,3 +1,9 @@
+## 0.38.4 (August 30, 2019)
+
+- chore: update start output
+- fix: download should not change current local forge version #191
+- fix: upgrade output in multi chain mode
+
 ## 0.38.3 (August 30, 2019)
 
 - fix: `forge ls` bug when forge package is missing

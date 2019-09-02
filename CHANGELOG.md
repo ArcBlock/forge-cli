@@ -1,3 +1,8 @@
+## 0.38.6 (September 02, 2019)
+
+- chore: upgrade eslint to v6.3.0
+- chore: modify newline in bump-version
+
 ## 0.38.5 (September 02, 2019)
 
 - fix: failed to read exit_status if start failed

@@ -36,7 +36,8 @@ if [ -f $VERSION ]; then
     fi
     echo -e "${NOTICE_FLAG} Will set new version to be ${WHITE}$INPUT_STRING"
     echo $INPUT_STRING > $VERSION
-    echo "## $INPUT_STRING ($NOW)\n" > tmpfile
+    echo "## $INPUT_STRING ($NOW)" > tmpfile
+    echo "" >> tmpfile
     git log --pretty=format:"- %s" "v$BASE_STRING"...HEAD >> tmpfile
     echo "" >> tmpfile
     echo "" >> tmpfile

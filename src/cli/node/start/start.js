@@ -81,10 +81,10 @@ async function start(chainName, dryRun = false, allowMultiChain) {
   const spinner = getSpinner(`Waiting for chain ${chalk.yellow(chainName)} to start...`);
   spinner.start();
   try {
+    const startAt = Date.now();
     shell.exec(command);
     await waitUntilStarted(chainName, 40000);
     await sleep(6000);
-    const startAt = Date.now();
     const errMessage = await checkStartError(chainName, startAt);
     if (errMessage) {
       throw new Error(`${errMessage.status}: ${errMessage.message}`);

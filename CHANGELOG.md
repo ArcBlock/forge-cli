@@ -1,3 +1,7 @@
+## 0.38.5 (September 02, 2019)
+
+- fix: failed to read exit_status if start failed
+
 ## 0.38.4 (August 30, 2019)
 
 - chore: update start output

@@ -118,7 +118,7 @@
   },
   "devDependencies": {
     "bdd-stdin": "^0.2.0",
-    "eslint": "5.3.0",
+    "eslint": "^6.3.0",
     "eslint-config-airbnb-base": "13.1.0",
     "eslint-config-prettier": "latest",
     "eslint-plugin-import": "^2.14.0",

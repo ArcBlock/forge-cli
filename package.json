@@ -70,6 +70,7 @@
     "@arcblock/graphql-client": "^0.37.2",
     "@arcblock/grpc-client": "^0.37.0",
     "@arcblock/mcrypto": "^0.37.0",
+    "@hutson/set-npm-auth-token-for-ci": "^4.0.3",
     "@iarna/toml": "^2.2.3",
     "app-module-path": "^2.2.0",
     "axios": "^0.19.0",
@@ -127,8 +128,7 @@
     "jest": "^24.7.1",
     "lerna": "^3.3.2",
     "lint-staged": "^7.2.2",
-    "prettier": "^1.6.1",
-    "set-npm-auth-token-for-ci": "^2.0.13"
+    "prettier": "^1.6.1"
   },
   "husky": {
     "hooks": {

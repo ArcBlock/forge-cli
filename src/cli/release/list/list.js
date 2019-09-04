@@ -2,12 +2,10 @@ const fs = require('fs');
 const path = require('path');
 const yaml = require('yaml');
 const chalk = require('chalk');
-const { config, isEmptyDirectory } = require('core/env');
+const { config } = require('core/env');
 const debug = require('core/debug')('list');
-const { isDirectory } = require('core/forge-fs');
 const { print, printError } = require('core/util');
-
-const { RELEASE_ASSETS } = require('../../../constant');
+const { listReleases } = require('core/forge-fs');
 
 function printList(title, list = [], current) {
   print(`${title}:`);
@@ -17,20 +15,6 @@ function printList(title, list = [], current) {
     list.forEach(x => print(x === current ? chalk.cyan(`  ✓ ${x}`) : `  - ${x}`));
   }
   print();
-}
-
-function listReleases() {
-  const { release } = config.get('cli').requiredDirs;
-  return RELEASE_ASSETS.reduce((acc, x) => {
-    const dir = path.join(release, x);
-    if (fs.existsSync(dir)) {
-      acc[x] = fs
-        .readdirSync(dir)
-        .filter(y => isDirectory(path.join(dir, y)) && !isEmptyDirectory(path.join(dir, y)));
-    }
-
-    return acc;
-  }, {});
 }
 
 function main() {

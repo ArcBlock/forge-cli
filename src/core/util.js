@@ -1,12 +1,14 @@
+const axios = require('axios');
 const crypto = require('crypto');
 const figlet = require('figlet');
 const shell = require('shelljs');
 const chalk = require('chalk');
+const url = require('url');
 const getPort = require('get-port');
 const prettyMilliseconds = require('pretty-ms');
 
 const { symbols, hr } = require('./ui');
-const { DEFAULT_CHAIN_NAME } = require('../constant');
+const { DEFAULT_CHAIN_NAME, MIRRORS } = require('../constant');
 const debug = require('./debug')('util');
 
 /**
@@ -168,8 +170,19 @@ const chainSortHandler = (xName, yName) => {
 
 const strEqual = (strA = '', strB = '') => strA.toUpperCase() === strB.toUpperCase();
 
+const fetchAssetRace = async urlPath => {
+  const tasks = MIRRORS.map(mirror => axios.get(url.resolve(mirror, urlPath)));
+  const resp = await Promise.race(tasks);
+
+  debug('fetchAssetRace.config', resp.config);
+  return resp.data || [];
+};
+
+const fetchAsset = async assetPath => fetchAssetRace(assetPath);
+
 module.exports = {
   chainSortHandler,
+  fetchAsset,
   getPort,
   getFreePort,
   makeRange,

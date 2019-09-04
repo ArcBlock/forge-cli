@@ -79,10 +79,6 @@ async function setupEnv(args, requirements, opts = {}) {
   }
 }
 
-function isEmptyDirectory(x) {
-  return isDirectory(x) && fs.readdirSync(x).length === 0;
-}
-
 async function ensureRunningNode() {
   const chainName = process.env.FORGE_CURRENT_CHAIN;
   if (!(await isForgeStarted())) {
@@ -489,7 +485,6 @@ module.exports = {
   getPlatform,
   createRpcClient,
   isDirectory,
-  isEmptyDirectory,
   printLogo,
   ensureConfigComment,
 };

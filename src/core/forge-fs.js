@@ -15,7 +15,7 @@ const {
   chainSortHandler,
 } = require('core/util');
 
-const { CONFIG_FILE_NAME, CHAIN_DATA_PATH_NAME } = require('../constant');
+const { CONFIG_FILE_NAME, CHAIN_DATA_PATH_NAME, RELEASE_ASSETS } = require('../constant');
 
 const CLI_BASE_DIRECTORY = path.join(os.homedir(), '.forge_cli');
 
@@ -40,8 +40,37 @@ function isDirectory(x) {
   return fs.existsSync(x) && fs.statSync(x).isDirectory();
 }
 
+function isEmptyDirectory(x) {
+  return isDirectory(x) && fs.readdirSync(x).length === 0;
+}
+
 function isFile(x) {
   return fs.existsSync(x) && fs.statSync(x).isFile();
+}
+
+function listReleases() {
+  const { release } = requiredDirs;
+  return RELEASE_ASSETS.reduce((acc, x) => {
+    const dir = path.join(release, x);
+    if (fs.existsSync(dir)) {
+      acc[x] = fs
+        .readdirSync(dir)
+        .filter(y => isDirectory(path.join(dir, y)) && !isEmptyDirectory(path.join(dir, y)));
+    }
+
+    return acc;
+  }, {});
+}
+
+function getLocalVersions() {
+  const releases = listReleases();
+
+  const versions = [];
+  Object.keys(releases).forEach(item => {
+    versions.push(...releases[item]);
+  });
+
+  return [...new Set(versions)];
 }
 
 function getAllAppDirectories() {
@@ -363,10 +392,12 @@ module.exports = {
   getForgeReleaseDirectory,
   getStorageEnginePath,
   getChainKeyFilePath,
+  getLocalVersions,
   isForgeBinExists,
   isReleaseBinExists,
   isDirectory,
   isFile,
+  listReleases,
   requiredDirs,
   updateReleaseYaml,
   updateChainConfig,

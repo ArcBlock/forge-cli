@@ -14,13 +14,12 @@ const {
   printSuccess,
   strEqual,
 } = require('core/util');
-const { checkStartError } = require('core/forge-fs');
+const { checkStartError, listReleases } = require('core/forge-fs');
 const { isForgeStartedByStarter } = require('core/forge-process');
 const debug = require('core/debug')('upgrade');
 
 const { stop, waitUntilStopped } = require('../stop/stop');
 const { ensureModerator } = require('../../protocol/deploy/deploy');
-const { listReleases } = require('../../release/list/list');
 
 function isStoppedToUpgrade(chainName) {
   return new Promise(resolve => {

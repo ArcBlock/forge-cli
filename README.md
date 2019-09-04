@@ -96,6 +96,7 @@ Commands:
   join <endpoint>                                        Join a network by providing a valid forge web graphql endpoint
   logs [type]                                            Show logs for various forge components
   ls                                                     List forge releases installed locally
+  ls:remote                                              List remote forge releases available for install
   project:create|create-project [options] [starterName]  Create a project from forge starter projects
   protocol:activate [name|address]                       Activate a transaction protocol by name or address
   protocol:compile [sourceDir]                           Compile a forge transaction protocol

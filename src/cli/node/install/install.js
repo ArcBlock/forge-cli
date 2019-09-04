@@ -16,7 +16,6 @@ const { print, printError, printInfo, printSuccess } = require('core/util');
 const { debug, getPlatform } = require('core/env');
 const { printLogo } = require('core/util');
 const {
-  requiredDirs,
   getGlobalForgeVersion,
   getAllChainNames,
   updateReleaseYaml,
@@ -24,7 +23,7 @@ const {
 } = require('core/forge-fs');
 const { isForgeStarted } = require('core/forge-process');
 
-const { DEFAULT_MIRROR, RELEASE_ASSETS } = require('../../../constant');
+const { DEFAULT_MIRROR, RELEASE_ASSETS, REQUIRED_DIRS } = require('../../../constant');
 
 function fetchReleaseVersion({ mirror, releaseDir }) {
   if (releaseDir && fs.existsSync(releaseDir)) {
@@ -173,7 +172,7 @@ function download(assetInfo) {
 }
 
 async function expandReleaseTarball(filePath, subFolder, version) {
-  const targetDir = path.join(requiredDirs.release, subFolder, version);
+  const targetDir = path.join(REQUIRED_DIRS.release, subFolder, version);
   fs.mkdirSync(targetDir, { recursive: true });
   await tar.x({ file: filePath, C: targetDir, strip: 1 });
   debug(`Expand release asset ${filePath} to ${targetDir}`);

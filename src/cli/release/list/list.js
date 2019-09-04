@@ -2,10 +2,11 @@ const fs = require('fs');
 const path = require('path');
 const yaml = require('yaml');
 const chalk = require('chalk');
-const { config } = require('core/env');
 const debug = require('core/debug')('list');
 const { print, printError } = require('core/util');
 const { listReleases } = require('core/forge-fs');
+
+const { REQUIRED_DIRS } = require('../../../constant');
 
 function printList(title, list = [], current) {
   print(`${title}:`);
@@ -20,7 +21,7 @@ function printList(title, list = [], current) {
 function main() {
   let current = '';
   try {
-    const { release } = config.get('cli').requiredDirs;
+    const { release } = REQUIRED_DIRS;
     if (fs.existsSync(path.join(release, 'forge')) === false) {
       printError(`Forge release not found, please run ${chalk.cyan('forge install')} first`);
       process.exit(1);

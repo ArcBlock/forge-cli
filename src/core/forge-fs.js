@@ -15,16 +15,13 @@ const {
   chainSortHandler,
 } = require('core/util');
 
-const { CONFIG_FILE_NAME, CHAIN_DATA_PATH_NAME, RELEASE_ASSETS } = require('../constant');
-
-const CLI_BASE_DIRECTORY = path.join(os.homedir(), '.forge_cli');
-
-const requiredDirs = {
-  tmp: path.join(CLI_BASE_DIRECTORY, 'tmp'),
-  bin: path.join(CLI_BASE_DIRECTORY, 'bin'),
-  cache: path.join(CLI_BASE_DIRECTORY, 'cache'),
-  release: path.join(CLI_BASE_DIRECTORY, 'release'),
-};
+const {
+  CHAIN_DATA_PATH_NAME,
+  CONFIG_FILE_NAME,
+  CLI_BASE_DIRECTORY,
+  RELEASE_ASSETS,
+  REQUIRED_DIRS,
+} = require('../constant');
 
 function clearDataDirectories(chainName = process.env.FORGE_CURRENT_CHAIN) {
   printWarning('Cleaning up chain data!');
@@ -49,7 +46,7 @@ function isFile(x) {
 }
 
 function listReleases() {
-  const { release } = requiredDirs;
+  const { release } = REQUIRED_DIRS;
   return RELEASE_ASSETS.reduce((acc, x) => {
     const dir = path.join(release, x);
     if (fs.existsSync(dir)) {
@@ -101,12 +98,8 @@ function getCurrentReleaseFilePath() {
   return path.join(getCurrentWorkingDirectory(), 'forge_release.toml');
 }
 
-function getCliDirectory() {
-  return path.join(os.homedir(), '.forge_cli');
-}
-
 function getReleaseDirectory(name, version) {
-  const releaseRoot = path.join(getCliDirectory(), 'release', name);
+  const releaseRoot = path.join(CLI_BASE_DIRECTORY, 'release', name);
   if (version) {
     return path.join(releaseRoot, version);
   }
@@ -370,7 +363,6 @@ module.exports = {
   ensureChainDirectory,
   getAllAppDirectories,
   getAllChainNames,
-  getCliDirectory,
   getConsensusEnginBinPath,
   getCurrentReleaseFilePath,
   getDataDirectory,
@@ -398,7 +390,6 @@ module.exports = {
   isDirectory,
   isFile,
   listReleases,
-  requiredDirs,
   updateReleaseYaml,
   updateChainConfig,
 };

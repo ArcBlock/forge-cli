@@ -5,10 +5,10 @@ const chalk = require('chalk');
 const yaml = require('yaml');
 const { symbols, getSpinner } = require('core/ui');
 const debug = require('core/debug')('compile');
-const { isFile, isDirectory, requiredDirs } = require('core/forge-fs');
+const { isFile, isDirectory } = require('core/forge-fs');
 const { download } = require('../../node/install/install');
 
-const { DEFAULT_MIRROR } = require('../../../constant');
+const { DEFAULT_MIRROR, REQUIRED_DIRS } = require('../../../constant');
 
 // eslint-disable-next-line consistent-return
 function fetchCompilerVersion(mirror = DEFAULT_MIRROR) {
@@ -69,7 +69,7 @@ async function ensureForgeCompiler() {
     return stdout.trim();
   }
 
-  const targetPath = path.join(requiredDirs.bin, 'forge-compiler');
+  const targetPath = path.join(REQUIRED_DIRS.bin, 'forge-compiler');
   if (isFile(targetPath)) {
     debug('using forge-compiler from', targetPath);
     return targetPath;

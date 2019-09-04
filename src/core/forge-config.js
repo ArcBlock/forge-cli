@@ -10,6 +10,7 @@ const {
   DEFAULT_FORGE_WEB_PORT,
   DEFAULT_WORKSHOP_PORT,
   DEFAULT_FORGE_GRPC_PORT,
+  REQUIRED_DIRS,
 } = require('../constant');
 const {
   getAllAppDirectories,
@@ -23,7 +24,6 @@ const {
   getChainDirectory,
   getChainReleaseFilePath,
   updateChainConfig,
-  requiredDirs,
 } = require('./forge-fs');
 const {
   makeRange,
@@ -274,7 +274,7 @@ async function ensureForgeRelease({
   allowMultiChain,
 }) {
   const cliConfig = {};
-  const cliReleaseDir = requiredDirs.release;
+  const cliReleaseDir = REQUIRED_DIRS.release;
   const releaseYamlPath = path.join(cliReleaseDir, './forge/release.yml');
   if (fs.existsSync(cliReleaseDir)) {
     try {

@@ -26,7 +26,7 @@ const { version } = require('../package.json');
 const onError = error => {
   debug(error);
 
-  printError(`Exception: ${error.message}`);
+  printError(error);
 
   let command = process.argv.length > 2 ? process.argv.slice(2).join(' ') : 'command';
   if (command.indexOf('-v') === -1 && command.indexOf('--verbose')) {

@@ -6,6 +6,8 @@ const { config } = require('core/env');
 const debug = require('core/debug')('logs');
 const { symbols } = require('core/ui');
 
+const { REQUIRED_DIRS } = require('../../../constant');
+
 function resolveLogPath(folder, file) {
   return folder ? path.resolve(`${folder.replace('~', os.homedir())}/${file}`) : '';
 }
@@ -26,6 +28,7 @@ function findLogFiles() {
       config.get('tendermint.path'),
       config.get('tendermint.logfile', 'logs/tendermint.log')
     ),
+    cli: path.join(REQUIRED_DIRS.logs, 'error.log'),
   };
 }
 

@@ -1,3 +1,6 @@
+const path = require('path');
+const fs = require('fs');
+const os = require('os');
 const axios = require('axios');
 const crypto = require('crypto');
 const figlet = require('figlet');
@@ -6,9 +9,10 @@ const chalk = require('chalk');
 const url = require('url');
 const getPort = require('get-port');
 const prettyMilliseconds = require('pretty-ms');
+const moment = require('moment');
 
 const { symbols, hr } = require('./ui');
-const { DEFAULT_CHAIN_NAME, MIRRORS } = require('../constant');
+const { DEFAULT_CHAIN_NAME, MIRRORS, REQUIRED_DIRS } = require('../constant');
 const debug = require('./debug')('util');
 
 /**
@@ -44,6 +48,21 @@ function sleep(timeout = 1000) {
   return new Promise(resolve => setTimeout(resolve, timeout));
 }
 
+/**
+ * Write log to file
+ * @param {array} args
+ */
+const logError = args => {
+  const content = args.map(item => (item instanceof Error ? item.stack : item)).join(os.EOL);
+  fs.writeFileSync(
+    path.join(REQUIRED_DIRS.logs, 'error.log'),
+    `${moment().format('YYYY-MM-DD HH:mm:ss.ms')} ${content}${os.EOL}`,
+    {
+      flag: 'a+',
+    }
+  );
+};
+
 function print(...args) {
   shell.echo.apply(null, args);
 }
@@ -62,6 +81,7 @@ function printWarning(...args) {
 
 function printError(...args) {
   debug(...args);
+  logError(args);
   if (args.length && args[0] instanceof Error) {
     args[0] = args[0].message;
   }

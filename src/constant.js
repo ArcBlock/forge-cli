@@ -1,8 +1,13 @@
+const path = require('path');
+const os = require('os');
+
 const shiftWidth = ' '.repeat(4);
+const CLI_BASE_DIRECTORY = path.join(os.homedir(), '.forge_cli');
 
 module.exports = {
   CONFIG_FILE_NAME: '.forge_chains',
   CHAIN_DATA_PATH_NAME: 'forge_release',
+  CLI_BASE_DIRECTORY,
   DEFAULT_CHAIN_NAME: 'default',
   DEFAULT_FORGE_WEB_PORT: 8210,
   DEFAULT_WORKSHOP_PORT: 8807,
@@ -20,5 +25,12 @@ module.exports = {
   ASSETS_PATH: {
     LATEST_VERSION: 'forge/latest.json',
     VERSIONS: 'forge/versions.json',
+  },
+  REQUIRED_DIRS: {
+    tmp: path.join(CLI_BASE_DIRECTORY, 'tmp'),
+    bin: path.join(CLI_BASE_DIRECTORY, 'bin'),
+    cache: path.join(CLI_BASE_DIRECTORY, 'cache'),
+    logs: path.join(CLI_BASE_DIRECTORY, 'logs'),
+    release: path.join(CLI_BASE_DIRECTORY, 'release'),
   },
 };

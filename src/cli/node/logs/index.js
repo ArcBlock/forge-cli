@@ -21,6 +21,7 @@ Examples:
   - ${chalk.cyan('forge logs transaction')}   display forge transaction log
   - ${chalk.cyan('forge logs error')}         display forge error log
   - ${chalk.cyan('forge logs tendermint')}    display tendermint logs
+  - ${chalk.cyan('forge logs cli')}    display cli error logs
         `);
     },
   },

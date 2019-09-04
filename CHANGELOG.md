@@ -1,3 +1,7 @@
+## 0.38.7 (September 04, 2019)
+
+- feature: add cli logs #135
+
 ## 0.38.6 (September 04, 2019)
 
 - feature: add forge ls:remote command #120

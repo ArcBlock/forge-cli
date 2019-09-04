@@ -7,7 +7,7 @@ const { symbols, hr, getSpinner } = require('core/ui');
 const { config } = require('core/env');
 const debug = require('core/debug')('start');
 const { checkStartError } = require('core/forge-fs');
-const { sleep, print, printInfo } = require('core/util');
+const { sleep, print, printError, printInfo } = require('core/util');
 const { isForgeStarted, getProcessTag, getAllRunningProcesses } = require('core/forge-process');
 
 const { printAllProcesses } = require('../ps/ps');
@@ -119,26 +119,26 @@ async function start(chainName, dryRun = false, allowMultiChain) {
   } catch (err) {
     debug.error(err);
     shell.echo();
-    shell.echo(`${symbols.error} Forge start failed: ${err.message}`);
+    printError(`Forge start failed: ${err.message}`);
 
     spinner.fail('Forge cannot be successfully started, now exiting...');
 
     await stop(chainName, false);
 
-    shell.echo();
-    shell.echo(`${symbols.info} Possible solutions:`);
-    shell.echo(hr);
-    shell.echo('1. Cleanup already running forge');
-    shell.echo('Ensure no running forge process that cannot be detected by forge-cli');
-    shell.echo(
+    print();
+    printError(`${symbols.info} Possible solutions:`);
+    print(hr);
+    print('1. Cleanup already running forge');
+    print('Ensure no running forge process that cannot be detected by forge-cli');
+    print(
       `Run: ${chalk.cyan(
         `forge stop ${chainName}`
       )}, to stop forge related processes, then try ${chalk.cyan(`forge start ${chainName}`)} again`
     );
-    shell.echo('');
-    shell.echo('2. Report bug to our engineer');
-    shell.echo('It is very likely that forge cannot be started on your environment');
-    shell.echo(`Please run: ${chalk.cyan(`forge start ${chainName} --dry-run`)}`);
+    print();
+    print('2. Report bug to our engineer');
+    print('It is very likely that forge cannot be started on your environment');
+    print(`Please run: ${chalk.cyan(`forge start ${chainName} --dry-run`)}`);
 
     return false;
   }

@@ -18,9 +18,10 @@ const { ensureConfigComment } = require('core/env');
 const { symbols, hr, pretty } = require('core/ui');
 const { print, printInfo, printError, printSuccess } = require('core/util');
 const debug = require('core/debug')('config:lib');
-const { getChainDirectory, requiredDirs } = require('core/forge-fs');
+const { getChainDirectory } = require('core/forge-fs');
 const { setFilePathOfConfig } = require('core/forge-config');
 
+const { REQUIRED_DIRS } = require('../../../constant');
 const { generateDefaultAccount } = require('../../account/lib/index');
 
 function getModeratorSecretKey() {
@@ -89,9 +90,9 @@ async function askUserConfigs(
   );
 
   // default icon file
-  const iconFile = path.join(requiredDirs.tmp, 'token.png');
+  const iconFile = path.join(REQUIRED_DIRS.tmp, 'token.png');
   shell.exec(`rm -f ${iconFile}`);
-  base64Img.imgSync(tokenDefaults.icon, requiredDirs.tmp, 'token');
+  base64Img.imgSync(tokenDefaults.icon, REQUIRED_DIRS.tmp, 'token');
 
   // moderator
   const moderator = getModerator();

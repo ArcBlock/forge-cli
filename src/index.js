@@ -26,14 +26,15 @@ const { version } = require('../package.json');
 const onError = error => {
   debug(error);
 
-  printError(`Exception: ${error.message}`);
+  printError(error);
 
   let command = process.argv.length > 2 ? process.argv.slice(2).join(' ') : 'command';
   if (command.indexOf('-v') === -1 && command.indexOf('--verbose')) {
     command += ' -v';
   }
 
-  printInfo(`run ${chalk.cyan(`forge ${command}`)} to get detail information`);
+  printInfo(`Run ${chalk.cyan('forge logs cli')} to get detail error`);
+  printInfo(`Run ${chalk.cyan(`forge ${command}`)} to debug`);
 };
 
 process.on('unhandledRejection', onError);

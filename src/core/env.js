@@ -15,16 +15,12 @@ const { get, set } = require('lodash');
 const GRpcClient = require('@arcblock/grpc-client');
 const { parse } = require('@arcblock/forge-config');
 
-const {
-  getChainDirectory,
-  isDirectory,
-  getChainReleaseFilePath,
-  requiredDirs,
-} = require('core/forge-fs');
+const { getChainDirectory, isDirectory, getChainReleaseFilePath } = require('core/forge-fs');
 const { ensureForgeRelease } = require('core/forge-config');
 const { isForgeStarted, getProcessTag } = require('./forge-process');
 const { print, printInfo, printSuccess, printLogo } = require('./util');
 
+const { REQUIRED_DIRS } = require('../constant');
 const { version } = require('../../package.json');
 const { symbols, hr, wrapSpinner } = require('./ui');
 const debug = require('./debug')('env');
@@ -32,7 +28,7 @@ const debug = require('./debug')('env');
 const CURRENT_WORKING_CHAIN = getChainDirectory(process.env.FORGE_CURRENT_CHAIN);
 process.env.CURRENT_WORKING_CHAIN = CURRENT_WORKING_CHAIN;
 
-const config = { cli: { requiredDirs } }; // global shared forge-cli run time config
+const config = { cli: {} }; // global shared forge-cli run time config
 
 /**
  * Setup running env for various commands, the check order for each requirement is important
@@ -262,8 +258,8 @@ async function ensureNonRoot() {
  * Ensure we have required directories done
  */
 function ensureRequiredDirs() {
-  Object.keys(requiredDirs).forEach(x => {
-    const dir = requiredDirs[x];
+  Object.keys(REQUIRED_DIRS).forEach(x => {
+    const dir = REQUIRED_DIRS[x];
     if (isDirectory(dir)) {
       debug(`${symbols.info} ${x} dir already initialized: ${dir}`);
     } else {
@@ -372,7 +368,7 @@ function getPlatform() {
 
 function writeCache(key, data) {
   try {
-    fs.writeFileSync(path.join(requiredDirs.cache, `${key}.json`), JSON.stringify(data));
+    fs.writeFileSync(path.join(REQUIRED_DIRS.cache, `${key}.json`), JSON.stringify(data));
     debug(`${symbols.success} cache ${key} write success!`);
     return true;
   } catch (err) {
@@ -383,7 +379,7 @@ function writeCache(key, data) {
 
 function readCache(key) {
   try {
-    const filePath = path.join(requiredDirs.cache, `${key}.json`);
+    const filePath = path.join(REQUIRED_DIRS.cache, `${key}.json`);
     return JSON.parse(fs.readFileSync(filePath));
   } catch (err) {
     debug.error(`${symbols.error} cache ${key} read failed!`);
@@ -474,7 +470,6 @@ module.exports = {
 
   debug,
   setupEnv,
-  requiredDirs,
   findReleaseVersion,
   ensureRequiredDirs,
   ensureRpcClient,

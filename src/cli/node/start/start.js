@@ -126,7 +126,7 @@ async function start(chainName, dryRun = false, allowMultiChain) {
     await stop(chainName, false);
 
     print();
-    printError(`${symbols.info} Possible solutions:`);
+    printInfo('Possible solutions:');
     print(hr);
     print('1. Cleanup already running forge');
     print('Ensure no running forge process that cannot be detected by forge-cli');

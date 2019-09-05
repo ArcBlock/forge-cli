@@ -317,10 +317,6 @@ async function stopForgeProcesses(chainName) {
     return [];
   }
 
-  if (runningChains.length === 1) {
-    return stopAllForgeProcesses();
-  }
-
   const runningProcesses = runningChains.find(x => chainName === x.name);
   let processes = [];
   if (runningProcesses) {

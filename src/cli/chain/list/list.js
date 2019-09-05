@@ -55,7 +55,8 @@ async function printChains() {
   }, {});
   chains.forEach(([name, config]) => {
     const status = getChainStatus(name, processesMap);
-    table.push([name, `v${config.version}`, chalk`{${getChainStatusColor(status)} ${status}}`]);
+    const version = config && config.version ? `v${config.version}` : '';
+    table.push([name, `${version}`, chalk`{${getChainStatusColor(status)} ${status}}`]);
   });
 
   print(table.toString());

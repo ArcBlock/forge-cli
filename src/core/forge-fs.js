@@ -296,7 +296,7 @@ function getChainConfigPath(chainName) {
 }
 
 function getChainConfig(chainName) {
-  const filePath = path.join(getChainDirectory(chainName), 'config.yml');
+  const filePath = getChainConfigPath(chainName);
   try {
     return fs.existsSync(filePath) ? yaml.parse(fs.readFileSync(filePath).toString()) || {} : {};
   } catch (err) {

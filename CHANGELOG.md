@@ -1,6 +1,6 @@
 ## 0.38.8 (September 05, 2019)
 
-- fix the inconsistency between chain:ls and ps
+- fix the inconsistency between chain:ls and ps #193
 - chore: disable ls, ls:remote show chain name
 
 ## 0.38.7 (September 04, 2019)

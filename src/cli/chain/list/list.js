@@ -5,13 +5,7 @@ const { print } = require('core/util');
 const { getAllChainNames } = require('core/forge-fs');
 const { getAllProcesses } = require('core/forge-process');
 
-const getChainStatus = (name, processes) => {
-  const processesMap = processes.reduce((acc, item) => {
-    acc[item.name] = item.value;
-
-    return acc;
-  }, {});
-
+const getChainStatus = (name, processesMap) => {
   let status = '';
   if (processesMap[name]) {
     const hasForgeProcess = processesMap[name].find(x => x.name === 'forge');
@@ -54,8 +48,13 @@ async function printChains() {
   });
 
   const processes = await getAllProcesses();
+  const processesMap = processes.reduce((acc, item) => {
+    acc[item.name] = item.value;
+
+    return acc;
+  }, {});
   chains.forEach(([name, config]) => {
-    const status = getChainStatus(name, processes);
+    const status = getChainStatus(name, processesMap);
     table.push([name, `v${config.version}`, chalk`{${getChainStatusColor(status)} ${status}}`]);
   });
 

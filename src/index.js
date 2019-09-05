@@ -62,7 +62,7 @@ const getCurrentChainENV = async (command, action, argsChainName) => {
 };
 
 const shouldPrintCurrentChain = (currentChainName, command) => {
-  if (['chain:remove', 'chain:create'].includes(command)) {
+  if (['chain:remove', 'chain:create', 'ls:remote', 'ls'].includes(command)) {
     return false;
   }
 

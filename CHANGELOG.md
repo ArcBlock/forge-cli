@@ -1,3 +1,9 @@
+## 0.38.8 (September 05, 2019)
+
+- fix the inconsistency between chain:ls and ps #193
+- fix: chain:ls version undefined bug #192
+- chore: disable ls, ls:remote show chain name
+
 ## 0.38.7 (September 04, 2019)
 
 - feature: add cli logs #135

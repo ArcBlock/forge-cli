@@ -7,6 +7,7 @@ const figlet = require('figlet');
 const shell = require('shelljs');
 const chalk = require('chalk');
 const url = require('url');
+const tar = require('tar');
 const getPort = require('get-port');
 const prettyMilliseconds = require('pretty-ms');
 const moment = require('moment');
@@ -200,10 +201,47 @@ const fetchAssetRace = async urlPath => {
 
 const fetchAsset = async assetPath => fetchAssetRace(assetPath);
 
+function getPackageConfig(filePath) {
+  const packageJSONPath = path.join(filePath, 'package.json');
+  if (!fs.existsSync(packageJSONPath)) {
+    throw new Error(`package.json not found in starter directory ${filePath}`);
+  }
+
+  const packageJSON = JSON.parse(fs.readFileSync(packageJSONPath).toString());
+  return packageJSON;
+}
+
+const downloadPackageFromNPM = async (name, dest, registry = '') => {
+  fs.mkdirSync(dest, { recursive: true });
+  debug('starter directory:', dest);
+
+  printInfo('Downloading package...');
+  let packCommand = `npm pack ${name} --color`;
+  if (name) {
+    packCommand = `${packCommand} --registry=${registry}`;
+  }
+
+  const { code, stdout, stderr } = shell.exec(packCommand, {
+    silent: true,
+    cwd: dest,
+  });
+
+  if (code !== 0) {
+    throw new Error(stderr);
+  }
+
+  const packageName = stdout.trim();
+  await tar.x({ file: path.join(dest, packageName), C: dest, strip: 1 });
+
+  return dest;
+};
+
 module.exports = {
   chainSortHandler,
+  downloadPackageFromNPM,
   fetchAsset,
   getPort,
+  getPackageConfig,
   getFreePort,
   makeRange,
   md5,

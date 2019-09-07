@@ -1,13 +1,107 @@
+const axios = require('axios');
+const chalk = require('chalk');
 const fs = require('fs');
+const fsExtra = require('fs-extra');
 const path = require('path');
+const fuzzy = require('fuzzy');
+const semver = require('semver');
+const inquirer = require('inquirer');
+inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
+
+const { wrapSpinner } = require('core/ui');
+const debug = require('core/debug');
+const { downloadPackageFromNPM, getPackageConfig, printError } = require('core/util');
+
+const { BLOCKLET_DIR, REMOTE_BOCKLET_URL } = require('../../../constant');
 
 const BLOCKLET_CONFIG_FILENAME = 'blocklet.json';
 const BLOCKLET_GROUPS = ['starter', 'dapp', 'contract'];
 
-const fetchRemoteBlocklet = async name => {
-  // 0: read from cache
-  // 1. fetch from remote
-  console.log(name);
+async function getBlocklets(url) {
+  try {
+    const { data } = await axios.get(url);
+    return data;
+  } catch (error) {
+    debug(error);
+    return {};
+  }
+}
+
+function getLocalBlocklet(starterName) {
+  if (!starterName) {
+    return '';
+  }
+
+  const dest = path.join(BLOCKLET_DIR, starterName);
+
+  return dest;
+}
+
+async function readUserBlockletName(name, blocklets) {
+  let result = name;
+  if (result && !blocklets[result]) {
+    printError('Please select a valid starter template.');
+    result = '';
+  }
+
+  if (!result) {
+    const templates = Object.keys(blocklets);
+    const { template } = await inquirer.prompt([
+      {
+        type: 'autocomplete',
+        name: 'template',
+        message: 'Select a starter template:',
+        source: (_, inp) => {
+          const input = inp || '';
+          return new Promise(resolve => {
+            const r = fuzzy.filter(input, templates);
+            resolve(r.map(item => item.original));
+          });
+        },
+      },
+    ]);
+
+    result = template;
+  }
+
+  return result;
+}
+
+async function checkBlockletUpdate(starterName, localVersion, remoteVersion) {
+  if (semver.lt(localVersion, remoteVersion)) {
+    const { confirm } = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'confirm',
+        default: false,
+        message: chalk.yellow(
+          `${starterName}: New version ${remoteVersion} is available, upgrade?`
+        ),
+      },
+    ]);
+
+    return confirm;
+  }
+
+  return false;
+}
+
+const fetchRemoteBlocklet = async (name, blocklets, registry) => {
+  const userBlockname = await readUserBlockletName(name, blocklets);
+  const blockletDir = getLocalBlocklet(userBlockname, registry);
+
+  if (fs.existsSync(blockletDir)) {
+    const packageConfig = getPackageConfig(blockletDir);
+    const { version } = packageConfig;
+    if (await checkBlockletUpdate(name, version, blocklets[name].version)) {
+      fsExtra.removeSync(blockletDir);
+      await downloadPackageFromNPM(name, blockletDir, registry);
+    }
+  } else {
+    await downloadPackageFromNPM(name, blockletDir, registry);
+  }
+
+  return blockletDir;
 };
 
 /**
@@ -15,7 +109,7 @@ const fetchRemoteBlocklet = async name => {
  * @param {string} group - blocklet group name
  */
 const loadHandlerByBlockletGroup = group => {
-  const filePath = path.join(__dirname, '..', 'lib', `${group}.js`);
+  const filePath = path.join(__dirname, '..', 'lib', 'handlers', `${group}.js`);
   if (!group || !fs.existsSync(filePath)) {
     throw new Error(`group ${group} is invalid`);
   }
@@ -32,14 +126,14 @@ const loadHandlerByBlockletGroup = group => {
  * @returns {Object} info - blocklet information
  * @returns {Object} info.blockletDir - blocklet directory
  */
-async function loadBlocklet({ name = '', localBlockletDir }) {
+async function loadBlocklet({ name = '', localBlockletDir, blocklets, registry }) {
   let blockletDir = '';
 
   if (localBlockletDir) {
     blockletDir = path.resolve(localBlockletDir);
   } else {
     // download from remote
-    blockletDir = await fetchRemoteBlocklet(name);
+    blockletDir = await fetchRemoteBlocklet(name, blocklets, registry);
   }
 
   if (!fs.existsSync(blockletDir)) {
@@ -72,22 +166,30 @@ function execute(data) {
 
 // Run the cli interactively
 async function run({ args: [blockletName = ''], opts: { localBlocklet } }) {
+  let blocklets = await wrapSpinner(
+    'Fetching blocklets information...',
+    getBlocklets,
+    REMOTE_BOCKLET_URL
+  );
+  blocklets = blocklets.reduce((acc, item) => {
+    acc[item.name] = item;
+    return acc;
+  }, {});
   // 0: load blocklet
-  const blockletDir = await loadBlocklet({ name: blockletName, localBlockletDir: localBlocklet });
-
-  // 1. verify blocklet
+  const blockletDir = await loadBlocklet({
+    name: blockletName,
+    localBlockletDir: localBlocklet,
+    blocklets,
+  });
 
   verifyBlocklet(blockletDir);
 
-  // 2. get blocklet description file
   const blockletConfig = JSON.parse(
     fs.readFileSync(path.join(blockletDir, BLOCKLET_CONFIG_FILENAME)).toString()
   );
 
-  // 3. decide use what type of handlers depend on blocklet type
   const handler = loadHandlerByBlockletGroup(blockletConfig.group);
 
-  // 4. use handlers to execute hooks defined in blocklet description file
   await handler.verify(blockletConfig, { cwd: blockletDir });
   await handler.run(blockletConfig, { cwd: blockletDir });
 

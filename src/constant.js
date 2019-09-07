@@ -3,8 +3,10 @@ const os = require('os');
 
 const shiftWidth = ' '.repeat(4);
 const CLI_BASE_DIRECTORY = path.join(os.homedir(), '.forge_cli');
+const BLOCKLET_DIR = path.join(os.homedir(), '.blocklets');
 
 module.exports = {
+  BLOCKLET_DIR,
   CONFIG_FILE_NAME: '.forge_chains',
   CHAIN_DATA_PATH_NAME: 'forge_release',
   CLI_BASE_DIRECTORY,
@@ -13,6 +15,7 @@ module.exports = {
   DEFAULT_WORKSHOP_PORT: 8807,
   DEFAULT_FORGE_GRPC_PORT: 28210,
   DEFAULT_MIRROR: 'https://releases.arcblock.io',
+  REMOTE_BOCKLET_URL: 'http://arcblockcn.oss-cn-beijing.aliyuncs.com/blocklets.json',
   REMOTE_STARTER_URL:
     'https://arcblockcn.oss-cn-beijing.aliyuncs.com/forge_starters/starter-release.json',
   RELEASE_ASSETS: [

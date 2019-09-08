@@ -14,7 +14,7 @@ const { downloadPackageFromNPM, getPackageConfig, printError } = require('core/u
 
 const { BLOCKLET_DIR, REMOTE_BOCKLET_URL } = require('../../../constant');
 
-const BLOCKLET_CONFIG_FILENAME = 'blocklet.json';
+const BLOCKLET_CONFIG_FILEPATH = path.join('blocklet', 'blocklet.json');
 const BLOCKLET_GROUPS = ['starter', 'dapp', 'contract'];
 
 async function getBlocklets(url) {
@@ -144,10 +144,10 @@ async function loadBlocklet({ name = '', localBlockletDir, blocklets, registry }
 }
 
 const verifyBlocklet = blockletDir => {
-  const blockletJSONPath = path.join(blockletDir, BLOCKLET_CONFIG_FILENAME);
+  const blockletJSONPath = path.join(blockletDir, BLOCKLET_CONFIG_FILEPATH);
 
   if (!fs.existsSync(blockletJSONPath)) {
-    throw new Error(`${BLOCKLET_CONFIG_FILENAME} file not found`);
+    throw new Error(`${BLOCKLET_CONFIG_FILEPATH} file not found`);
   }
 
   const blockletConfig = JSON.parse(fs.readFileSync(blockletJSONPath));
@@ -175,7 +175,7 @@ async function run({ args: [blockletName = ''], opts: { localBlocklet } }) {
     acc[item.name] = item;
     return acc;
   }, {});
-  // 0: load blocklet
+
   const blockletDir = await loadBlocklet({
     name: blockletName,
     localBlockletDir: localBlocklet,
@@ -185,15 +185,13 @@ async function run({ args: [blockletName = ''], opts: { localBlocklet } }) {
   verifyBlocklet(blockletDir);
 
   const blockletConfig = JSON.parse(
-    fs.readFileSync(path.join(blockletDir, BLOCKLET_CONFIG_FILENAME)).toString()
+    fs.readFileSync(path.join(blockletDir, BLOCKLET_CONFIG_FILEPATH)).toString()
   );
 
   const handler = loadHandlerByBlockletGroup(blockletConfig.group);
 
   await handler.verify(blockletConfig, { cwd: blockletDir });
   await handler.run(blockletConfig, { cwd: blockletDir });
-
-  return 0;
 }
 
 exports.run = run;

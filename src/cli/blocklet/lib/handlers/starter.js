@@ -20,7 +20,7 @@ const verify = (blockletConfig, { cwd }) => {
   return true;
 };
 
-const runGenerateScripts = (scripts = {}, cwd) => {
+const runGenerateScripts = (scripts = {}, cwd, targetDir) => {
   if (scripts.installDependencies) {
     childProcess.execSync(`${scripts.installDependencies} --color always`, {
       stdio: 'inherit',
@@ -29,7 +29,11 @@ const runGenerateScripts = (scripts = {}, cwd) => {
   }
 
   if (scripts.generate) {
-    childProcess.execSync(scripts.generate, { stdio: 'inherit', cwd });
+    childProcess.execSync(scripts.generate, {
+      stdio: 'inherit',
+      cwd,
+      env: Object.assign(process.env, { TARGET_DIR: targetDir }),
+    });
   }
 };
 
@@ -39,9 +43,9 @@ const run = async (blockletConfig, { cwd }) => {
     printInfo('No hooks');
     return;
   }
-  runGenerateScripts(scripts, cwd);
-
   fsExtra.copySync(path.join(cwd, blockletConfig.sources), process.cwd());
+
+  runGenerateScripts(scripts, { cwd, targetDir: process.cwd() });
 
   if (hooks['post-copy']) {
     childProcess.execSync(hooks['post-copy'], { stdio: 'inherit', cwd: process.cwd() });

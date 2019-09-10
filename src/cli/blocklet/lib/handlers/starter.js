@@ -20,7 +20,7 @@ const verify = (blockletConfig, { cwd }) => {
   return true;
 };
 
-const runGenerateScripts = (scripts = {}, cwd, targetDir) => {
+const runGenerateScripts = (scripts = {}, { cwd, targetDir }) => {
   if (scripts.installDependencies) {
     childProcess.execSync(`${scripts.installDependencies} --color always`, {
       stdio: 'inherit',

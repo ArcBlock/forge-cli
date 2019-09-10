@@ -14,7 +14,7 @@ const { downloadPackageFromNPM, getPackageConfig, printError } = require('core/u
 
 const { BLOCKLET_DIR, REMOTE_BOCKLET_URL } = require('../../../constant');
 
-const BLOCKLET_CONFIG_FILEPATH = path.join('blocklet', 'blocklet.json');
+const BLOCKLET_CONFIG_FILEPATH = 'blocklet.json';
 const BLOCKLET_GROUPS = ['starter', 'dapp', 'contract'];
 
 async function getBlocklets(url) {
@@ -107,8 +107,9 @@ const fetchRemoteBlocklet = async (name, blocklets, registry) => {
 /**
  * Load handler by blocklet group name
  * @param {string} group - blocklet group name
+ * @return {BaseHandler} handler
  */
-const loadHandlerByBlockletGroup = group => {
+const getHandlerByBlockletGroup = group => {
   const filePath = path.join(__dirname, '..', 'lib', 'handlers', `${group}.js`);
   if (!group || !fs.existsSync(filePath)) {
     throw new Error(`group ${group} is invalid`);
@@ -188,10 +189,11 @@ async function run({ args: [blockletName = ''], opts: { localBlocklet } }) {
     fs.readFileSync(path.join(blockletDir, BLOCKLET_CONFIG_FILEPATH)).toString()
   );
 
-  const handler = loadHandlerByBlockletGroup(blockletConfig.group);
+  const Handler = getHandlerByBlockletGroup(blockletConfig.group);
+  const handler = new Handler(blockletConfig);
 
-  await handler.verify(blockletConfig, { cwd: blockletDir });
-  await handler.run(blockletConfig, { cwd: blockletDir });
+  await handler.verify({ cwd: blockletDir });
+  await handler.handle({ cwd: blockletDir });
 }
 
 exports.run = run;

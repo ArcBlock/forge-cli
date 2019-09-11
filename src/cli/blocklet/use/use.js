@@ -40,28 +40,28 @@ function getLocalBlocklet(starterName) {
 async function readUserBlockletName(name, blocklets) {
   let result = name;
   if (result && !blocklets[result]) {
-    printError('Please select a valid starter template.');
+    printError(`There is no ${result} blocklet, please select a valid blocklet:`);
     result = '';
   }
 
   if (!result) {
-    const templates = Object.keys(blocklets);
-    const { template } = await inquirer.prompt([
+    const tmp = Object.keys(blocklets);
+    const { blocklet } = await inquirer.prompt([
       {
         type: 'autocomplete',
-        name: 'template',
-        message: 'Select a starter template:',
+        name: 'blocklet',
+        message: 'Select a blocklet:',
         source: (_, inp) => {
           const input = inp || '';
           return new Promise(resolve => {
-            const r = fuzzy.filter(input, templates);
+            const r = fuzzy.filter(input, tmp);
             resolve(r.map(item => item.original));
           });
         },
       },
     ]);
 
-    result = template;
+    result = blocklet;
   }
 
   return result;

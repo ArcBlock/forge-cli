@@ -230,7 +230,7 @@ async function getRunningProcessEndpoints(chainName) {
   const result = {};
   processes.forEach(({ name }) => {
     if (strEqual(name, 'web')) {
-      result[name] = `http://127.0.0.1:${get(cfg, 'forge.web.port')}`;
+      result[name] = `http://127.0.0.1:${get(cfg, 'forge.web.port')}/api`;
     } else if (strEqual(name, 'forge')) {
       const grpcUri = get(cfg, 'forge.sock_grpc', '');
       result[name] = `${grpcUri}`;

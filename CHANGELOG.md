@@ -1,3 +1,7 @@
+## 0.38.10 (September 11, 2019)
+
+- fix: Print duplicate chain name
+
 ## 0.38.9 (September 11, 2019)
 
 - fix not exit process when upgrade failed #214

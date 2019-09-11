@@ -42,25 +42,24 @@ function isStoppedToUpgrade(chainName) {
   });
 }
 
-async function main({ args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
-  const client = createRpcClient();
-  const current = config.get('cli.currentVersion');
-  const releases = listReleases()
-    .forge.filter(x => semver.gt(x, current))
-    .sort((v1, v2) => semver.gt(v2, v1));
-
-  if (!releases.length) {
-    print(`${symbols.success} Abort because no available newer version to upgrade!`);
-    printInfo(`Run ${chalk.cyan('forge download')} to install a new version.`);
-    process.exit(0);
+const execExceptionOnError = failedMessage => (...args) => {
+  const { code } = shell.exec(...args);
+  if (code !== 0) {
+    throw new Error(`${failedMessage}: ${code}`);
   }
+};
 
-  const moderator = await ensureModerator(client);
-  if (!moderator) {
-    return;
-  }
+const useNewVersion = (chainName, version) => {
+  execExceptionOnError('use new version failed')(
+    `forge use ${version} -c ${chainName} --color always`
+  );
+  execExceptionOnError('stop web failed')(`forge web stop -c ${chainName} --color always`, {
+    silent: true,
+  });
+  execExceptionOnError('start forge failed')(`forge start ${chainName} --color always`);
+};
 
-  const { info } = await client.getChainInfo();
+const getConfigs = async ({ currentVersion, info, releases }) => {
   const questions = [
     {
       type: 'list',
@@ -78,7 +77,7 @@ async function main({ args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
         }
 
         if (semver.gt(v, config.get('cli.version'))) {
-          return `Target version must be greater than version ${current}`;
+          return `Target version must be greater than version ${currentVersion}`;
         }
 
         return true;
@@ -105,7 +104,7 @@ async function main({ args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
       type: 'confirm',
       name: 'confirm',
       message: answers =>
-        `Will upgrade node from v${chalk.cyan(current)} to v${chalk.cyan(
+        `Will upgrade node from v${chalk.cyan(currentVersion)} to v${chalk.cyan(
           answers.version
         )} at height ${chalk.cyan(answers.height)}, and this cannot be undo, are your sure?`,
       default: false,
@@ -113,64 +112,89 @@ async function main({ args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
   ];
 
   const answers = await inquirer.prompt(questions);
-  if (!answers.confirm) {
-    printError('Abort because user cancellation!');
-    process.exit(0);
-  }
+  return answers;
+};
 
-  const hash = await client.sendUpgradeNodeTx({
-    tx: {
-      itx: answers,
-    },
-    wallet: moderator,
-  });
+async function main({ args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
+  try {
+    const client = createRpcClient();
+    const current = config.get('cli.currentVersion');
+    const releases = listReleases()
+      .forge.filter(x => semver.gt(x, current))
+      .sort((v1, v2) => semver.gt(v2, v1));
 
-  printSuccess('Upgrade node transaction sent');
-  print(hr);
-
-  const txSpinner = getSpinner('Waiting for transaction commit...');
-  txSpinner.start();
-  const waitMS = 1000 + parseTimeStrToMS(config.get('tendermint.timeoutCommit', '5s'));
-  await sleep(waitMS);
-  txSpinner.stop();
-
-  shell.exec(`forge tx ${hash} -c ${chainName}`);
-
-  const spinner = getSpinner('Stopping forge...');
-  spinner.start();
-  debug('waiting forge stop');
-
-  if (await isForgeStartedByStarter(chainName)) {
-    const forgeStopInfo = await isStoppedToUpgrade(chainName);
-    if (forgeStopInfo !== true) {
-      printError(forgeStopInfo);
-      process.exit(1);
+    if (!releases.length) {
+      print(`${symbols.success} Abort because no available newer version to upgrade!`);
+      printInfo(`Run ${chalk.cyan('forge download')} to install a new version.`);
+      process.exit(0);
     }
 
-    spinner.stop();
-    await stop(chainName, true);
-    debug('forge stopped');
-    spinner.succeed('Forge stopped');
-  } else {
-    await waitUntilStopped(chainName);
-    spinner.stop();
-    await stop(chainName, false);
-    debug('forge stopped');
-    spinner.succeed('Forge stopped');
+    const moderator = await ensureModerator(client);
+    if (!moderator) {
+      return;
+    }
+
+    const { info } = await client.getChainInfo();
+    const configs = await getConfigs({ info, currentVersion: current, releases });
+    if (!configs.confirm) {
+      printError('Abort because user cancellation!');
+      process.exit(0);
+    }
+
+    const hash = await client.sendUpgradeNodeTx({
+      tx: {
+        itx: configs,
+      },
+      wallet: moderator,
+    });
+
+    printSuccess('Upgrade node transaction sent');
+    print(hr);
+
+    const txSpinner = getSpinner('Waiting for transaction commit...');
+    txSpinner.start();
+    const waitMS = 1000 + parseTimeStrToMS(config.get('tendermint.timeoutCommit', '5s'));
+    await sleep(waitMS);
+    txSpinner.stop();
+
+    execExceptionOnError(`send tx ${hash} failed`)(`forge tx ${hash} -c ${chainName}`);
+
+    const spinner = getSpinner('Stopping forge...');
+    spinner.start();
+    debug('waiting forge stop');
+
+    if (await isForgeStartedByStarter(chainName)) {
+      const forgeStopInfo = await isStoppedToUpgrade(chainName);
+      if (forgeStopInfo !== true) {
+        printError(forgeStopInfo);
+        process.exit(1);
+      }
+
+      spinner.stop();
+      await stop(chainName, true);
+      debug('forge stopped');
+      spinner.succeed('Forge stopped');
+    } else {
+      await waitUntilStopped(chainName);
+      spinner.stop();
+      await stop(chainName, false);
+      debug('forge stopped');
+      spinner.succeed('Forge stopped');
+    }
+
+    useNewVersion(chainName, configs.version);
+
+    printInfo('Version:');
+    execExceptionOnError(`forge version -c ${chainName} --color always`);
+    print();
+    printSuccess('Upgrade success!');
+
+    process.exit(0);
+  } catch (error) {
+    printError('Upgrade failed!');
+    printError(error);
+    process.exit(1);
   }
-
-  shell.exec(`forge use ${answers.version} -c ${chainName} --color always`);
-  // We need to stop forge-web here, because when forge crashed, forge-web is still alive
-  shell.exec(`forge web stop -c ${chainName} --color always`, { silent: true });
-  shell.exec(`forge start ${chainName} --color always`);
-
-  print();
-  printInfo('Version:');
-  shell.exec(`forge version -c ${chainName}`);
-  print();
-  printSuccess('Upgrade success!');
-
-  process.exit(0);
 }
 
 exports.run = main;

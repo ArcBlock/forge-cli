@@ -73,6 +73,7 @@ async function start(chainName, dryRun = false, allowMultiChain) {
     printInfo(
       `Please create an issue on ${chalk.cyan(url)} with output after running above command`
     );
+    process.exit(0);
   }
 
   const command = `${startCommandPrefix} ${startType}`;

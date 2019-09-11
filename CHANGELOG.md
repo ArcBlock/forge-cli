@@ -1,3 +1,7 @@
+## 0.38.9 (September 11, 2019)
+
+- fix not exit process when upgrade failed #214
+
 ## 0.38.8 (September 05, 2019)
 
 - fix the inconsistency between chain:ls and ps #193

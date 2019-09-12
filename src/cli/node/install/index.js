@@ -2,6 +2,7 @@ const shell = require('shelljs');
 const chalk = require('chalk');
 const { cli, action } = require('core/cli');
 const { execute, run } = require('./install');
+const { version } = require('../../../../package.json');
 
 cli(
   'install [version]',
@@ -25,11 +26,11 @@ Examples:
     'forge install'
   )}             Download and activate latest version, prompt to customize config
   - ${chalk.cyan('forge install --silent')}    Download and setup with default config
-  - ${chalk.cyan('forge install 0.22.0')}      Download and activate forge v0.22.0
-  - ${chalk.cyan('forge install v0.22.0')}     Download and activate forge v0.22.0
+  - ${chalk.cyan(`forge install ${version}`)}      Download and activate forge v${version}
+  - ${chalk.cyan(`forge install v${version}`)}     Download and activate forge v${version}
   - ${chalk.cyan(
-    'forge install --mirror http://arcblock.oss-cn-beijing.aliyuncs.com'
-  )}      Download from custom mirror
+    'forge install --mirror http://arcblockcn.oss-cn-beijing.aliyuncs.com'
+  )}      Install latest forge from custom mirror
         `);
       },
     },

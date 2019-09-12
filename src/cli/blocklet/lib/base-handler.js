@@ -1,7 +1,9 @@
 const childProcess = require('child_process');
 const fsExtra = require('fs-extra');
 const path = require('path');
-const { isDirectory } = require('core/forge-fs');
+const chalk = require('chalk');
+
+const { isDirectory, isEmptyDirectory } = require('core/forge-fs');
 const { printInfo } = require('core/util');
 
 const TEMPLATES_FIELD_NAME = 'templates';
@@ -51,10 +53,18 @@ class BaseHandler {
     if (!this.blockletConfig) {
       throw new Error('There is no blocklet.json');
     }
+
+    if (!this.blockletConfig[TEMPLATES_FIELD_NAME]) {
+      throw new Error(`There is no ${TEMPLATES_FIELD_NAME} in blocklet config`);
+    }
+
+    if (!this.blockletConfig.composable && !isEmptyDirectory(this.targetDir)) {
+      throw new Error(`Target directory ${chalk.cyan(this.targetDir)} is not empty`);
+    }
   }
 
   async handle() {
-    const { 'install-scripts': scripts, hooks = {} } = this.blockletConfig;
+    const { 'install-scripts': scripts = {}, hooks = {} } = this.blockletConfig;
     if (!hooks) {
       printInfo('No hooks');
       return;

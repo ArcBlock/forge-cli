@@ -9,22 +9,26 @@ const semver = require('semver');
 inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
 
 const { wrapSpinner } = require('core/ui');
-const debug = require('core/debug');
-const { downloadPackageFromNPM, getPackageConfig, printError, printWarning } = require('core/util');
+const {
+  downloadPackageFromNPM,
+  getPackageConfig,
+  printError,
+  printInfo,
+  printWarning,
+} = require('core/util');
 const { isDirectory, isEmptyDirectory } = require('core/forge-fs');
 
 const { BLOCKLET_DIR, REMOTE_BOCKLET_URL } = require('../../../constant');
 
 const BLOCKLET_CONFIG_FILEPATH = 'blocklet.json';
-const BLOCKLET_GROUPS = ['starter', 'dapp', 'contract'];
 
 async function getBlocklets(url) {
   try {
     const { data } = await axios.get(url);
     return data;
   } catch (error) {
-    debug(error);
-    return {};
+    printError(error);
+    return [];
   }
 }
 
@@ -38,7 +42,7 @@ function getLocalBlocklet(starterName) {
   return dest;
 }
 
-const promptTargetDirectory = async () => {
+const promptTargetDirectory = async (checkEmpty = true) => {
   const { targetDir } = await inquirer.prompt({
     type: 'text',
     name: 'targetDir',
@@ -56,7 +60,7 @@ const promptTargetDirectory = async () => {
         return `Target ${chalk(dest)} is a file`;
       }
 
-      if (!isEmptyDirectory(dest)) {
+      if (checkEmpty && !isEmptyDirectory(dest)) {
         return `Target folder ${chalk.cyan(dest)} is not empty`;
       }
 
@@ -67,7 +71,7 @@ const promptTargetDirectory = async () => {
   return targetDir;
 };
 
-async function getTargetDir(targetDirectory) {
+async function getTargetDir(targetDirectory, checkEmpty = true) {
   let result = targetDirectory;
   if (!result) {
     result = process.cwd();
@@ -77,7 +81,7 @@ async function getTargetDir(targetDirectory) {
     if (!isDirectory(result)) {
       printWarning(`Target ${chalk.cyan(result)} is a file, please input a directory:`);
       result = await promptTargetDirectory();
-    } else if (!isEmptyDirectory(result)) {
+    } else if (checkEmpty && !isEmptyDirectory(result)) {
       printWarning(`Target directory ${chalk.cyan(result)} is not empty, please choose another:`);
       result = await promptTargetDirectory();
     }
@@ -88,15 +92,15 @@ async function getTargetDir(targetDirectory) {
   return path.resolve(result);
 }
 
-async function readUserBlockletName(name, blocklets) {
+async function readUserBlockletName(name, blockletsMap) {
   let result = name;
-  if (result && !blocklets[result]) {
+  if (result && !blockletsMap[result]) {
     printError(`There is no ${result} blocklet, please select a valid blocklet:`);
     result = '';
   }
 
   if (!result) {
-    const tmp = Object.keys(blocklets);
+    const tmp = Object.keys(blockletsMap);
     const { blocklet } = await inquirer.prompt([
       {
         type: 'autocomplete',
@@ -138,13 +142,18 @@ async function checkBlockletUpdate(starterName, localVersion, remoteVersion) {
 }
 
 const fetchRemoteBlocklet = async (name, blocklets, registry) => {
-  const blockname = await readUserBlockletName(name, blocklets);
+  const blockletsMap = blocklets.reduce((acc, item) => {
+    acc[item.name] = item;
+    return acc;
+  }, {});
+
+  const blockname = await readUserBlockletName(name, blockletsMap);
   const blockletDir = getLocalBlocklet(blockname, registry);
 
   if (fs.existsSync(blockletDir)) {
     const packageConfig = getPackageConfig(blockletDir);
     const { version } = packageConfig;
-    if (await checkBlockletUpdate(blockname, version, blocklets[blockname].version)) {
+    if (await checkBlockletUpdate(blockname, version, blockletsMap[blockname].version)) {
       fsExtra.removeSync(blockletDir);
       await downloadPackageFromNPM(blockname, blockletDir, registry);
     }
@@ -163,7 +172,8 @@ const fetchRemoteBlocklet = async (name, blocklets, registry) => {
 const getHandlerByBlockletGroup = group => {
   const filePath = path.join(__dirname, '..', 'lib', 'handlers', `${group}.js`);
   if (!group || !fs.existsSync(filePath)) {
-    throw new Error(`group ${group} is invalid`);
+    printInfo('Use default group handler.');
+    return require(path.join(__dirname, '..', 'lib', 'base-handler.js')); // eslint-disable-line
   }
 
   return require(filePath); // eslint-disable-line
@@ -175,7 +185,6 @@ const getHandlerByBlockletGroup = group => {
  * @param {Object} options
  * @param {string} options.name - blocklet name, if localBlockDir is empty, it will use `name` to fetch blocklet from remote
  * @param {string} options.localBlockletDir - If localblockDir is not empty, will load from local blocklet
- * @returns {Object} info - blocklet information
  * @returns {Object} info.blockletDir - blocklet directory
  */
 async function loadBlocklet({ name = '', localBlockletDir, blocklets, registry }) {
@@ -184,7 +193,6 @@ async function loadBlocklet({ name = '', localBlockletDir, blocklets, registry }
   if (localBlockletDir) {
     blockletDir = path.resolve(localBlockletDir);
   } else {
-    // download from remote
     blockletDir = await fetchRemoteBlocklet(name, blocklets, registry);
   }
 
@@ -195,22 +203,6 @@ async function loadBlocklet({ name = '', localBlockletDir, blocklets, registry }
   return blockletDir;
 }
 
-const verifyBlocklet = blockletDir => {
-  const blockletJSONPath = path.join(blockletDir, BLOCKLET_CONFIG_FILEPATH);
-
-  if (!fs.existsSync(blockletJSONPath)) {
-    throw new Error(`${BLOCKLET_CONFIG_FILEPATH} file not found`);
-  }
-
-  const blockletConfig = JSON.parse(fs.readFileSync(blockletJSONPath));
-
-  if (!BLOCKLET_GROUPS.includes(blockletConfig.group)) {
-    throw new Error('invalid group');
-  }
-
-  // TODO: verify other requirements
-};
-
 // Execute the cli silently.
 function execute(data) {
   run(data);
@@ -218,35 +210,39 @@ function execute(data) {
 
 // Run the cli interactively
 async function run({ args: [blockletName = ''], opts: { localBlocklet, target } }) {
-  const targetDir = await getTargetDir(target);
+  try {
+    const blocklets = await wrapSpinner(
+      'Fetching blocklets information...',
+      getBlocklets,
+      REMOTE_BOCKLET_URL
+    );
 
-  let blocklets = await wrapSpinner(
-    'Fetching blocklets information...',
-    getBlocklets,
-    REMOTE_BOCKLET_URL
-  );
-  blocklets = blocklets.reduce((acc, item) => {
-    acc[item.name] = item;
-    return acc;
-  }, {});
+    if (!Array.isArray(blocklets) || blocklets.length === 0) {
+      throw new Error('load blocklets configs failed');
+    }
 
-  const blockletDir = await loadBlocklet({
-    name: blockletName,
-    localBlockletDir: localBlocklet,
-    blocklets,
-  });
+    const blockletDir = await loadBlocklet({
+      name: blockletName,
+      localBlockletDir: localBlocklet,
+      blocklets,
+    });
 
-  verifyBlocklet(blockletDir);
+    const blockletConfig = JSON.parse(
+      fs.readFileSync(path.join(blockletDir, BLOCKLET_CONFIG_FILEPATH)).toString()
+    );
 
-  const blockletConfig = JSON.parse(
-    fs.readFileSync(path.join(blockletDir, BLOCKLET_CONFIG_FILEPATH)).toString()
-  );
+    const { composable = false } = blockletConfig;
+    const checkEmptyDir = !composable;
+    const targetDir = await getTargetDir(target, checkEmptyDir);
+    const Handler = getHandlerByBlockletGroup(blockletConfig.group);
+    const handler = new Handler({ blockletConfig, targetDir, blockletDir });
 
-  const Handler = getHandlerByBlockletGroup(blockletConfig.group);
-  const handler = new Handler({ blockletConfig, targetDir, blockletDir });
-
-  await handler.verify();
-  await handler.handle();
+    await handler.verify();
+    await handler.handle();
+  } catch (error) {
+    printError(error);
+    process.exit(1);
+  }
 }
 
 exports.run = run;

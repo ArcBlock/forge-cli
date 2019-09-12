@@ -1,3 +1,7 @@
+## 0.38.11 (September 12, 2019)
+
+- chore: download forge-swap
+
 ## 0.38.10 (September 11, 2019)
 
 - fix: Print duplicate chain name

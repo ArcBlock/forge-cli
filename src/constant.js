@@ -15,7 +15,14 @@ module.exports = {
   DEFAULT_MIRROR: 'https://releases.arcblock.io',
   REMOTE_STARTER_URL:
     'https://arcblockcn.oss-cn-beijing.aliyuncs.com/forge_starters/starter-release.json',
-  RELEASE_ASSETS: ['forge', 'simulator', 'forge_web', 'forge_starter', 'forge_workshop'],
+  RELEASE_ASSETS: [
+    'forge',
+    'simulator',
+    'forge_web',
+    'forge_starter',
+    'forge_workshop',
+    'forge_swap',
+  ],
   SHIFT_WIDTH: shiftWidth,
   MIRRORS: [
     'https://releases.arcblock.io',

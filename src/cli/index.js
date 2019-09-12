@@ -5,7 +5,6 @@ exports.blocklet = require('./blocklet');
 exports.chain = require('./chain');
 exports.misc = require('./misc');
 exports.node = require('./node');
-exports.project = require('./project');
 exports.protocol = require('./protocol');
 exports.release = require('./release');
 exports.tools = require('./tools');

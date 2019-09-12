@@ -6,7 +6,6 @@ const fuzzy = require('fuzzy');
 const inquirer = require('inquirer');
 const path = require('path');
 const semver = require('semver');
-const shell = require('shelljs');
 inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
 
 const { wrapSpinner } = require('core/ui');
@@ -248,7 +247,6 @@ async function run({ args: [blockletName = ''], opts: { localBlocklet, target } 
 
   await handler.verify();
   await handler.handle();
-  shell.cd(this.targetDir);
 }
 
 exports.run = run;

@@ -2,15 +2,17 @@ const axios = require('axios');
 const chalk = require('chalk');
 const fs = require('fs');
 const fsExtra = require('fs-extra');
-const path = require('path');
 const fuzzy = require('fuzzy');
-const semver = require('semver');
 const inquirer = require('inquirer');
+const path = require('path');
+const semver = require('semver');
+const shell = require('shelljs');
 inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
 
 const { wrapSpinner } = require('core/ui');
 const debug = require('core/debug');
-const { downloadPackageFromNPM, getPackageConfig, printError } = require('core/util');
+const { downloadPackageFromNPM, getPackageConfig, printError, printWarning } = require('core/util');
+const { isDirectory, isEmptyDirectory } = require('core/forge-fs');
 
 const { BLOCKLET_DIR, REMOTE_BOCKLET_URL } = require('../../../constant');
 
@@ -35,6 +37,56 @@ function getLocalBlocklet(starterName) {
   const dest = path.join(BLOCKLET_DIR, starterName);
 
   return dest;
+}
+
+const promptTargetDirectory = async () => {
+  const { targetDir } = await inquirer.prompt({
+    type: 'text',
+    name: 'targetDir',
+    message: 'Please input target directory:',
+    validate: input => {
+      if (!input) return 'Target directory should not be empty';
+
+      const dest = path.resolve(input);
+      if (!fs.existsSync(dest)) {
+        fs.mkdirSync(dest);
+        return true;
+      }
+
+      if (!isDirectory(dest)) {
+        return `Target ${chalk(dest)} is a file`;
+      }
+
+      if (!isEmptyDirectory(dest)) {
+        return `Target folder ${chalk.cyan(dest)} is not empty`;
+      }
+
+      return true;
+    },
+  });
+
+  return targetDir;
+};
+
+async function getTargetDir(targetDirectory) {
+  let result = targetDirectory;
+  if (!result) {
+    result = process.cwd();
+  }
+
+  if (fs.existsSync(result)) {
+    if (!isDirectory(result)) {
+      printWarning(`Target ${chalk.cyan(result)} is a file, please input a directory:`);
+      result = await promptTargetDirectory();
+    } else if (!isEmptyDirectory(result)) {
+      printWarning(`Target directory ${chalk.cyan(result)} is not empty, please choose another:`);
+      result = await promptTargetDirectory();
+    }
+  } else {
+    fs.mkdirSync(result);
+  }
+
+  return path.resolve(result);
 }
 
 async function readUserBlockletName(name, blocklets) {
@@ -87,18 +139,18 @@ async function checkBlockletUpdate(starterName, localVersion, remoteVersion) {
 }
 
 const fetchRemoteBlocklet = async (name, blocklets, registry) => {
-  const userBlockname = await readUserBlockletName(name, blocklets);
-  const blockletDir = getLocalBlocklet(userBlockname, registry);
+  const blockname = await readUserBlockletName(name, blocklets);
+  const blockletDir = getLocalBlocklet(blockname, registry);
 
   if (fs.existsSync(blockletDir)) {
     const packageConfig = getPackageConfig(blockletDir);
     const { version } = packageConfig;
-    if (await checkBlockletUpdate(name, version, blocklets[name].version)) {
+    if (await checkBlockletUpdate(blockname, version, blocklets[blockname].version)) {
       fsExtra.removeSync(blockletDir);
-      await downloadPackageFromNPM(name, blockletDir, registry);
+      await downloadPackageFromNPM(blockname, blockletDir, registry);
     }
   } else {
-    await downloadPackageFromNPM(name, blockletDir, registry);
+    await downloadPackageFromNPM(blockname, blockletDir, registry);
   }
 
   return blockletDir;
@@ -166,7 +218,9 @@ function execute(data) {
 }
 
 // Run the cli interactively
-async function run({ args: [blockletName = ''], opts: { localBlocklet } }) {
+async function run({ args: [blockletName = ''], opts: { localBlocklet, target } }) {
+  const targetDir = await getTargetDir(target);
+
   let blocklets = await wrapSpinner(
     'Fetching blocklets information...',
     getBlocklets,
@@ -190,10 +244,11 @@ async function run({ args: [blockletName = ''], opts: { localBlocklet } }) {
   );
 
   const Handler = getHandlerByBlockletGroup(blockletConfig.group);
-  const handler = new Handler(blockletConfig);
+  const handler = new Handler({ blockletConfig, targetDir, blockletDir });
 
-  await handler.verify({ cwd: blockletDir });
-  await handler.handle({ cwd: blockletDir });
+  await handler.verify();
+  await handler.handle();
+  shell.cd(this.targetDir);
 }
 
 exports.run = run;

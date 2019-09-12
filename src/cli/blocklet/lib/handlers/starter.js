@@ -1,3 +1,5 @@
+const chalk = require('chalk');
+
 const { isEmptyDirectory } = require('core/forge-fs');
 
 const BaseHandler = require('./base');
@@ -12,8 +14,8 @@ class StarterHandler extends BaseHandler {
       throw new Error(`There is no '${TEMPLATES_FIELD_NAME}' config in blocklet.json`);
     }
 
-    if (!isEmptyDirectory(process.cwd())) {
-      throw new Error('Current directory is not empty');
+    if (!isEmptyDirectory(this.targetDir)) {
+      throw new Error(`Target directory ${chalk.cyan(this.targetDir)} is not empty`);
     }
   }
 }

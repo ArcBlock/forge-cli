@@ -6,15 +6,6 @@ const { printInfo } = require('core/util');
 
 const TEMPLATES_FIELD_NAME = 'templates';
 
-const runInstallationScripts = (scripts = {}, { cwd }) => {
-  if (scripts['install-dependencies']) {
-    childProcess.execSync(`${scripts['install-dependencies']} --color always`, {
-      stdio: 'inherit',
-      cwd,
-    });
-  }
-};
-
 /**
  *
  * @param {string|array} source
@@ -37,8 +28,23 @@ const copyFiles = (sourceRoot, file, target) => {
 };
 
 class BaseHandler {
-  constructor(blockletConfig) {
+  constructor({ blockletConfig, targetDir, blockletDir }) {
     this.blockletConfig = blockletConfig;
+    this.blockletDir = blockletDir;
+    this.targetDir = targetDir;
+  }
+
+  execExitOnError(cmd, options) {
+    const opt = JSON.parse(JSON.stringify(options));
+    opt.stdio = 'inherit';
+    const env = { FORGE_BLOCKLET_TARGET_DIR: this.targetDir };
+    if (opt.env) {
+      Object.assign(env, opt.env);
+    }
+
+    opt.env = Object.assign(process.env, env);
+
+    childProcess.execSync(cmd, opt);
   }
 
   verify() {
@@ -47,7 +53,7 @@ class BaseHandler {
     }
   }
 
-  async handle({ cwd }) {
+  async handle() {
     const { 'install-scripts': scripts, hooks = {} } = this.blockletConfig;
     if (!hooks) {
       printInfo('No hooks');
@@ -55,27 +61,33 @@ class BaseHandler {
     }
 
     if (hooks['pre-copy']) {
-      childProcess.execSync(hooks['pre-copy'], { stdio: 'inherit', cwd: process.cwd() });
+      this.execExitOnError(hooks['pre-copy'], { cwd: this.blockletDir });
     }
 
-    copyFiles(cwd, this.blockletConfig[TEMPLATES_FIELD_NAME], process.cwd());
+    if (scripts['install-dependencies']) {
+      this.execExitOnError(`${scripts['install-dependencies']}`, {
+        cwd: this.blockletDir,
+      });
+    }
 
-    runInstallationScripts(scripts, { cwd, targetDir: process.cwd() });
+    copyFiles(this.blockletDir, this.blockletConfig[TEMPLATES_FIELD_NAME], this.targetDir);
 
     if (hooks.configure) {
-      childProcess.execSync(hooks.configure, {
-        stdio: 'inherit',
-        cwd,
-        env: Object.assign(process.env, { FORGE_BLOCKLET_TARGET_DIR: process.cwd() }),
+      this.execExitOnError(hooks.configure, {
+        cwd: this.blockletDir,
       });
     }
 
     if (hooks['post-copy']) {
-      childProcess.execSync(hooks['post-copy'], { stdio: 'inherit', cwd: process.cwd() });
+      this.execExitOnError(hooks['post-copy'], {
+        cwd: this.targetDir,
+      });
     }
 
     if (hooks['on-complete']) {
-      childProcess.execSync(hooks['on-complete'], { stdio: 'inherit', cwd });
+      this.execExitOnError(hooks['on-complete'], {
+        cwd: this.blockletDir,
+      });
     }
   }
 }

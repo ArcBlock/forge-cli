@@ -311,7 +311,8 @@ async function askUserConfigs(
         name: 'accountSourceType',
         message: 'Input token holder address, or generate if do not have one?',
         when: d => d.moderatorAsTokenHolder === false || !moderator,
-        choices: ['Input', 'Generate'],
+        choices: ['Generate', 'Input'],
+        default: 'Generate',
       },
       {
         type: 'text',
@@ -358,6 +359,7 @@ async function askUserConfigs(
     const wallet = generateDefaultAccount();
     answers.tokenHolderAddress = wallet.address;
     answers.tokenHolderPk = wallet.pk_base64_url;
+    answers.tokenHolderSk = wallet.sk_base64_url;
   }
 
   const {
@@ -456,10 +458,14 @@ async function askUserConfigs(
   print(hr);
 
   if (answers.accountSourceType === 'Generate') {
-    printInfo('Generated account:');
-    print('Holder address:', chalk.cyan(tokenHolderAddress));
-    print('Holder PK:', chalk.cyan(tokenHolderPk));
+    print('\n======================================================');
+    printInfo(chalk.yellow('Generated Token Holder Account (Please Keep the SecretKey safe):'));
+    print('======================================================');
+    print('Address:', chalk.cyan(tokenHolderAddress));
+    print('PublicKey:', chalk.cyan(tokenHolderPk));
+    print('SecretKey:', chalk.cyan(answers.tokenHolderSk));
     print(hr);
+    print('\n');
   }
 
   return result;

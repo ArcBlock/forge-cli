@@ -1,3 +1,8 @@
+## 0.38.12 (September 12, 2019)
+
+- blocklet: load blocklet from npm
+- blocklet: load local blocklet
+
 ## 0.38.11 (September 12, 2019)
 
 - chore: download forge-swap

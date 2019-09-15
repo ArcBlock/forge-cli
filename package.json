@@ -1,6 +1,6 @@
 {
   "name": "@arcblock/forge-cli",
-  "version": "0.38.11",
+  "version": "0.38.12",
   "description": "a general set of CLI for arcblock Forge framework",
   "license": "Apache-2.0",
   "main": "src/index.js",
@@ -90,6 +90,7 @@
     "fuzzy": "^0.1.3",
     "get-port": "^5.0.0",
     "getos": "^3.1.1",
+    "git-url-parse": "^11.1.2",
     "glob": "^7.1.2",
     "inquirer": "^5.2.0",
     "inquirer-autocomplete-prompt": "^0.12.2",

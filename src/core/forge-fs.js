@@ -385,6 +385,7 @@ module.exports = {
   getStorageEnginePath,
   getChainKeyFilePath,
   getLocalVersions,
+  isEmptyDirectory,
   isForgeBinExists,
   isReleaseBinExists,
   isDirectory,

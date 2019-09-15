@@ -149,7 +149,7 @@ async function compileJavascript({ sourceDir, targetDir, config, protoFile, outp
 
   shell.exec(
     // eslint-disable-next-line max-len
-    `grpc_tools_node_protoc --proto_path=${sourceDir} --js_out=import_style=commonjs,binary:${targetJsDir} --plugin=protoc-gen-grpc=\`which grpc_tools_node_protoc_plugin\` ${protoFile}`
+    `grpc_tools_node_protoc --proto_path=/tmp/forge_compiler_vendors --proto_path=${sourceDir} --js_out=import_style=commonjs,binary:${targetJsDir} --plugin=protoc-gen-grpc=\`which grpc_tools_node_protoc_plugin\` ${protoFile}`
   );
   shell.echo(
     `${symbols.success} protobuf js generated: ${targetJsDir.replace(
@@ -157,7 +157,9 @@ async function compileJavascript({ sourceDir, targetDir, config, protoFile, outp
       ''
     )}/protocol_pb.js`
   );
-  shell.exec(`pbjs -p ${sourceDir} -t json -o ${targetJsDir}/protocol_spec.json ${protoFile}`);
+  shell.exec(
+    `pbjs -p /tmp/forge_compiler_vendors -p ${sourceDir} -t json -o ${targetJsDir}/protocol_spec.json ${protoFile}`
+  );
   shell.echo(
     `${symbols.success} json spec generated: ${targetJsDir.replace(
       outputPrefix,

@@ -6,6 +6,7 @@ const { print } = require('core/util');
 const { execute, run } = require('./use');
 
 cli('blocklet:use', 'Download and install a blocklet', input => action(execute, run, input), {
+  alias: 'project:create',
   requirements: {
     forgeRelease: false,
     runningNode: false,

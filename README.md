@@ -74,6 +74,7 @@ Options:
   -r, --npmRegistry <registry>           Specify a custom npm registry
   -y, --yes                              Assume that the answer to any confirmation question is yes
   -d, --defaults                         Run command using default values for all questions
+  -m, --mirror <url>                     Mirror host used to download forge release
   -g, --socket-grpc <endpoint>           Socket gRPC endpoint to connect, with this you can use forge-cli with a remote node
   -h, --help                             output usage information
 
@@ -91,7 +92,7 @@ Commands:
   checkin                                Send a poke tx to the network to get tokens for test
   config [options] [action]              Read/write chain/node config
   declare:node                           Declare the current node to be a validator candidate
-  download [options] [version]           Download a forge release without activate it
+  download [version]                     Download a forge release without activate it
   help <subcommand>                      Show help of a sub command
   install|init [options] [version]       Download and setup forge release on this machine
   join <endpoint>                        Join a network by providing a valid forge web graphql endpoint

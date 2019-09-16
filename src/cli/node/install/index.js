@@ -14,10 +14,7 @@ cli(
       forgeRelease: false,
       rpcClient: false,
     },
-    options: [
-      ['-m, --mirror <url>', 'Mirror host used to download forge release'],
-      ['-s, --silent', 'Install release silently, do not prompt for config customization'],
-    ],
+    options: [['-s, --silent', 'Install release silently, do not prompt for config customization']],
     handlers: {
       '--help': () => {
         shell.echo(`

@@ -14,7 +14,6 @@ cli(
       rpcClient: false,
       wallet: false,
     },
-    options: [['-m, --mirror <url>', 'Mirror host used to download forge release']],
     handlers: {
       '--help': () => {
         shell.echo(`

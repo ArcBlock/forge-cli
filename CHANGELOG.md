@@ -1,3 +1,8 @@
+## 0.38.13 (September 16, 2019)
+
+- chore: move mirror param to global
+- fix: global mirror settings not used when download and install
+
 ## 0.38.12 (September 12, 2019)
 
 - blocklet: load blocklet from npm

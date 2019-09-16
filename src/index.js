@@ -62,7 +62,11 @@ const getCurrentChainENV = async (command, action, argsChainName) => {
 };
 
 const shouldPrintCurrentChain = (currentChainName, command) => {
-  if (['chain:remove', 'chain:create', 'ls:remote', 'ls', 'help'].includes(command)) {
+  if (
+    ['chain:remove', 'protocol:compile', 'chain:create', 'ls:remote', 'ls', 'help'].includes(
+      command
+    )
+  ) {
     return false;
   }
 
@@ -119,6 +123,7 @@ const run = async () => {
     .option('-r, --npmRegistry <registry>', 'Specify a custom npm registry')
     .option('-y, --yes', 'Assume that the answer to any confirmation question is yes')
     .option('-d, --defaults', 'Run command using default values for all questions')
+    .option('-m, --mirror <url>', 'Mirror host used to download forge release')
     .option(
       '-g, --socket-grpc <endpoint>',
       'Socket gRPC endpoint to connect, with this you can use forge-cli with a remote node'

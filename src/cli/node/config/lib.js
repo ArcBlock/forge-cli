@@ -1,20 +1,22 @@
 const fs = require('fs');
+const fsExtra = require('fs-extra');
 const path = require('path');
 const chalk = require('chalk');
-const shell = require('shelljs');
 const numeral = require('numeral');
 const inquirer = require('inquirer');
 const get = require('lodash/get');
+const cloneDeep = require('lodash/cloneDeep');
 const toml = require('@iarna/toml');
 const base64 = require('base64-url');
 const base64Img = require('base64-img');
 const kebabCase = require('lodash/kebabCase');
+const semver = require('semver');
 
 const { isValid, isFromPublicKey } = require('@arcblock/did');
 
 const { ensureConfigComment } = require('core/env');
 const { getModerator } = require('core/moderator');
-const { symbols, hr, pretty } = require('core/ui');
+const { hr, pretty } = require('core/ui');
 const { print, printInfo, printError, printSuccess } = require('core/util');
 const debug = require('core/debug')('config:lib');
 const { getChainDirectory } = require('core/forge-fs');
@@ -34,11 +36,14 @@ function getNumberValidator(label, integer = true) {
   };
 }
 
-async function askUserConfigs(
-  defaults,
+async function readUserConfigs(
+  configs,
   chainName = '',
   { isCreate = false, interactive = true } = {}
 ) {
+  const defaults = cloneDeep(configs);
+  defaults.forge.prime.token_holder = defaults.forge.prime.token_holder || {};
+
   const tokenDefaults = Object.assign(
     {
       name: 'ArcBlock',
@@ -57,17 +62,23 @@ async function askUserConfigs(
 
   const pokeDefaults = Object.assign(
     {
-      address: 'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz',
-      balance: 4000000000,
       daily_limit: 2500000,
       amount: 25,
     },
-    defaults.forge.poke || {}
+    defaults.forge.transaction.poke || {}
+  );
+
+  const tokenHolderDefaults = Object.assign(
+    {
+      address: 'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz',
+      balance: 4000000000,
+    },
+    defaults.forge.prime.token_holder || {}
   );
 
   // default icon file
   const iconFile = path.join(REQUIRED_DIRS.tmp, 'token.png');
-  shell.exec(`rm -f ${iconFile}`);
+  fsExtra.removeSync(iconFile);
   base64Img.imgSync(tokenDefaults.icon, REQUIRED_DIRS.tmp, 'token');
 
   // moderator
@@ -220,7 +231,10 @@ async function askUserConfigs(
         type: 'confirm',
         name: 'enablePoke',
         message: 'Do you want to enable "feel lucky" (poke) feature for this chain?',
-        default: typeof defaults.forge.poke === 'undefined' ? true : defaults.forge.poke.amount,
+        default:
+          typeof defaults.forge.transaction.poke === 'undefined'
+            ? true
+            : defaults.forge.transaction.amount,
       },
       {
         type: 'confirm',
@@ -233,7 +247,9 @@ async function askUserConfigs(
         type: 'number',
         name: 'pokeAmount',
         message: 'How much token to give on a successful poke?',
-        default: defaults.forge.poke ? defaults.forge.poke.amount : pokeDefaults.amount,
+        default: defaults.forge.transaction.poke
+          ? defaults.forge.transaction.poke.amount
+          : pokeDefaults.amount,
         when: d => d.customizePoke,
         validate: getNumberValidator('poke amount', false),
         transformer: v => numeral(v).format('0,0.0000'),
@@ -275,7 +291,11 @@ async function askUserConfigs(
         message: d => {
           const total = d.customizeToken ? d.tokenInitialSupply : tokenDefaults.initial_supply;
           // eslint-disable-next-line no-nested-ternary
-          const poked = d.enablePoke ? (d.customizePoke ? d.pokeBalance : pokeDefaults.balance) : 0;
+          const poked = d.enablePoke
+            ? d.customizePoke
+              ? d.pokeBalance
+              : tokenHolderDefaults.balance
+            : 0;
           const symbol = d.customizeToken ? d.tokenSymbol : tokenDefaults.symbol;
           return `Set moderator as token owner of (${total - poked} ${symbol}) on chain start?`;
         },
@@ -379,32 +399,37 @@ async function askUserConfigs(
 
   // poke config
   if (enablePoke) {
-    defaults.forge.poke = pokeDefaults;
+    defaults.forge.transaction.poke = pokeDefaults;
     if (customizePoke) {
-      defaults.forge.poke.balance = Number(pokeBalance || defaults.forge.poke.balance);
-      defaults.forge.poke.daily_limit = Number(pokeDailyLimit || defaults.forge.poke.daily_limit);
-      defaults.forge.poke.amount = Number(pokeAmount || defaults.forge.poke.amount);
+      defaults.forge.prime.token_holder.balance = Number(
+        pokeBalance || defaults.forge.prime.token_holder.balance
+      );
+      defaults.forge.transaction.poke.daily_limit = Number(
+        pokeDailyLimit || defaults.forge.transaction.poke.daily_limit
+      );
+      defaults.forge.transaction.poke.amount = Number(
+        pokeAmount || defaults.forge.transaction.poke.amount
+      );
     }
   } else {
-    defaults.forge.poke = {};
-    defaults.forge.poke.balance = 0;
-    defaults.forge.poke.daily_limit = 0;
-    defaults.forge.poke.amount = 0;
+    defaults.forge.transaction.poke = {};
+    defaults.forge.prime.token_holder.balance = 0;
+    defaults.forge.transaction.poke.daily_limit = 0;
+    defaults.forge.transaction.poke.amount = 0;
   }
 
   // moderator config
   if (includeModerator) {
-    if (!defaults.forge.moderator) {
-      defaults.forge.moderator = {};
-    }
-    defaults.forge.moderator.address = moderator.address;
-    defaults.forge.moderator.publicKey = moderator.publicKey;
+    defaults.forge.prime.moderator = defaults.forge.prime.moderator || {};
+
+    defaults.forge.prime.moderator.address = moderator.address;
+    defaults.forge.prime.moderator.pk = moderator.publicKey;
   }
 
   // accounts config
   const total = customizeToken ? tokenInitialSupply : tokenDefaults.initial_supply;
   // eslint-disable-next-line no-nested-ternary
-  const poked = enablePoke ? (customizePoke ? pokeBalance : pokeDefaults.balance) : 0;
+  const poked = enablePoke ? (customizePoke ? pokeBalance : tokenHolderDefaults.balance) : 0;
   if (moderatorAsTokenHolder) {
     defaults.forge.accounts = [
       {
@@ -445,6 +470,78 @@ async function askUserConfigs(
   return result;
 }
 
+const mapToStandard = configs => {
+  const result = cloneDeep(configs);
+  result.forge.transaction = result.forge.transaction || {};
+
+  result.forge.prime = result.forge.prime || {};
+  result.forge.prime.token_holder = result.forge.prime.token_holder
+    ? result.forge.prime.token_holder
+    : {};
+
+  result.forge.prime.moderator = result.forge.moderator;
+  result.forge.transaction.stake = result.forge.stake.timeout;
+  result.forge.transaction.stake.timeout_general = result.forge.transaction.stake.general;
+  result.forge.transaction.stake.timeout_stake_for_node =
+    result.forge.transaction.stake.stake_for_node;
+
+  return result;
+};
+
+const mapToLittleThan0380 = configs => {
+  const result = cloneDeep(configs);
+  result.forge.poke = result.forge.transaction.poke || {};
+
+  result.forge.poke.address = result.forge.prime.token_holder.address;
+  result.forge.poke.balance = result.forge.prime.token_holder.balance;
+  result.forge.moderator = result.forge.prime.moderator;
+
+  const { general, stake_for_node } = result.forge.transaction.stake; // eslint-disable-line
+  result.forge.stake.timeout = Object.assign(result.forge.transaction.stake, {
+    general,
+    stake_for_node,
+  });
+
+  if (result.forge.transaction.poke) {
+    delete result.forge.transaction.poke;
+  }
+  if (result.forge.prime) {
+    delete result.forge.prime;
+  }
+
+  if (result.forge.transaction.stake) {
+    delete result.forge.transaction.stake;
+  }
+
+  return result;
+};
+
+async function getCustomConfigs(
+  defaults,
+  forgeCoreVersion,
+  { chainName = '', isCreate = false, interactive = true } = {}
+) {
+  const configs = cloneDeep(defaults);
+
+  if (semver.lt(forgeCoreVersion, '0.38.0')) {
+    // for forge core version gte 0.38.0
+    const userConfigs = await readUserConfigs(mapToStandard(configs), chainName, {
+      isCreate,
+      interactive,
+    });
+
+    const result = mapToLittleThan0380(userConfigs);
+
+    return result;
+  }
+
+  if (semver.gte(forgeCoreVersion, '0.38.0')) {
+    return readUserConfigs(configs, chainName, { isCreate, interactive });
+  }
+
+  return readUserConfigs(configs, chainName, { isCreate, interactive }); // for always return a value in a function
+}
+
 async function writeConfigs(targetPath, configs, overwrite = true) {
   if (fs.existsSync(targetPath) && !overwrite) {
     debug('config file exists');
@@ -453,9 +550,9 @@ async function writeConfigs(targetPath, configs, overwrite = true) {
 
   fs.writeFileSync(targetPath, ensureConfigComment(toml.stringify(configs)));
   const docUrl = 'https://docs.arcblock.io/forge/latest/core/configuration.html!';
-  shell.echo(`${symbols.success} config file ${chalk.cyan(targetPath)} is updated!`);
-  shell.echo(`${symbols.info} full configuration documentation: ${chalk.cyan(docUrl)}`);
-  shell.echo(hr);
+  printSuccess(`config file ${chalk.cyan(targetPath)} is updated!`);
+  printInfo(`full configuration documentation: ${chalk.cyan(docUrl)}`);
+  print(hr);
 }
 
-module.exports = { askUserConfigs, writeConfigs, getModerator };
+module.exports = { getCustomConfigs, writeConfigs };

@@ -6,10 +6,10 @@ const { isForgeStarted } = require('core/forge-process');
 const GraphQLClient = require('@arcblock/graphql-client');
 const toml = require('@iarna/toml');
 
-const { getChainReleaseFilePath } = require('core/forge-fs');
+const { getChainReleaseFilePath, getChainConfig } = require('core/forge-fs');
 const { print, printInfo, printSuccess, printWarning } = require('core/util');
 
-const { askUserConfigs, writeConfigs } = require('./lib');
+const { getCustomConfigs, writeConfigs } = require('./lib');
 
 async function main({
   args: [action = 'get'],
@@ -39,16 +39,11 @@ async function main({
     if (isStarted) {
       printWarning(
         `${chalk.yellow(
-          'You are trying to modify the configuration of a running forge chain/node.'
+          `
+You are trying to modify the configuration of a running forge chain/node.
+  Token and chainId configuration cannot be changed once the chain is started.
+  If you really need to do so, please stop and reset the chain first.`.trim()
         )}`
-      );
-      printWarning(
-        `${chalk.yellow(
-          'token and chainId configuration cannot be changed once the chain is started'
-        )}`
-      );
-      printWarning(
-        `${chalk.yellow('If you really need to do so, please stop and reset the chain first')}`
       );
 
       process.exit(1);
@@ -56,7 +51,9 @@ async function main({
 
     const originConfigFilePath = getChainReleaseFilePath(chainName);
     const defaultConfig = toml.parse(fs.readFileSync(originConfigFilePath).toString());
-    const configs = await askUserConfigs(defaultConfig, chainName, {
+    const { version: forgeCoreVersion } = getChainConfig(chainName);
+    const configs = await getCustomConfigs(defaultConfig, forgeCoreVersion, {
+      chainName,
       isCreate: false,
       interactive: !defaults,
     });

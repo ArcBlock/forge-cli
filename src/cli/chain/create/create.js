@@ -9,7 +9,7 @@ const {
   getOriginForgeReleaseFilePath,
   getChainReleaseFilePath,
 } = require('core/forge-fs');
-const { askUserConfigs, writeConfigs } = require('../../node/config/lib');
+const { getCustomConfigs, writeConfigs } = require('../../node/config/lib');
 
 async function main({ args: [chainName = ''], opts: { defaults, allowMultiChain = false } }) {
   if (allowMultiChain === false) {
@@ -17,10 +17,16 @@ async function main({ args: [chainName = ''], opts: { defaults, allowMultiChain 
     process.exit(0);
   }
   try {
+    const forgeCoreVersion = config.get('cli').currentVersion;
     let configs = toml.parse(
-      fs.readFileSync(getOriginForgeReleaseFilePath(config.get('cli').currentVersion)).toString()
+      fs.readFileSync(getOriginForgeReleaseFilePath(forgeCoreVersion)).toString()
     );
-    configs = await askUserConfigs(configs, chainName, { interactive: !defaults, isCreate: true });
+
+    configs = await getCustomConfigs(configs, forgeCoreVersion, {
+      chainName,
+      interactive: !defaults,
+      isCreate: true,
+    });
 
     const {
       app: { name },

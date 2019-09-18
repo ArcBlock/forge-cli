@@ -245,7 +245,7 @@ function ensureChainDirectory(chainName = process.env.FORGE_CURRENT_CHAIN) {
     fs.mkdirSync(getDataDirectory(chainName), { recursive: true });
     fs.mkdirSync(path.join(forgeChainDir, 'keys'), { recursive: true });
     updateChainConfig(chainName, { version: getGlobalForgeVersion() });
-    print(`Initialized an empty storage space in ${forgeChainDir}`);
+    printSuccess(`Initialized an empty storage space in ${forgeChainDir}`);
   }
 
   return forgeChainDir;

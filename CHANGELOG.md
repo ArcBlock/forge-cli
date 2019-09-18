@@ -2,6 +2,7 @@
 
 - feat: include moderator in the config file for default chain
 - fix: do not panic when current forge-release not set
+- fit to forge configs of greater than v0.38.0
 
 ## 0.38.14 (September 19, 2019)
 

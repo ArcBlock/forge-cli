@@ -23,6 +23,7 @@ const {
   getChainWorkshopDirectory,
   getChainDirectory,
   getChainReleaseFilePath,
+  getLocalVersions,
   updateChainConfig,
 } = require('./forge-fs');
 const {
@@ -301,10 +302,9 @@ async function ensureForgeRelease({
       }
     } catch (err) {
       debug.error('ensureForgeRelease.readConfig.error', err);
-      if (exitOn404) {
-        printError(`config file ${releaseYamlPath} invalid`);
-        process.exit(1);
-      }
+      const latestLocal = getLocalVersions().pop();
+      cliConfig.globalVersion = latestLocal;
+      cliConfig.currentVersion = latestLocal;
 
       return false;
     }

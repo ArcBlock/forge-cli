@@ -10,11 +10,10 @@ const base64 = require('base64-url');
 const base64Img = require('base64-img');
 const kebabCase = require('lodash/kebabCase');
 
-const { fromSecretKey } = require('@arcblock/forge-wallet');
 const { isValid, isFromPublicKey } = require('@arcblock/did');
-const { bytesToHex, hexToBytes, isHexStrict } = require('@arcblock/forge-util');
 
 const { ensureConfigComment } = require('core/env');
+const { getModerator } = require('core/moderator');
 const { symbols, hr, pretty } = require('core/ui');
 const { print, printInfo, printError, printSuccess } = require('core/util');
 const debug = require('core/debug')('config:lib');
@@ -23,20 +22,6 @@ const { setFilePathOfConfig } = require('core/forge-config');
 
 const { REQUIRED_DIRS } = require('../../../constant');
 const { generateDefaultAccount } = require('../../account/lib/index');
-
-function getModeratorSecretKey() {
-  const sk = process.env.FORGE_MODERATOR_SK;
-
-  if (!sk) {
-    return undefined;
-  }
-
-  if (isHexStrict(sk)) {
-    return sk;
-  }
-
-  return bytesToHex(Buffer.from(base64.unescape(sk), 'base64'));
-}
 
 function getNumberValidator(label, integer = true) {
   return v => {
@@ -47,15 +32,6 @@ function getNumberValidator(label, integer = true) {
     }
     return true;
   };
-}
-
-function getModerator() {
-  const sk = getModeratorSecretKey();
-  if (sk) {
-    return fromSecretKey(sk);
-  }
-
-  return undefined;
 }
 
 async function askUserConfigs(
@@ -421,10 +397,8 @@ async function askUserConfigs(
     if (!defaults.forge.moderator) {
       defaults.forge.moderator = {};
     }
-    defaults.forge.moderator.address = moderator.toAddress();
-    defaults.forge.moderator.publicKey = base64.escape(
-      base64.encode(hexToBytes(moderator.publicKey))
-    );
+    defaults.forge.moderator.address = moderator.address;
+    defaults.forge.moderator.publicKey = moderator.publicKey;
   }
 
   // accounts config
@@ -434,8 +408,8 @@ async function askUserConfigs(
   if (moderatorAsTokenHolder) {
     defaults.forge.accounts = [
       {
-        address: moderator.toAddress(),
-        pk: base64.escape(base64.encode(hexToBytes(moderator.publicKey))),
+        address: moderator.address,
+        pk: moderator.publicKey,
         balance: total - poked,
       },
     ];
@@ -484,4 +458,4 @@ async function writeConfigs(targetPath, configs, overwrite = true) {
   shell.echo(hr);
 }
 
-module.exports = { askUserConfigs, writeConfigs };
+module.exports = { askUserConfigs, writeConfigs, getModerator };

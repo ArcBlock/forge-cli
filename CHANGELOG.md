@@ -1,3 +1,8 @@
+## 0.38.15 (September 19, 2019)
+
+- feat: include moderator in the config file for default chain
+- fix: do not panic when current forge-release not set
+
 ## 0.38.14 (September 19, 2019)
 
 - improvement: use url.resolve instead of concat strings to concat url

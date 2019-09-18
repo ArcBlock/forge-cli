@@ -1,3 +1,8 @@
+## 0.38.14 (September 18, 2019)
+
+- feat: include moderator in the config file for default chain
+- fix: do not panic when current forge-release not set
+
 ## 0.38.13 (September 16, 2019)
 
 - chore: move mirror param to global

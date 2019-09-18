@@ -488,7 +488,7 @@ const mapToStandard = configs => {
   return result;
 };
 
-const mapToLittleThan0380 = configs => {
+const mapToLessThanV38 = configs => {
   const result = cloneDeep(configs);
   result.forge.poke = result.forge.transaction.poke || {};
 
@@ -530,7 +530,7 @@ async function getCustomConfigs(
       interactive,
     });
 
-    const result = mapToLittleThan0380(userConfigs);
+    const result = mapToLessThanV38(userConfigs);
 
     return result;
   }

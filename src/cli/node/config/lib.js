@@ -25,6 +25,8 @@ const { setFilePathOfConfig } = require('core/forge-config');
 const { REQUIRED_DIRS } = require('../../../constant');
 const { generateDefaultAccount } = require('../../account/lib/index');
 
+const DAYS_OF_YEAR = 365;
+
 function getNumberValidator(label, integer = true) {
   return v => {
     if (!Number(v)) return `The ${label} should be a number`;
@@ -140,8 +142,7 @@ async function readUserConfigs(
       {
         type: 'text',
         name: 'tokenName',
-        // eslint-disable-next-line quotes
-        message: "What's the token name?",
+        message: "What's the token name?", // eslint-disable-line
         default: tokenDefaults.name,
         when: d => d.customizeToken,
         validate: v => {
@@ -155,8 +156,7 @@ async function readUserConfigs(
       {
         type: 'text',
         name: 'tokenSymbol',
-        // eslint-disable-next-line quotes
-        message: "What's the token symbol?",
+        message: "What's the token symbol?", // eslint-disable-line
         default: tokenDefaults.symbol,
         when: d => d.customizeToken,
         validate: v => {
@@ -170,8 +170,7 @@ async function readUserConfigs(
       {
         type: 'text',
         name: 'tokenIcon',
-        // eslint-disable-next-line quotes
-        message: "What's the token icon?",
+        message: "What's the token icon?", // eslint-disable-line
         default: iconFile,
         when: d => d.customizeToken,
         validate: v => {
@@ -214,9 +213,21 @@ async function readUserConfigs(
         type: 'number',
         name: 'tokenInitialSupply',
         message: 'Please input token initial supply:',
-        default: tokenDefaults.initial_supply,
+        default: answers => answers.tokenTotalSupply || tokenDefaults.initial_supply,
         when: d => d.customizeToken,
-        validate: getNumberValidator('initial supply'),
+        validate: (v, answers) => {
+          const basicValidation = getNumberValidator('initial supply')(v);
+          if (basicValidation !== true) {
+            return basicValidation;
+          }
+          const initialSupply = Number(v);
+          const totalSupply = Number(answers.tokenTotalSupply);
+          if (initialSupply > totalSupply) {
+            return 'initial supply should less or equal than total supply';
+          }
+
+          return true;
+        },
         transformer: v => numeral(v).format('0,0'),
       },
       {
@@ -251,16 +262,46 @@ async function readUserConfigs(
           ? defaults.forge.transaction.poke.amount
           : pokeDefaults.amount,
         when: d => d.customizePoke,
-        validate: getNumberValidator('poke amount', false),
+        validate: (v, answers) => {
+          const basicValidation = getNumberValidator('poke amount', false)(v);
+          if (basicValidation !== true) {
+            return basicValidation;
+          }
+
+          const pokeAmount = Number(v);
+          const tokenInitialSupply = Number(answers.tokenInitialSupply);
+          if (pokeAmount * DAYS_OF_YEAR * 4 > tokenInitialSupply) {
+            return 'Poke amount is too big. Make sure it is less than daily amount * 365 * 4';
+          }
+
+          return true;
+        },
         transformer: v => numeral(v).format('0,0.0000'),
       },
       {
         type: 'number',
         name: 'pokeDailyLimit',
         message: 'How much token can be poked daily?',
-        default: d => d.pokeAmount * 100000,
+        default: d => Math.floor(Number(d.tokenInitialSupply) / (4 * DAYS_OF_YEAR)),
         when: d => d.customizePoke,
-        validate: getNumberValidator('daily poke limit', false),
+        validate: (v, answers) => {
+          const basicValidation = getNumberValidator('daily poke limit', false)(v);
+          if (basicValidation !== true) {
+            return basicValidation;
+          }
+
+          const dailyLimit = Number(v);
+          const pokeAmount = Number(answers.pokeAmount);
+          if (dailyLimit < pokeAmount) {
+            return 'Poke daily limit should greater or equal than poke amount';
+          }
+
+          if (dailyLimit * DAYS_OF_YEAR * 4 > Number(answers.tokenInitialSupply)) {
+            return 'Poke amount is too big. Make sure it is less than daily amount * 365 * 4';
+          }
+
+          return true;
+        },
         transformer: v => numeral(v).format('0,0'),
       },
       {
@@ -275,7 +316,20 @@ async function readUserConfigs(
               tokenDefaults.initial_supply
           ),
         when: d => d.customizePoke,
-        validate: getNumberValidator('total poke amount', false),
+        validate: (v, answers) => {
+          const basicValidation = getNumberValidator('total poke amount', false)(v);
+          if (basicValidation !== true) {
+            return basicValidation;
+          }
+
+          const pokeDailyLimit = Number(answers.pokeDailyLimit);
+          const totalPokeToken = pokeDailyLimit * 4 * DAYS_OF_YEAR;
+          if (Number(v) < totalPokeToken) {
+            return 'Poke balance is too small. Make sure it is bigger than daily limit * 365 * 4';
+          }
+
+          return true;
+        },
         transformer: v => numeral(v).format('0,0'),
       },
       {

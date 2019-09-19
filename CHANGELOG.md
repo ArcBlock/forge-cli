@@ -1,3 +1,9 @@
+## 0.38.14 (September 19, 2019)
+
+- improvement: use url.resolve instead of concat strings to concat url
+- fix unintended exit before download sucessfully #226
+- improvement:
+
 ## 0.38.13 (September 16, 2019)
 
 - chore: move mirror param to global

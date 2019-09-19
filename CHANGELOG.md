@@ -1,8 +1,8 @@
-## 0.38.14 (September 18, 2019)
+## 0.38.14 (September 19, 2019)
 
-- feat: include moderator in the config file for default chain
-- fix: do not panic when current forge-release not set
-- fit to forge configs of greater than v0.38.0
+- improvement: use url.resolve instead of concat strings to concat url
+- fix unintended exit before download successfully #226
+- improvement: throw error if download incomplete
 
 ## 0.38.13 (September 16, 2019)
 

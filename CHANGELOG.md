@@ -1,3 +1,7 @@
+## 0.38.16 (September 19, 2019)
+
+- feature: add token validations when custom forge configs #219
+
 ## 0.38.15 (September 19, 2019)
 
 - feat: include moderator in the config file for default chain

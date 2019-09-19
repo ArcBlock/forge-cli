@@ -9,6 +9,7 @@ const os = require('os');
 const shell = require('shelljs');
 const semver = require('semver');
 const tar = require('tar');
+const URL = require('url');
 const inquirer = require('inquirer');
 const { spawn } = require('child_process');
 const { symbols, hr, getSpinner, getProgress } = require('core/ui');
@@ -78,7 +79,7 @@ function getAssetInfo({ platform, version, key, mirror, releaseDir }) {
     }
   }
 
-  const url = `${mirror}/forge/${version}/${name}`;
+  const url = URL.resolve(mirror, `forge/${version}/${name}`);
 
   return { url, name };
 }

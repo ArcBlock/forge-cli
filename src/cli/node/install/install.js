@@ -155,6 +155,10 @@ function download(assetInfo) {
         });
 
         response.data.on('end', () => {
+          if (!response.data.complete) {
+            return reject(new Error('download incomplete'));
+          }
+
           const buffer = Buffer.concat(bufferArray);
           fs.writeFileSync(assetDest, buffer);
           debug(`${assetInfo.name} download success: ${assetDest}`);
@@ -173,6 +177,7 @@ function download(assetInfo) {
 
 async function expandReleaseTarball(filePath, subFolder, version) {
   const targetDir = path.join(REQUIRED_DIRS.release, subFolder, version);
+  fsExtra.removeSync(targetDir);
   fs.mkdirSync(targetDir, { recursive: true });
   await tar.x({ file: filePath, C: targetDir, strip: 1 });
   debug(`Expand release asset ${filePath} to ${targetDir}`);

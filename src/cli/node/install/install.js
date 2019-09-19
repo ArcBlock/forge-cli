@@ -177,9 +177,11 @@ function download(assetInfo) {
 
 async function expandReleaseTarball(filePath, subFolder, version) {
   const targetDir = path.join(REQUIRED_DIRS.release, subFolder, version);
-  fsExtra.removeSync(targetDir);
+
+  fsExtra.removeSync(targetDir); // ensure target directory is empty
   fs.mkdirSync(targetDir, { recursive: true });
-  await tar.x({ file: filePath, C: targetDir, strip: 1 });
+
+  tar.x({ file: filePath, C: targetDir, strip: 1, sync: true });
   debug(`Expand release asset ${filePath} to ${targetDir}`);
 }
 

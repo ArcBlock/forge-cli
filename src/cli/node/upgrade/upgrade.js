@@ -14,7 +14,7 @@ const {
   printSuccess,
   strEqual,
 } = require('core/util');
-const { checkStartError, listReleases } = require('core/forge-fs');
+const { checkStartError, listReleases, updateChainConfig } = require('core/forge-fs');
 const { isForgeStartedByStarter } = require('core/forge-process');
 const debug = require('core/debug')('upgrade');
 
@@ -50,9 +50,7 @@ const execExceptionOnError = failedMessage => (...args) => {
 };
 
 const useNewVersion = (chainName, version) => {
-  execExceptionOnError('use new version failed')(
-    `forge use ${version} -c ${chainName} --color always`
-  );
+  updateChainConfig(chainName, { version });
   execExceptionOnError('stop web failed')(`forge web stop -c ${chainName} --color always`, {
     silent: true,
   });

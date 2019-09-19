@@ -5,6 +5,8 @@ const path = require('path');
 const { get, set } = require('lodash');
 const TOML = require('@iarna/toml');
 
+const { getModerator } = require('core/moderator');
+
 const {
   DEFAULT_CHAIN_NAME,
   DEFAULT_FORGE_WEB_PORT,
@@ -23,6 +25,7 @@ const {
   getChainWorkshopDirectory,
   getChainDirectory,
   getChainReleaseFilePath,
+  getLocalVersions,
   updateChainConfig,
 } = require('./forge-fs');
 const {
@@ -152,6 +155,7 @@ function setConfig(
     workshopPort,
   }
 ) {
+  const moderator = getModerator();
   let content = JSON.parse(JSON.stringify(configs));
 
   set(content, 'forge.web.port', forgeWebPort);
@@ -161,6 +165,10 @@ function setConfig(
   set(content, 'tendermint.sock_p2p', `tcp://0.0.0.0:${tendermintP2pPort}`);
   set(content, 'workshop.port', workshopPort);
   set(content, 'workshop.local_forge', `tcp://127.0.0.1:${forgeGrpcPort}`);
+
+  if (moderator) {
+    set(content, 'forge.moderator', moderator);
+  }
 
   content = setFilePathOfConfig(content, chainName);
 
@@ -301,10 +309,9 @@ async function ensureForgeRelease({
       }
     } catch (err) {
       debug.error('ensureForgeRelease.readConfig.error', err);
-      if (exitOn404) {
-        printError(`config file ${releaseYamlPath} invalid`);
-        process.exit(1);
-      }
+      const latestLocal = getLocalVersions().pop();
+      cliConfig.globalVersion = latestLocal;
+      cliConfig.currentVersion = latestLocal;
 
       return false;
     }

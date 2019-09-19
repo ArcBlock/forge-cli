@@ -111,9 +111,7 @@ async function start(chainName, dryRun = false, allowMultiChain) {
     shell.echo(`${symbols.info} For above process list, please run ${chalk.cyan('forge ps')}`);
     shell.echo(
       `${symbols.info} If you want to know forge status detail, please run ${chalk.cyan(
-        `${symbols.info} For forge status detail, please run ${chalk.cyan(
-          `forge status -c ${chainName}`
-        )}`
+        `forge status -c ${chainName}`
       )}`
     );
     return true;

@@ -137,6 +137,7 @@ function download(assetInfo) {
     axios
       .get(assetInfo.url, {
         responseType: 'stream',
+        timeout: 5 * 60 * 1000, // 5 minutes
       })
       .then(response => {
         const progress = getProgress({

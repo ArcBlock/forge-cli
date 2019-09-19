@@ -5,7 +5,7 @@ const { symbols } = require('core/ui');
 const { config } = require('core/env');
 const { isForgeStarted } = require('core/forge-process');
 const debug = require('core/debug')('release:use');
-const { updateReleaseYaml, updateChainConfig, listReleases } = require('core/forge-fs');
+const { updateReleaseYaml, listReleases } = require('core/forge-fs');
 const { print, printError, printSuccess } = require('core/util');
 
 // eslint-disable-next-line consistent-return
@@ -47,7 +47,7 @@ async function main({
     }
 
     updateReleaseYaml('forge', version);
-    updateChainConfig(chainName, { version });
+
     debug(`'${chainName}' chain version updated:`, version);
 
     printSuccess(`forge v${version} activated successfully!`);

@@ -1,16 +1,15 @@
 const fs = require('fs');
 const chalk = require('chalk');
-const shell = require('shelljs');
-const { symbols, hr } = require('core/ui');
+const { hr } = require('core/ui');
 const { webUrl } = require('core/env');
 const { isForgeStarted } = require('core/forge-process');
 const GraphQLClient = require('@arcblock/graphql-client');
 const toml = require('@iarna/toml');
 
-const { getChainReleaseFilePath } = require('core/forge-fs');
-const { printInfo } = require('core/util');
+const { getChainReleaseFilePath, getChainConfig } = require('core/forge-fs');
+const { print, printInfo, printSuccess, printWarning } = require('core/util');
 
-const { askUserConfigs, writeConfigs } = require('./lib');
+const { getCustomConfigs, writeConfigs } = require('./lib');
 
 async function main({
   args: [action = 'get'],
@@ -21,15 +20,15 @@ async function main({
       const client = new GraphQLClient(`${webUrl()}/api`);
       // eslint-disable-next-line no-shadow
       const { config } = await client.getConfig({ parsed: true });
-      shell.echo(`${symbols.success} config for peer:`);
-      shell.echo(hr);
-      shell.echo(config);
+      printSuccess('config for peer:');
+      print(hr);
+      print(config);
     } else {
       const forgeConfigPath = getChainReleaseFilePath(chainName);
-      shell.echo(hr);
-      shell.echo(`${symbols.info} config file path: ${forgeConfigPath}`);
-      shell.echo(hr);
-      shell.echo(fs.readFileSync(forgeConfigPath).toString());
+      print(hr);
+      printInfo(`config file path: ${forgeConfigPath}`);
+      print(hr);
+      print(fs.readFileSync(forgeConfigPath).toString());
     }
 
     return;
@@ -38,19 +37,12 @@ async function main({
   if (action === 'set') {
     const isStarted = await isForgeStarted(chainName);
     if (isStarted) {
-      shell.echo(
-        `${symbols.warning} ${chalk.yellow(
-          'You are trying to modify the configuration of a running forge chain/node.'
-        )}`
-      );
-      shell.echo(
-        `${symbols.warning} ${chalk.yellow(
-          'token and chainId configuration cannot be changed once the chain is started'
-        )}`
-      );
-      shell.echo(
-        `${symbols.warning} ${chalk.yellow(
-          'If you really need to do so, please stop and reset the chain first'
+      printWarning(
+        `${chalk.yellow(
+          `
+You are trying to modify the configuration of a running forge chain/node.
+  Token and chainId configuration cannot be changed once the chain is started.
+  If you really need to do so, please stop and reset the chain first.`.trim()
         )}`
       );
 
@@ -59,7 +51,9 @@ async function main({
 
     const originConfigFilePath = getChainReleaseFilePath(chainName);
     const defaultConfig = toml.parse(fs.readFileSync(originConfigFilePath).toString());
-    const configs = await askUserConfigs(defaultConfig, chainName, {
+    const { version: forgeCoreVersion } = getChainConfig(chainName);
+    const configs = await getCustomConfigs(defaultConfig, forgeCoreVersion, {
+      chainName,
       isCreate: false,
       interactive: !defaults,
     });

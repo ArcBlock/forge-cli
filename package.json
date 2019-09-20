@@ -1,6 +1,6 @@
 {
   "name": "@arcblock/forge-cli",
-  "version": "0.38.15",
+  "version": "0.38.16",
   "description": "a general set of CLI for arcblock Forge framework",
   "license": "Apache-2.0",
   "main": "src/index.js",
@@ -129,7 +129,8 @@
     "jest": "^24.7.1",
     "lerna": "^3.3.2",
     "lint-staged": "^7.2.2",
-    "prettier": "^1.6.1"
+    "prettier": "^1.6.1",
+    "rewire": "^4.0.1"
   },
   "husky": {
     "hooks": {

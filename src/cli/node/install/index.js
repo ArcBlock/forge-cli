@@ -14,7 +14,10 @@ cli(
       forgeRelease: false,
       rpcClient: false,
     },
-    options: [['-s, --silent', 'Install release silently, do not prompt for config customization']],
+    options: [
+      ['-s, --silent', 'Install release silently, do not prompt for config customization'],
+      ['-f, --force', 'Clean local downloaded assets before install'],
+    ],
     handlers: {
       '--help': () => {
         shell.echo(`

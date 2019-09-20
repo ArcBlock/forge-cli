@@ -13,14 +13,17 @@ const URL = require('url');
 const inquirer = require('inquirer');
 const { spawn } = require('child_process');
 const { symbols, hr, getSpinner, getProgress } = require('core/ui');
-const { print, printError, printInfo, printSuccess } = require('core/util');
-const { debug, getPlatform } = require('core/env');
+const { print, printError, printInfo, printSuccess, printWarning } = require('core/util');
+const { getPlatform } = require('core/env');
+const debug = require('core/debug')('install');
 const { printLogo } = require('core/util');
 const {
   getGlobalForgeVersion,
   getAllChainNames,
   updateReleaseYaml,
   isReleaseBinExists,
+  getReleaseAssets,
+  getReleaseDirectory,
 } = require('core/forge-fs');
 const { isForgeStarted } = require('core/forge-process');
 
@@ -66,6 +69,18 @@ function fetchReleaseVersion({ mirror, releaseDir }) {
   }
 
   process.exit(1);
+}
+
+function clearLocalAssets(assets = [], version) {
+  if (assets.length > 0) {
+    printWarning('Cleaning local assets...');
+    assets.forEach(asset => {
+      const assetPath = getReleaseDirectory(asset, version);
+      fsExtra.removeSync(assetPath);
+      debug('cleaned local asset', assetPath);
+    });
+    printSuccess('Cleaned local assets!');
+  }
 }
 
 function getAssetInfo({ platform, version, key, mirror, releaseDir }) {
@@ -189,7 +204,7 @@ async function expandReleaseTarball(filePath, subFolder, version) {
 
 async function main({
   args: [userVersion],
-  opts: { mirror = DEFAULT_MIRROR, allowMultiChain, releaseDir, silent },
+  opts: { mirror = DEFAULT_MIRROR, allowMultiChain, releaseDir, silent, force = false },
 }) {
   try {
     const platform = await getPlatform();
@@ -204,6 +219,10 @@ async function main({
 
     const userVer = semver.coerce(userVersion) ? semver.coerce(userVersion).version : '';
     const version = userVer || fetchReleaseVersion({ mirror, releaseDir });
+
+    if (force === true) {
+      clearLocalAssets(getReleaseAssets(), version);
+    }
 
     const currentVersion = getGlobalForgeVersion();
     const unDownloadAssets = RELEASE_ASSETS.filter(x => !isReleaseBinExists(x, version));
@@ -302,3 +321,4 @@ exports.getAssetInfo = getAssetInfo;
 exports.downloadAssets = downloadAssets;
 exports.download = download;
 exports.expandReleaseTarball = expandReleaseTarball;
+exports.clearLocalAssets = clearLocalAssets;

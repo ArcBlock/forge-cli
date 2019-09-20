@@ -167,7 +167,7 @@ function setConfig(
   set(content, 'workshop.local_forge', `tcp://127.0.0.1:${forgeGrpcPort}`);
 
   if (moderator) {
-    set(content, 'forge.moderator', moderator);
+    set(content, 'forge.prime.moderator', Object.assign({ balance: 0 }, moderator));
   }
 
   content = setFilePathOfConfig(content, chainName);

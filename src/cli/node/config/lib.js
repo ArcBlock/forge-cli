@@ -25,6 +25,8 @@ const { setFilePathOfConfig } = require('core/forge-config');
 const { REQUIRED_DIRS } = require('../../../constant');
 const { generateDefaultAccount } = require('../../account/lib/index');
 
+const DAYS_OF_YEAR = 365;
+
 function getNumberValidator(label, integer = true) {
   return v => {
     if (!Number(v)) return `The ${label} should be a number`;
@@ -36,12 +38,79 @@ function getNumberValidator(label, integer = true) {
   };
 }
 
+function initialSupplyValidator(num, answers) {
+  const basicValidation = getNumberValidator('initial supply')(num);
+  if (basicValidation !== true) {
+    return basicValidation;
+  }
+  const initialSupply = Number(num);
+  const totalSupply = Number(answers.tokenTotalSupply);
+  if (initialSupply > totalSupply) {
+    return 'Initial supply should less or equal than total supply';
+  }
+
+  return true;
+}
+
+function pokeAmountValidator(v, answers) {
+  const basicValidation = getNumberValidator('poke amount', false)(v);
+  if (basicValidation !== true) {
+    return basicValidation;
+  }
+
+  const pokeAmount = Number(v);
+  const tokenInitialSupply = Number(answers.tokenInitialSupply);
+  if (pokeAmount * DAYS_OF_YEAR * 4 > tokenInitialSupply) {
+    return `Poke amount is too big. Make sure it is less than initial supply / ${DAYS_OF_YEAR} / 4`;
+  }
+
+  return true;
+}
+
+function dailyLimitValidator(v, answers) {
+  const basicValidation = getNumberValidator('daily poke limit', false)(v);
+  if (basicValidation !== true) {
+    return basicValidation;
+  }
+
+  const dailyLimit = Number(v);
+  const pokeAmount = Number(answers.pokeAmount);
+  if (dailyLimit < pokeAmount) {
+    return 'Daily poke limit should greater or equal than poke amount';
+  }
+
+  if (dailyLimit * DAYS_OF_YEAR * 4 > Number(answers.tokenInitialSupply)) {
+    return `Daily poke limit is too big. Make sure it is less than initial supply / ${DAYS_OF_YEAR} / 4`;
+  }
+
+  return true;
+}
+
+function pokeBalanceValidator(v, answers) {
+  const basicValidation = getNumberValidator('total poke amount', false)(v);
+  if (basicValidation !== true) {
+    return basicValidation;
+  }
+
+  if (Number(v) > Number(answers.initialSupply)) {
+    return 'Poke balance is too big. Make sure it is less than initial supply';
+  }
+
+  const totalPokeToken = Number(answers.pokeDailyLimit) * 4 * DAYS_OF_YEAR;
+  if (Number(v) < totalPokeToken) {
+    return `Poke balance is too small. Make sure it is bigger than daily limit * ${DAYS_OF_YEAR} * 4`;
+  }
+
+  return true;
+}
+
 async function readUserConfigs(
   configs,
   chainName = '',
   { isCreate = false, interactive = true } = {}
 ) {
   const defaults = cloneDeep(configs);
+  defaults.forge.prime = defaults.forge.prime || {};
   defaults.forge.prime.token_holder = defaults.forge.prime.token_holder || {};
 
   const tokenDefaults = Object.assign(
@@ -140,8 +209,7 @@ async function readUserConfigs(
       {
         type: 'text',
         name: 'tokenName',
-        // eslint-disable-next-line quotes
-        message: "What's the token name?",
+        message: "What's the token name?", // eslint-disable-line
         default: tokenDefaults.name,
         when: d => d.customizeToken,
         validate: v => {
@@ -155,8 +223,7 @@ async function readUserConfigs(
       {
         type: 'text',
         name: 'tokenSymbol',
-        // eslint-disable-next-line quotes
-        message: "What's the token symbol?",
+        message: "What's the token symbol?", // eslint-disable-line
         default: tokenDefaults.symbol,
         when: d => d.customizeToken,
         validate: v => {
@@ -170,8 +237,7 @@ async function readUserConfigs(
       {
         type: 'text',
         name: 'tokenIcon',
-        // eslint-disable-next-line quotes
-        message: "What's the token icon?",
+        message: "What's the token icon?", // eslint-disable-line
         default: iconFile,
         when: d => d.customizeToken,
         validate: v => {
@@ -214,9 +280,9 @@ async function readUserConfigs(
         type: 'number',
         name: 'tokenInitialSupply',
         message: 'Please input token initial supply:',
-        default: tokenDefaults.initial_supply,
+        default: answers => answers.tokenTotalSupply || tokenDefaults.initial_supply,
         when: d => d.customizeToken,
-        validate: getNumberValidator('initial supply'),
+        validate: initialSupplyValidator,
         transformer: v => numeral(v).format('0,0'),
       },
       {
@@ -234,7 +300,7 @@ async function readUserConfigs(
         default:
           typeof defaults.forge.transaction.poke === 'undefined'
             ? true
-            : defaults.forge.transaction.amount,
+            : defaults.forge.transaction.poke.amount,
       },
       {
         type: 'confirm',
@@ -251,16 +317,20 @@ async function readUserConfigs(
           ? defaults.forge.transaction.poke.amount
           : pokeDefaults.amount,
         when: d => d.customizePoke,
-        validate: getNumberValidator('poke amount', false),
+        validate: pokeAmountValidator,
         transformer: v => numeral(v).format('0,0.0000'),
       },
       {
         type: 'number',
         name: 'pokeDailyLimit',
         message: 'How much token can be poked daily?',
-        default: d => d.pokeAmount * 100000,
+        default: d =>
+          Math.min(
+            Number(d.pokeAmount) * 10000,
+            Math.floor(Number(d.tokenInitialSupply) / (4 * DAYS_OF_YEAR))
+          ),
         when: d => d.customizePoke,
-        validate: getNumberValidator('daily poke limit', false),
+        validate: dailyLimitValidator,
         transformer: v => numeral(v).format('0,0'),
       },
       {
@@ -269,13 +339,13 @@ async function readUserConfigs(
         message: 'How much token can be poked in total?',
         default: d =>
           Math.min(
-            d.pokeDailyLimit * 365 * 4,
+            d.pokeDailyLimit * DAYS_OF_YEAR * 4,
             d.tokenInitialSupply ||
               get(defaults, 'forge.token.initial_supply') ||
               tokenDefaults.initial_supply
           ),
         when: d => d.customizePoke,
-        validate: getNumberValidator('total poke amount', false),
+        validate: pokeBalanceValidator,
         transformer: v => numeral(v).format('0,0'),
       },
       {
@@ -549,9 +619,9 @@ async function writeConfigs(targetPath, configs, overwrite = true) {
   }
 
   fs.writeFileSync(targetPath, ensureConfigComment(toml.stringify(configs)));
-  const docUrl = 'https://docs.arcblock.io/forge/latest/core/configuration.html!';
-  printSuccess(`config file ${chalk.cyan(targetPath)} is updated!`);
-  printInfo(`full configuration documentation: ${chalk.cyan(docUrl)}`);
+  const docUrl = 'https://docs.arcblock.io/forge/latest/core/configuration.html';
+  printSuccess(`Config file ${chalk.cyan(targetPath)} is updated!`);
+  printInfo(`Full configuration documentation: ${chalk.cyan(docUrl)}!`);
   print(hr);
 }
 

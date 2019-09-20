@@ -14,6 +14,7 @@ cli(
       rpcClient: false,
       wallet: false,
     },
+    options: [['-f, --force', 'Clean local downloaded assets before download']],
     handlers: {
       '--help': () => {
         shell.echo(`

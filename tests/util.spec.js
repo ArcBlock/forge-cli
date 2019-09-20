@@ -1,7 +1,7 @@
 const util = require('../src/core/util');
 
 describe('#util', () => {
-  describe.only('#parseTimeStrToMS', () => {
+  describe('#parseTimeStrToMS', () => {
     test('should return 10_000 when param is 10ms', async () => {
       expect(util.parseTimeStrToMS('10ms')).toEqual(10);
     });

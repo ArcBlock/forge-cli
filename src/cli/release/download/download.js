@@ -4,15 +4,19 @@ const shell = require('shelljs');
 const chalk = require('chalk');
 const semver = require('semver');
 const { getPlatform } = require('core/env');
-const { isReleaseBinExists, getGlobalForgeVersion } = require('core/forge-fs');
+const { isReleaseBinExists, getGlobalForgeVersion, getReleaseAssets } = require('core/forge-fs');
 const { printError, printInfo, printSuccess } = require('core/util');
 const debug = require('core/debug')('download');
-const { downloadAssets, fetchReleaseVersion } = require('cli/node/install/install');
+const {
+  downloadAssets,
+  fetchReleaseVersion,
+  clearLocalAssets,
+} = require('cli/node/install/install');
 
 const { DEFAULT_MIRROR, RELEASE_ASSETS } = require('../../../constant');
 
 // eslint-disable-next-line consistent-return
-async function main({ args: [userVersion], opts: { mirror = DEFAULT_MIRROR, releaseDir } }) {
+async function main({ args: [userVersion], opts: { mirror = DEFAULT_MIRROR, releaseDir, force } }) {
   try {
     const platform = await getPlatform();
     printInfo(`Detected platform is: ${platform}`);
@@ -26,6 +30,11 @@ async function main({ args: [userVersion], opts: { mirror = DEFAULT_MIRROR, rele
     const userVer =
       userVersion && semver.coerce(userVersion) ? semver.coerce(userVersion).version : '';
     const version = userVer || fetchReleaseVersion({ mirror, releaseDir });
+
+    if (force === true) {
+      clearLocalAssets(getReleaseAssets(), version);
+    }
+
     const unDownloadAssets = RELEASE_ASSETS.filter(x => !isReleaseBinExists(x, version));
     const currentVersion = getGlobalForgeVersion();
     if (unDownloadAssets.length === 0) {

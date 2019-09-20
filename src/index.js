@@ -117,7 +117,7 @@ const run = async () => {
     .option('-v, --verbose', 'Output runtime info when execute subcommand, useful for debug')
     .option('-c, --chain-name <chainName>', 'Execute command use specific chain')
     .option(
-      '-f, --config-path <path>',
+      '-i, --config-path <path>',
       'Forge config used when starting forge node and initializing gRPC clients'
     )
     .option('-r, --npmRegistry <registry>', 'Specify a custom npm registry')

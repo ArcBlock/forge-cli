@@ -356,6 +356,19 @@ function checkStartError(chainName, startAtMs = Date.now()) {
   });
 }
 
+function getReleaseAssets() {
+  const releaseDir = getReleaseDir();
+  if (!fs.existsSync(releaseDir)) {
+    return [];
+  }
+
+  return fs.readdirSync(releaseDir);
+}
+
+function getReleaseDir() {
+  return path.join(CLI_BASE_DIRECTORY, 'release');
+}
+
 module.exports = {
   clearDataDirectories,
   checkStartError,
@@ -376,12 +389,15 @@ module.exports = {
   getGlobalForgeVersion,
   getChainReleaseFilePath,
   getChainWorkshopDirectory,
+  getReleaseDir,
+  getReleaseAssets,
   getLogfile,
   getRootConfigDirectory,
   getTendermintHomeDir,
   getForgeVersionFromYaml,
   getOriginForgeReleaseFilePath,
   getForgeReleaseDirectory,
+  getReleaseDirectory,
   getStorageEnginePath,
   getChainKeyFilePath,
   getLocalVersions,

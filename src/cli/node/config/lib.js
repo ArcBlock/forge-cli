@@ -234,7 +234,7 @@ async function readUserConfigs(
         default:
           typeof defaults.forge.transaction.poke === 'undefined'
             ? true
-            : defaults.forge.transaction.amount,
+            : defaults.forge.transaction.poke.amount,
       },
       {
         type: 'confirm',

@@ -70,7 +70,7 @@ Options:
   -V, --version                          output the version number
   -v, --verbose                          Output runtime info when execute subcommand, useful for debug
   -c, --chain-name <chainName>           Execute command use specific chain
-  -f, --config-path <path>               Forge config used when starting forge node and initializing gRPC clients
+  -i, --config-path <path>               Forge config used when starting forge node and initializing gRPC clients
   -r, --npmRegistry <registry>           Specify a custom npm registry
   -y, --yes                              Assume that the answer to any confirmation question is yes
   -d, --defaults                         Run command using default values for all questions
@@ -92,7 +92,7 @@ Commands:
   checkin                                Send a poke tx to the network to get tokens for test
   config [options] [action]              Read/write chain/node config
   declare:node                           Declare the current node to be a validator candidate
-  download [version]                     Download a forge release without activate it
+  download [options] [version]           Download a forge release without activate it
   help <subcommand>                      Show help of a sub command
   install|init [options] [version]       Download and setup forge release on this machine
   join <endpoint>                        Join a network by providing a valid forge web graphql endpoint

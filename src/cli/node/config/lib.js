@@ -110,6 +110,7 @@ async function readUserConfigs(
   { isCreate = false, interactive = true } = {}
 ) {
   const defaults = cloneDeep(configs);
+  defaults.forge.prime = defaults.forge.prime || {};
   defaults.forge.prime.token_holder = defaults.forge.prime.token_holder || {};
 
   const tokenDefaults = Object.assign(

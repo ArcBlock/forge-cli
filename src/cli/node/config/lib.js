@@ -324,7 +324,11 @@ async function readUserConfigs(
         type: 'number',
         name: 'pokeDailyLimit',
         message: 'How much token can be poked daily?',
-        default: d => Math.floor(Number(d.tokenInitialSupply) / (4 * DAYS_OF_YEAR)),
+        default: d =>
+          Math.min(
+            Number(d.pokeAmount) * 10000,
+            Math.floor(Number(d.tokenInitialSupply) / (4 * DAYS_OF_YEAR))
+          ),
         when: d => d.customizePoke,
         validate: dailyLimitValidator,
         transformer: v => numeral(v).format('0,0'),

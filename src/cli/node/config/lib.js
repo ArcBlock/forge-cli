@@ -271,7 +271,7 @@ async function readUserConfigs(
           const pokeAmount = Number(v);
           const tokenInitialSupply = Number(answers.tokenInitialSupply);
           if (pokeAmount * DAYS_OF_YEAR * 4 > tokenInitialSupply) {
-            return 'Poke amount is too big. Make sure it is less than daily amount * 365 * 4';
+            return `Poke amount is too big. Make sure it is less than daily amount * ${DAYS_OF_YEAR} * 4`;
           }
 
           return true;
@@ -297,7 +297,7 @@ async function readUserConfigs(
           }
 
           if (dailyLimit * DAYS_OF_YEAR * 4 > Number(answers.tokenInitialSupply)) {
-            return 'Poke amount is too big. Make sure it is less than daily amount * 365 * 4';
+            return `Poke amount is too big. Make sure it is less than daily amount * ${DAYS_OF_YEAR} * 4`;
           }
 
           return true;
@@ -310,7 +310,7 @@ async function readUserConfigs(
         message: 'How much token can be poked in total?',
         default: d =>
           Math.min(
-            d.pokeDailyLimit * 365 * 4,
+            d.pokeDailyLimit * DAYS_OF_YEAR * 4,
             d.tokenInitialSupply ||
               get(defaults, 'forge.token.initial_supply') ||
               tokenDefaults.initial_supply
@@ -325,7 +325,7 @@ async function readUserConfigs(
           const pokeDailyLimit = Number(answers.pokeDailyLimit);
           const totalPokeToken = pokeDailyLimit * 4 * DAYS_OF_YEAR;
           if (Number(v) < totalPokeToken) {
-            return 'Poke balance is too small. Make sure it is bigger than daily limit * 365 * 4';
+            return `Poke balance is too small. Make sure it is bigger than daily limit * ${DAYS_OF_YEAR} * 4`;
           }
 
           return true;
@@ -603,9 +603,9 @@ async function writeConfigs(targetPath, configs, overwrite = true) {
   }
 
   fs.writeFileSync(targetPath, ensureConfigComment(toml.stringify(configs)));
-  const docUrl = 'https://docs.arcblock.io/forge/latest/core/configuration.html!';
-  printSuccess(`config file ${chalk.cyan(targetPath)} is updated!`);
-  printInfo(`full configuration documentation: ${chalk.cyan(docUrl)}`);
+  const docUrl = 'https://docs.arcblock.io/forge/latest/core/configuration.html';
+  printSuccess(`Config file ${chalk.cyan(targetPath)} is updated!`);
+  printInfo(`Full configuration documentation: ${chalk.cyan(docUrl)}!`);
   print(hr);
 }
 

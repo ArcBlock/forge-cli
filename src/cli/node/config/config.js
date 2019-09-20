@@ -39,11 +39,16 @@ async function main({
     if (isStarted) {
       printWarning(
         `${chalk.yellow(
-          `
-You are trying to modify the configuration of a running forge chain/node.
-  Token and chainId configuration cannot be changed once the chain is started.
-  If you really need to do so, please stop and reset the chain first.`.trim()
+          'You are trying to modify the configuration of a running forge chain/node.'
         )}`
+      );
+      printWarning(
+        `${chalk.yellow(
+          'Token and chainId configuration cannot be changed once the chain is started.'
+        )}`
+      );
+      printWarning(
+        `${chalk.yellow('If you really need to do so, please stop and reset the chain first.')}`
       );
 
       process.exit(1);

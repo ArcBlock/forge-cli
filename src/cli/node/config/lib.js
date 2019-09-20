@@ -38,6 +38,72 @@ function getNumberValidator(label, integer = true) {
   };
 }
 
+function initialSupplyValidator(num, answers) {
+  const basicValidation = getNumberValidator('initial supply')(num);
+  if (basicValidation !== true) {
+    return basicValidation;
+  }
+  const initialSupply = Number(num);
+  const totalSupply = Number(answers.tokenTotalSupply);
+  if (initialSupply > totalSupply) {
+    return 'Initial supply should less or equal than total supply';
+  }
+
+  return true;
+}
+
+function pokeAmountValidator(v, answers) {
+  const basicValidation = getNumberValidator('poke amount', false)(v);
+  if (basicValidation !== true) {
+    return basicValidation;
+  }
+
+  const pokeAmount = Number(v);
+  const tokenInitialSupply = Number(answers.tokenInitialSupply);
+  if (pokeAmount * DAYS_OF_YEAR * 4 > tokenInitialSupply) {
+    return `Poke amount is too big. Make sure it is less than initial supply / ${DAYS_OF_YEAR} / 4`;
+  }
+
+  return true;
+}
+
+function dailyLimitValidator(v, answers) {
+  const basicValidation = getNumberValidator('daily poke limit', false)(v);
+  if (basicValidation !== true) {
+    return basicValidation;
+  }
+
+  const dailyLimit = Number(v);
+  const pokeAmount = Number(answers.pokeAmount);
+  if (dailyLimit < pokeAmount) {
+    return 'Daily poke limit should greater or equal than poke amount';
+  }
+
+  if (dailyLimit * DAYS_OF_YEAR * 4 > Number(answers.tokenInitialSupply)) {
+    return `Daily poke limit is too big. Make sure it is less than initial supply / ${DAYS_OF_YEAR} / 4`;
+  }
+
+  return true;
+}
+
+function pokeBalanceValidator(v, answers) {
+  const basicValidation = getNumberValidator('total poke amount', false)(v);
+  if (basicValidation !== true) {
+    return basicValidation;
+  }
+
+  if (Number(v) > Number(answers.initialSupply)) {
+    return 'Poke balance is too big. Make sure it is less than initial supply';
+  }
+
+  const totalPokeToken = Number(answers.pokeDailyLimit) * 4 * DAYS_OF_YEAR;
+  if (Number(v) < totalPokeToken) {
+    return `Poke balance is too small. Make sure it is bigger than daily limit * ${DAYS_OF_YEAR} * 4`;
+  }
+
+  return true;
+}
+
 async function readUserConfigs(
   configs,
   chainName = '',
@@ -215,19 +281,7 @@ async function readUserConfigs(
         message: 'Please input token initial supply:',
         default: answers => answers.tokenTotalSupply || tokenDefaults.initial_supply,
         when: d => d.customizeToken,
-        validate: (v, answers) => {
-          const basicValidation = getNumberValidator('initial supply')(v);
-          if (basicValidation !== true) {
-            return basicValidation;
-          }
-          const initialSupply = Number(v);
-          const totalSupply = Number(answers.tokenTotalSupply);
-          if (initialSupply > totalSupply) {
-            return 'initial supply should less or equal than total supply';
-          }
-
-          return true;
-        },
+        validate: initialSupplyValidator,
         transformer: v => numeral(v).format('0,0'),
       },
       {
@@ -262,20 +316,7 @@ async function readUserConfigs(
           ? defaults.forge.transaction.poke.amount
           : pokeDefaults.amount,
         when: d => d.customizePoke,
-        validate: (v, answers) => {
-          const basicValidation = getNumberValidator('poke amount', false)(v);
-          if (basicValidation !== true) {
-            return basicValidation;
-          }
-
-          const pokeAmount = Number(v);
-          const tokenInitialSupply = Number(answers.tokenInitialSupply);
-          if (pokeAmount * DAYS_OF_YEAR * 4 > tokenInitialSupply) {
-            return `Poke amount is too big. Make sure it is less than daily amount * ${DAYS_OF_YEAR} * 4`;
-          }
-
-          return true;
-        },
+        validate: pokeAmountValidator,
         transformer: v => numeral(v).format('0,0.0000'),
       },
       {
@@ -284,24 +325,7 @@ async function readUserConfigs(
         message: 'How much token can be poked daily?',
         default: d => Math.floor(Number(d.tokenInitialSupply) / (4 * DAYS_OF_YEAR)),
         when: d => d.customizePoke,
-        validate: (v, answers) => {
-          const basicValidation = getNumberValidator('daily poke limit', false)(v);
-          if (basicValidation !== true) {
-            return basicValidation;
-          }
-
-          const dailyLimit = Number(v);
-          const pokeAmount = Number(answers.pokeAmount);
-          if (dailyLimit < pokeAmount) {
-            return 'Poke daily limit should greater or equal than poke amount';
-          }
-
-          if (dailyLimit * DAYS_OF_YEAR * 4 > Number(answers.tokenInitialSupply)) {
-            return `Poke amount is too big. Make sure it is less than daily amount * ${DAYS_OF_YEAR} * 4`;
-          }
-
-          return true;
-        },
+        validate: dailyLimitValidator,
         transformer: v => numeral(v).format('0,0'),
       },
       {
@@ -316,20 +340,7 @@ async function readUserConfigs(
               tokenDefaults.initial_supply
           ),
         when: d => d.customizePoke,
-        validate: (v, answers) => {
-          const basicValidation = getNumberValidator('total poke amount', false)(v);
-          if (basicValidation !== true) {
-            return basicValidation;
-          }
-
-          const pokeDailyLimit = Number(answers.pokeDailyLimit);
-          const totalPokeToken = pokeDailyLimit * 4 * DAYS_OF_YEAR;
-          if (Number(v) < totalPokeToken) {
-            return `Poke balance is too small. Make sure it is bigger than daily limit * ${DAYS_OF_YEAR} * 4`;
-          }
-
-          return true;
-        },
+        validate: pokeBalanceValidator,
         transformer: v => numeral(v).format('0,0'),
       },
       {

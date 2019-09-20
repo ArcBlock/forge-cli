@@ -60,7 +60,7 @@ const ensureModerator = async client => {
   const moderator = fromSecretKey(sk);
   shell.echo(`${symbols.info} moderator address ${moderator.toAddress()}`);
 
-  if (!config.get('forge.moderator.address')) {
+  if (!config.get('forge.prime.moderator.address')) {
     printError('Abort because forge.moderator is not set in config file');
     printInfo(
       `Please add following content in config file ${chalk.cyan(

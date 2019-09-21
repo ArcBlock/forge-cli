@@ -153,6 +153,7 @@ function setConfig(
     tendermintGrpcPort,
     tendermintP2pPort,
     workshopPort,
+    currentVersion,
   }
 ) {
   const moderator = getModerator();
@@ -167,7 +168,15 @@ function setConfig(
   set(content, 'workshop.local_forge', `tcp://127.0.0.1:${forgeGrpcPort}`);
 
   if (moderator) {
-    set(content, 'forge.prime.moderator', Object.assign({ balance: 0 }, moderator));
+    const tmp = Object.assign({}, moderator);
+    let moderatorKey = 'forge.moderator';
+
+    if (semver.gte(currentVersion, '0.38.0')) {
+      tmp.balance = 0;
+      moderatorKey = 'forge.prime.moderator';
+    }
+
+    set(content, moderatorKey, tmp);
   }
 
   content = setFilePathOfConfig(content, chainName);
@@ -192,7 +201,7 @@ function setFilePathOfConfig(configs, chainName) {
   return content;
 }
 
-async function setConfigToChain(configs, chainName) {
+async function setConfigToChain(configs, chainName, currentVersion) {
   const {
     forgeWebPort,
     forgeGrpcPort,
@@ -209,6 +218,7 @@ async function setConfigToChain(configs, chainName) {
     tendermintGrpcPort,
     tendermintP2pPort,
     workshopPort,
+    currentVersion,
   });
 }
 
@@ -217,7 +227,7 @@ async function setConfigToChain(configs, chainName) {
  * Include forge web port, forge grpc port and some config path.
  * @param {*} configs origin configs
  */
-async function getDefaultChainConfigs(configs) {
+async function getDefaultChainConfigs(configs, currentVersion) {
   const forgeWebPort = await getFreePort(
     makeRange(DEFAULT_FORGE_WEB_PORT, DEFAULT_FORGE_WEB_PORT + 30)
   );
@@ -245,6 +255,7 @@ async function getDefaultChainConfigs(configs) {
     tendermintGrpcPort,
     tendermintP2pPort,
     workshopPort,
+    currentVersion,
   });
 }
 
@@ -263,7 +274,7 @@ async function copyReleaseConfig(currentVersion, overwrite = true) {
 
   printSuccess(`Extract forge config from ${sourcePath}`);
   let content = fs.readFileSync(sourcePath);
-  content = await getDefaultChainConfigs(TOML.parse(content.toString()));
+  content = await getDefaultChainConfigs(TOML.parse(content.toString()), currentVersion);
   fs.writeFileSync(targetPath, TOML.stringify(content));
 
   printSuccess(`Forge config written to ${targetPath}`);

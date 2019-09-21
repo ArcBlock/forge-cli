@@ -31,7 +31,7 @@ async function main({ args: [chainName = ''], opts: { defaults, allowMultiChain 
     const {
       app: { name },
     } = configs;
-    configs = await setConfigToChain(configs, name);
+    configs = await setConfigToChain(configs, name, forgeCoreVersion);
     createNewChain(name);
     await writeConfigs(getChainReleaseFilePath(name), configs);
     printInfo(`Run ${chalk.cyan(`forge start ${name}`)} to start the chain`);

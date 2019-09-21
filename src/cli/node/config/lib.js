@@ -575,6 +575,7 @@ const mapToLessThanV38 = configs => {
   if (result.forge.transaction.poke) {
     delete result.forge.transaction.poke;
   }
+
   if (result.forge.prime) {
     delete result.forge.prime;
   }

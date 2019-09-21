@@ -183,7 +183,7 @@ async function main({ args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
     useNewVersion(chainName, configs.version);
 
     printInfo('Version:');
-    execExceptionOnError(`forge version -c ${chainName} --color always`);
+    execExceptionOnError()(`forge version -c ${chainName} --color always`);
     print();
     printSuccess('Upgrade success!');
 

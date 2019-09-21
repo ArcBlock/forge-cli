@@ -20,9 +20,11 @@ function getModerator() {
   const sk = getModeratorSecretKey();
   if (sk) {
     const wallet = fromSecretKey(sk);
+    const pk = base64.escape(base64.encode(hexToBytes(wallet.publicKey)));
     return {
       address: wallet.toAddress(),
-      publicKey: base64.escape(base64.encode(hexToBytes(wallet.publicKey))),
+      pk,
+      publicKey: pk, // TODO: removed?
     };
   }
 

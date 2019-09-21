@@ -17,7 +17,7 @@ async function main({ args: [chainName = ''], opts: { defaults, allowMultiChain 
     process.exit(0);
   }
   try {
-    const forgeCoreVersion = config.get('cli').currentVersion;
+    const forgeCoreVersion = config.get('cli').globalVersion;
     let configs = toml.parse(
       fs.readFileSync(getOriginForgeReleaseFilePath(forgeCoreVersion)).toString()
     );

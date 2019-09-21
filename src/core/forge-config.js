@@ -299,6 +299,7 @@ async function ensureForgeRelease({
     try {
       // Read global release version
       const curVersion = getForgeVersionFromYaml(releaseYamlPath, 'current');
+
       if (!semver.valid(curVersion)) {
         throw new Error(`no valid version field found in release config ${releaseYamlPath}`);
       }

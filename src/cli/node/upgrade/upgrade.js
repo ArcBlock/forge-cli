@@ -4,7 +4,7 @@ const shell = require('shelljs');
 const chalk = require('chalk');
 
 const { config, createRpcClient } = require('core/env');
-const { hr, getSpinner, symbols } = require('core/ui');
+const { hr, getSpinner } = require('core/ui');
 const {
   sleep,
   parseTimeStrToMS,
@@ -122,7 +122,7 @@ async function main({ args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
       .sort((v1, v2) => semver.gt(v2, v1));
 
     if (!releases.length) {
-      print(`${symbols.success} Abort because no available newer version to upgrade!`);
+      printSuccess('Abort because no available newer version to upgrade!');
       printInfo(`Run ${chalk.cyan('forge download')} to install a new version.`);
       process.exit(0);
     }

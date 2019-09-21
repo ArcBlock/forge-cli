@@ -2,6 +2,7 @@ const path = require('path');
 const shell = require('shelljs');
 const chalk = require('chalk');
 const base64 = require('base64-url');
+const semver = require('semver');
 const { toItxAddress } = require('@arcblock/did-util');
 const { fromSecretKey } = require('@arcblock/forge-wallet');
 const { bytesToHex, hexToBytes, isHexStrict } = require('@arcblock/forge-util');
@@ -58,9 +59,16 @@ function ensureModeratorDeclared(client, wallet) {
 const ensureModerator = async client => {
   const sk = ensureModeratorSecretKey();
   const moderator = fromSecretKey(sk);
-  shell.echo(`${symbols.info} moderator address ${moderator.toAddress()}`);
+  printInfo(`moderator address ${moderator.toAddress()}`);
 
-  if (!config.get('forge.prime.moderator.address')) {
+  let moderatorKey = 'forge.prime.moderator';
+  const currentVersion = config.get('cli.currentVersion');
+
+  if (semver.lt(currentVersion, '0.38.0')) {
+    moderatorKey = 'forge.moderator';
+  }
+
+  if (!config.get(`${moderatorKey}.address`)) {
     printError('Abort because forge.moderator is not set in config file');
     printInfo(
       `Please add following content in config file ${chalk.cyan(
@@ -69,7 +77,7 @@ const ensureModerator = async client => {
     );
     printInfo(`${chalk.red('then restart current forge:')}`);
     shell.echo(`
-[forge.moderator]
+[${moderatorKey}]
 address = "${moderator.toAddress()}"
 publicKey = "${base64.escape(base64.encode(hexToBytes(moderator.publicKey)))}"
 `);

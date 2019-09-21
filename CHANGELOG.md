@@ -1,3 +1,7 @@
+## 0.38.19 (September 21, 2019)
+
+- fix: not version after upgrade success
+
 ## 0.38.18 (September 21, 2019)
 
 - fix: get moderator during forge upgrade

@@ -13,7 +13,14 @@ const URL = require('url');
 const inquirer = require('inquirer');
 const { spawn } = require('child_process');
 const { symbols, hr, getSpinner, getProgress } = require('core/ui');
-const { print, printError, printInfo, printSuccess, printWarning } = require('core/util');
+const {
+  print,
+  printError,
+  printInfo,
+  printSuccess,
+  printWarning,
+  fetchAssetsByVersion,
+} = require('core/util');
 const { getPlatform } = require('core/env');
 const debug = require('core/debug')('install');
 const { printLogo } = require('core/util');
@@ -225,7 +232,11 @@ async function main({
     }
 
     const currentVersion = getGlobalForgeVersion();
-    const unDownloadAssets = RELEASE_ASSETS.filter(x => !isReleaseBinExists(x, version));
+    const versionAssets = await fetchAssetsByVersion(version, platform);
+    // prettier-ignore
+    const unDownloadAssets = RELEASE_ASSETS
+      .filter(x => versionAssets.some(a => a.indexOf(x) >= 0))
+      .filter(x => !isReleaseBinExists(x, version));
 
     if (unDownloadAssets.length === 0) {
       printInfo(`forge v${version} is already installed`);

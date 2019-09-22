@@ -13,7 +13,7 @@ const prettyMilliseconds = require('pretty-ms');
 const moment = require('moment');
 
 const { symbols, hr } = require('./ui');
-const { DEFAULT_CHAIN_NAME, MIRRORS, REQUIRED_DIRS } = require('../constant');
+const { DEFAULT_CHAIN_NAME, MIRRORS, REQUIRED_DIRS, ASSETS_PATH } = require('../constant');
 const debug = require('./debug')('util');
 
 /**
@@ -200,6 +200,17 @@ const fetchAssetRace = async urlPath => {
 };
 
 const fetchAsset = async assetPath => fetchAssetRace(assetPath);
+const fetchAssetsByVersion = async (version, platform) => {
+  const v1 = version.replace(/^v/i, '');
+  const v2 = `v${v1}`;
+  const versionsInfo = await fetchAsset(ASSETS_PATH.VERSIONS);
+  const release = versionsInfo.find(x => [v1, v2].includes(x.version));
+  if (release) {
+    return release.assets.filter(x => x.name.indexOf(`_${platform}_`) > 0).map(x => x.name);
+  }
+
+  return [];
+};
 
 function getPackageConfig(filePath) {
   const packageJSONPath = path.join(filePath, 'package.json');
@@ -240,6 +251,7 @@ module.exports = {
   chainSortHandler,
   downloadPackageFromNPM,
   fetchAsset,
+  fetchAssetsByVersion,
   getPort,
   getPackageConfig,
   getFreePort,

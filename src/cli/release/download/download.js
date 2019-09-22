@@ -5,7 +5,7 @@ const chalk = require('chalk');
 const semver = require('semver');
 const { getPlatform } = require('core/env');
 const { isReleaseBinExists, getGlobalForgeVersion, getReleaseAssets } = require('core/forge-fs');
-const { printError, printInfo, printSuccess } = require('core/util');
+const { printError, printInfo, printSuccess, fetchAssetsByVersion } = require('core/util');
 const debug = require('core/debug')('download');
 const {
   downloadAssets,
@@ -35,7 +35,11 @@ async function main({ args: [userVersion], opts: { mirror = DEFAULT_MIRROR, rele
       clearLocalAssets(getReleaseAssets(), version);
     }
 
-    const unDownloadAssets = RELEASE_ASSETS.filter(x => !isReleaseBinExists(x, version));
+    const versionAssets = await fetchAssetsByVersion(version, platform);
+    // prettier-ignore
+    const unDownloadAssets = RELEASE_ASSETS
+      .filter(x => versionAssets.some(a => a.indexOf(x) >= 0))
+      .filter(x => !isReleaseBinExists(x, version));
     const currentVersion = getGlobalForgeVersion();
     if (unDownloadAssets.length === 0) {
       if (version === currentVersion) {

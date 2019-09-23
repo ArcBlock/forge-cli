@@ -3,7 +3,7 @@ const fs = require('fs');
 const chalk = require('chalk');
 const { getPlatform } = require('core/env');
 const { print, printError, printInfo, printSuccess } = require('core/util');
-const { formatVersion, downloadForge, DOWNLOAD_FLAGS } = require('./lib');
+const { formatVersion, download, DOWNLOAD_FLAGS } = require('./lib');
 
 const { DEFAULT_MIRROR, RELEASE_ASSETS } = require('../../../constant');
 
@@ -20,7 +20,7 @@ async function main({ args: [userVersion], opts: { mirror = DEFAULT_MIRROR, rele
     }
 
     const { version, isLatest } = formatVersion({ version: userVersion, mirror, releaseDir });
-    const downloadResult = await downloadForge({
+    const downloadResult = await download({
       version,
       mirror,
       releaseDir,

@@ -95,7 +95,7 @@ async function downloadAssets(assets, { platform, version, mirror, releaseDir })
     try {
       const assetInfo = getAssetInfo({ platform, version, key: asset, mirror, releaseDir });
       // eslint-disable-next-line no-await-in-loop
-      const assetTarball = await download(assetInfo);
+      const assetTarball = await downloadAsset(assetInfo);
       // eslint-disable-next-line no-await-in-loop
       await expandReleaseTarball(assetTarball, asset, version);
       fsExtra.removeSync(assetTarball);
@@ -115,7 +115,7 @@ async function downloadAssets(assets, { platform, version, mirror, releaseDir })
   return true;
 }
 
-function download(assetInfo) {
+function downloadAsset(assetInfo) {
   return new Promise((resolve, reject) => {
     debug('Download asset', assetInfo.url);
 
@@ -234,7 +234,7 @@ const DOWNLOAD_FLAGS = {
  * @param {*} options
  * @return {DOWNLOAD_FLAGS}
  */
-async function downloadForge({
+async function download({
   version,
   mirror,
   releaseDir,
@@ -294,6 +294,6 @@ async function downloadForge({
 
 module.exports = {
   formatVersion,
-  downloadForge,
+  download,
   DOWNLOAD_FLAGS,
 };

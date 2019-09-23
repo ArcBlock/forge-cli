@@ -8,7 +8,7 @@ const { print, printError, printInfo, printSuccess } = require('core/util');
 const { getPlatform } = require('core/env');
 const { getAllChainNames, updateReleaseYaml } = require('core/forge-fs');
 const { isForgeStarted } = require('core/forge-process');
-const { formatVersion, downloadForge, DOWNLOAD_FLAGS } = require('../../release/download/lib');
+const { formatVersion, download, DOWNLOAD_FLAGS } = require('../../release/download/lib');
 
 const { DEFAULT_MIRROR, RELEASE_ASSETS } = require('../../../constant');
 
@@ -38,7 +38,7 @@ async function main({
     }
 
     const { version, isLatest } = formatVersion({ version: userVersion, mirror, releaseDir });
-    const downloadResult = await downloadForge({
+    const downloadResult = await download({
       version,
       mirror,
       releaseDir,

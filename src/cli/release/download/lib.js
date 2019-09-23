@@ -293,9 +293,6 @@ async function downloadForge({
 }
 
 module.exports = {
-  clearLocalAssets,
-  downloadAssets,
-  getUnDownloadAssets,
   formatVersion,
   downloadForge,
   DOWNLOAD_FLAGS,

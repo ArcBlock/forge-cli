@@ -7,6 +7,7 @@ const figlet = require('figlet');
 const shell = require('shelljs');
 const chalk = require('chalk');
 const url = require('url');
+const semver = require('semver');
 const tar = require('tar');
 const getPort = require('get-port');
 const prettyMilliseconds = require('pretty-ms');
@@ -200,11 +201,10 @@ const fetchAssetRace = async urlPath => {
 };
 
 const fetchAsset = async assetPath => fetchAssetRace(assetPath);
+
 const fetchAssetsByVersion = async (version, platform) => {
-  const v1 = version.replace(/^v/i, '');
-  const v2 = `v${v1}`;
   const versionsInfo = await fetchAsset(ASSETS_PATH.VERSIONS);
-  const release = versionsInfo.find(x => [v1, v2].includes(x.version));
+  const release = versionsInfo.find(x => semver.eq(version, x.version));
   if (release) {
     return release.assets.filter(x => x.name.indexOf(`_${platform}_`) > 0).map(x => x.name);
   }

@@ -7,13 +7,14 @@ const figlet = require('figlet');
 const shell = require('shelljs');
 const chalk = require('chalk');
 const url = require('url');
+const semver = require('semver');
 const tar = require('tar');
 const getPort = require('get-port');
 const prettyMilliseconds = require('pretty-ms');
 const moment = require('moment');
 
 const { symbols, hr } = require('./ui');
-const { DEFAULT_CHAIN_NAME, MIRRORS, REQUIRED_DIRS } = require('../constant');
+const { DEFAULT_CHAIN_NAME, MIRRORS, REQUIRED_DIRS, ASSETS_PATH } = require('../constant');
 const debug = require('./debug')('util');
 
 /**
@@ -201,6 +202,16 @@ const fetchAssetRace = async urlPath => {
 
 const fetchAsset = async assetPath => fetchAssetRace(assetPath);
 
+const fetchAssetsByVersion = async (version, platform) => {
+  const versionsInfo = await fetchAsset(ASSETS_PATH.VERSIONS);
+  const release = versionsInfo.find(x => semver.eq(version, x.version));
+  if (release) {
+    return release.assets.filter(x => x.name.indexOf(`_${platform}_`) > 0).map(x => x.name);
+  }
+
+  return [];
+};
+
 function getPackageConfig(filePath) {
   const packageJSONPath = path.join(filePath, 'package.json');
   if (!fs.existsSync(packageJSONPath)) {
@@ -240,6 +251,7 @@ module.exports = {
   chainSortHandler,
   downloadPackageFromNPM,
   fetchAsset,
+  fetchAssetsByVersion,
   getPort,
   getPackageConfig,
   getFreePort,

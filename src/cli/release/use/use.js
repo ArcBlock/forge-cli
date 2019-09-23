@@ -2,10 +2,9 @@ const chalk = require('chalk');
 const shell = require('shelljs');
 const semver = require('semver');
 const { symbols } = require('core/ui');
-const { config } = require('core/env');
 const { isForgeStarted } = require('core/forge-process');
 const debug = require('core/debug')('release:use');
-const { updateReleaseYaml, listReleases } = require('core/forge-fs');
+const { updateReleaseYaml, listReleases, getGlobalForgeVersion } = require('core/forge-fs');
 const { print, printError, printSuccess } = require('core/util');
 
 // eslint-disable-next-line consistent-return
@@ -22,7 +21,7 @@ async function main({
     }
 
     const { version } = semver.coerce(userVersion);
-    if (version === config.get('cli.currentVersion')) {
+    if (semver.eq(version, getGlobalForgeVersion())) {
       shell.echo(`${symbols.warning} Already using forge release v${version}`);
       return process.exit(1);
     }
@@ -55,7 +54,7 @@ async function main({
     print(`Now you can start forge with ${chalk.cyan(`forge start ${chainName}`)}`);
     print('');
   } catch (err) {
-    debug.error(err);
+    printError(err);
     printError('Forge release activate failed');
   }
 }

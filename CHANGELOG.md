@@ -1,3 +1,7 @@
+## 0.38.20 (September 22, 2019)
+
+- chore: use asset list from remote
+
 ## 0.38.19 (September 21, 2019)
 
 - fix: not version after upgrade success

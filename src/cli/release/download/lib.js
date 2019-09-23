@@ -10,7 +10,7 @@ const shell = require('shelljs');
 const semver = require('semver');
 const tar = require('tar');
 const URL = require('url');
-const { symbols, getSpinner, getProgress, hr } = require('core/ui');
+const { symbols, getSpinner, getProgress } = require('core/ui');
 const {
   print,
   printError,
@@ -20,12 +20,7 @@ const {
   fetchAssetsByVersion,
 } = require('core/util');
 const debug = require('core/debug')('install');
-const {
-  getGlobalForgeVersion,
-  getReleaseAssets,
-  getReleaseDirectory,
-  isReleaseBinExists,
-} = require('core/forge-fs');
+const { getReleaseAssets, getReleaseDirectory, isReleaseBinExists } = require('core/forge-fs');
 
 const { REQUIRED_DIRS } = require('../../../constant');
 
@@ -269,15 +264,7 @@ async function download({
   });
 
   if (unDownloadAssets.length === 0) {
-    const currentVersion = getGlobalForgeVersion();
     printInfo(`forge v${version} is already installed!`);
-
-    if (semver.eq(version, currentVersion)) {
-      print(hr);
-      print(chalk.cyan('Current forge release'));
-      print(hr);
-      shell.exec('forge version');
-    }
 
     return DOWNLOAD_FLAGS.ALREADY_EXISTS;
   }

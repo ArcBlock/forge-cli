@@ -15,9 +15,7 @@ module.exports = {
   DEFAULT_WORKSHOP_PORT: 8807,
   DEFAULT_FORGE_GRPC_PORT: 28210,
   DEFAULT_MIRROR: 'https://releases.arcblock.io',
-  REMOTE_BOCKLET_URL: 'http://arcblockcn.oss-cn-beijing.aliyuncs.com/blocklets.json',
-  REMOTE_STARTER_URL:
-    'https://arcblockcn.oss-cn-beijing.aliyuncs.com/forge_starters/starter-release.json',
+  REMOTE_BLOCKLET_URL: 'http://arcblockcn.oss-cn-beijing.aliyuncs.com/blocklets.json',
   RELEASE_ASSETS: [
     'forge',
     'simulator',

@@ -33,8 +33,8 @@ async function main({
       }
     }
 
-    const { forge } = listReleases();
-    if (!forge.includes(version)) {
+    const releases = await listReleases();
+    if (!releases.find(item => semver.eq(version, item.version))) {
       shell.echo(
         `${
           symbols.error

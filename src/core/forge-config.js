@@ -325,7 +325,7 @@ async function ensureForgeRelease({
       }
     } catch (err) {
       debug.error('ensureForgeRelease.readConfig.error', err);
-      const latestLocal = getLocalVersions().pop();
+      const latestLocal = await getLocalVersions().pop();
       cliConfig.globalVersion = latestLocal;
       cliConfig.currentVersion = latestLocal;
 

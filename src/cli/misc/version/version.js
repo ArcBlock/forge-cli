@@ -2,7 +2,6 @@ const fs = require('fs');
 const shell = require('shelljs');
 const {
   config,
-  getPlatform,
   runNativeWebCommand,
   runNativeSimulatorCommand,
   runNativeWorkshopCommand,
@@ -10,6 +9,7 @@ const {
 const debug = require('core/debug')('version');
 const { symbols } = require('core/ui');
 
+const { getPlatform } = require('core/util');
 const { getConsensusEnginBinPath, getStorageEnginePath } = require('core/forge-fs');
 const { version: forgeCliVersion } = require('../../../../package.json');
 

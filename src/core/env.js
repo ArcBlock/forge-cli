@@ -3,7 +3,6 @@
 const fs = require('fs');
 const util = require('util');
 const path = require('path');
-const getos = require('getos');
 const chalk = require('chalk');
 const shell = require('shelljs');
 const execa = require('execa');
@@ -334,40 +333,6 @@ function makeNativeCommandRunner(executable, name, { env } = {}) {
   };
 }
 
-function getPlatform() {
-  return new Promise((resolve, reject) => {
-    const platform = process.env.FORGE_CLI_PLATFORM;
-    if (platform && ['darwin', 'centos'].includes(platform)) {
-      shell.echo(
-        `${symbols.info} ${chalk.yellow(
-          `Using custom platform: ${process.env.FORGE_CLI_PLATFORM}`
-        )}`
-      );
-      resolve(platform);
-      return;
-    }
-
-    getos((err, info) => {
-      if (err) {
-        console.error(err);
-        return reject(err);
-      }
-
-      if (info.os === 'darwin') {
-        return resolve(info.os);
-      }
-
-      if (info.os === 'linux') {
-        return resolve('centos');
-      }
-
-      shell.echo(`${symbols.error} Oops, ${info.os} is not supported by forge currently`);
-      process.exit(1);
-      return resolve(info.os);
-    });
-  });
-}
-
 function writeCache(key, data) {
   try {
     fs.writeFileSync(path.join(REQUIRED_DIRS.cache, `${key}.json`), JSON.stringify(data));
@@ -506,7 +471,6 @@ module.exports = {
   runNativeWebCommand: makeNativeCommandRunner('webBinPath', 'web'),
   runNativeWorkshopCommand: makeNativeCommandRunner('workshopBinPath', 'workshop'),
   runNativeSimulatorCommand: makeNativeCommandRunner('simulatorBinPath', 'simulator'),
-  getPlatform,
   getModerator,
   createRpcClient,
   isDirectory,

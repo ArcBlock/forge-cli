@@ -2,23 +2,14 @@ const fs = require('fs');
 const path = require('path');
 const yaml = require('yaml');
 const chalk = require('chalk');
+const semver = require('semver');
 const debug = require('core/debug')('list');
-const { print, printError } = require('core/util');
+const { print, printError, highlightOfList } = require('core/util');
 const { listReleases } = require('core/forge-fs');
 
 const { REQUIRED_DIRS } = require('../../../constant');
 
-function printList(title, list = [], current) {
-  print(`${title}:`);
-  if (list.length === 0) {
-    print('  -');
-  } else {
-    list.forEach(x => print(x === current ? chalk.cyan(`  ✓ ${x}`) : `  - ${x}`));
-  }
-  print();
-}
-
-function main() {
+async function main() {
   let current = '';
   try {
     const { release } = REQUIRED_DIRS;
@@ -38,20 +29,14 @@ function main() {
   }
 
   try {
-    const {
-      forge,
-      simulator,
-      forge_starter: starter,
-      forge_web: forgeWeb,
-      forge_workshop: forgeWorkshop,
-    } = listReleases();
-    debug({ forge, starter, simulator, current, forgeWeb, forgeWorkshop });
-
-    printList('Forge Kernel', forge, current);
-    printList('Forge Web', forgeWeb, current);
-    printList('Simulator', simulator, current);
-    printList('Starter', starter, current);
-    printList('Workshop', forgeWorkshop, current);
+    const releases = (await listReleases()) || [];
+    if (releases.length === 0) {
+      print('  -');
+    } else {
+      releases.forEach(({ version }) => {
+        highlightOfList(() => semver.eq(version, current), version);
+      });
+    }
   } catch (err) {
     debug(err);
     printError(
@@ -66,4 +51,3 @@ function main() {
 
 exports.run = main;
 exports.execute = main;
-exports.listReleases = listReleases;

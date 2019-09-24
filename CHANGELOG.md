@@ -1,3 +1,10 @@
+## 0.38.23 (September 24, 2019)
+
+- fix: 'forge ls/upgrade/ls:remote' list incomplete releases #239
+- chore: remove details of specific version from `forge list` outputs
+- refact: `listReleases` and `getLocalVersions` function
+- refact: move `getPlatform` to util module
+
 ## 0.38.22 (September 24, 2019)
 
 - chore: bump version

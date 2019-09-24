@@ -1,20 +1,15 @@
-const chalk = require('chalk');
 const semver = require('semver');
-const { fetchAsset, print, printError } = require('core/util');
+const { fetchAsset, print, printError, highlightOfList } = require('core/util');
 const { getLocalVersions } = require('core/forge-fs');
 
 const { ASSETS_PATH, SHIFT_WIDTH } = require('../../../constant');
 
 const printList = (list = [], localVersions = []) => {
-  const shiftWidth = ' '.repeat(2);
   if (list.length === 0) {
     print(`${SHIFT_WIDTH}-`);
   } else {
-    // prettier-ignore
     list.forEach(x =>
-      (localVersions.find(localVersion => semver.eq(localVersion, x))
-        ? print(chalk.cyan(`->${SHIFT_WIDTH}${x}`))
-        : print(`${shiftWidth}${SHIFT_WIDTH}${x}`)));
+      highlightOfList(() => localVersions.find(localVersion => semver.eq(localVersion, x)), x)); // prettier-ignore
   }
 };
 
@@ -34,7 +29,7 @@ const main = async () => {
         return 0;
       });
 
-    const localVersions = getLocalVersions();
+    const localVersions = await getLocalVersions();
 
     printList(versions, localVersions);
   } catch (error) {

@@ -18,7 +18,7 @@ const {
 } = require('core/util');
 const { isDirectory, isEmptyDirectory } = require('core/forge-fs');
 
-const { BLOCKLET_DIR, REMOTE_BOCKLET_URL } = require('../../../constant');
+const { BLOCKLET_DIR, REMOTE_BLOCKLET_URL } = require('../../../constant');
 
 const BLOCKLET_CONFIG_FILEPATH = 'blocklet.json';
 
@@ -214,7 +214,7 @@ async function run({ args: [blockletName = ''], opts: { localBlocklet, target } 
     const blocklets = await wrapSpinner(
       'Fetching blocklets information...',
       getBlocklets,
-      REMOTE_BOCKLET_URL
+      REMOTE_BLOCKLET_URL
     );
 
     if (!Array.isArray(blocklets) || blocklets.length === 0) {

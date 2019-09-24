@@ -292,7 +292,11 @@ async function ensureForgeRelease({
   chainName = process.env.FORGE_CURRENT_CHAIN,
   allowMultiChain,
 }) {
-  const cliConfig = {};
+  const cliConfig = {
+    chainRoot: getChainDirectory(chainName),
+    chainConfig: getChainReleaseFilePath(chainName),
+  };
+
   const cliReleaseDir = REQUIRED_DIRS.release;
   const releaseYamlPath = path.join(cliReleaseDir, './forge/release.yml');
   if (fs.existsSync(cliReleaseDir)) {
@@ -385,9 +389,12 @@ async function ensureForgeRelease({
 
     // forge_kernel
     const forgeBinPath = path.join(cliReleaseDir, 'forge', currentVersion, './bin/forge');
+    const tmPath = `lib/consensus-${currentVersion}/priv/tendermint/tendermint`;
+    const tmBinPath = path.join(cliReleaseDir, 'forge', currentVersion, tmPath);
     if (fs.existsSync(forgeBinPath) && fs.statSync(forgeBinPath).isFile()) {
       cliConfig.releaseDir = cliReleaseDir;
       cliConfig.forgeBinPath = forgeBinPath;
+      cliConfig.tmBinPath = tmBinPath;
       cliConfig.forgeReleaseDir = path.join(cliReleaseDir, 'forge');
       debug(`${symbols.success} Using forge release dir: ${cliReleaseDir}`);
       debug(`${symbols.success} Using forge executable: ${forgeBinPath}`);

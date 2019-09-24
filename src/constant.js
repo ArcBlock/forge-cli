@@ -43,4 +43,5 @@ module.exports = {
     logs: path.join(CLI_BASE_DIRECTORY, 'logs'),
     release: path.join(CLI_BASE_DIRECTORY, 'release'),
   },
+  RESERVED_CHAIN_NAMES: ['forge'],
 };

@@ -1,3 +1,7 @@
+## 0.38.21 (September 24, 2019)
+
+- fix: error chain_id when first run forge config set #232
+
 ## 0.38.20 (September 22, 2019)
 
 - chore: use asset list from remote

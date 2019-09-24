@@ -17,12 +17,12 @@ const { isValid, isFromPublicKey } = require('@arcblock/did');
 const { ensureConfigComment } = require('core/env');
 const { getModerator } = require('core/moderator');
 const { hr, pretty } = require('core/ui');
-const { print, printInfo, printError, printSuccess } = require('core/util');
+const { print, printInfo, printError, printSuccess, strEqual } = require('core/util');
 const debug = require('core/debug')('config:lib');
 const { getChainDirectory } = require('core/forge-fs');
 const { setFilePathOfConfig } = require('core/forge-config');
 
-const { REQUIRED_DIRS } = require('../../../constant');
+const { REQUIRED_DIRS, DEFAULT_CHAIN_NAME, RESERVED_CHAIN_NAMES } = require('../../../constant');
 const { generateDefaultAccount } = require('../../account/lib/index');
 
 const DAYS_OF_YEAR = 365;
@@ -104,6 +104,10 @@ function pokeBalanceValidator(v, answers) {
   return true;
 }
 
+function isReservedChainName(chainName = '', reservedChainNames = []) {
+  return reservedChainNames.includes(chainName);
+}
+
 async function readUserConfigs(
   configs,
   chainName = '',
@@ -159,6 +163,10 @@ async function readUserConfigs(
     if (!v) return 'The chain name should not be empty';
     if (!/^[a-zA-Z][a-zA-Z0-9_\-\s]{3,23}$/.test(v)) {
       return 'The chain name should start with a letter, only contain 0-9,a-z,A-Z, and length between 4~24';
+    }
+
+    if (isReservedChainName(v, RESERVED_CHAIN_NAMES)) {
+      return `${chalk.cyan(v)} is reserved, please use another one`;
     }
 
     if (fs.existsSync(getChainDirectory(v))) {
@@ -450,10 +458,12 @@ async function readUserConfigs(
     tokenHolderPk,
   } = answers;
 
-  defaults.tendermint.moniker = name;
+  const chainId = strEqual(chainName, DEFAULT_CHAIN_NAME) ? 'forge' : chainName;
+
+  defaults.tendermint.moniker = chainId;
   defaults.app.name = name;
   defaults.tendermint.timeout_commit = `${blockTime}s`;
-  defaults.tendermint.genesis.chain_id = kebabCase(name);
+  defaults.tendermint.genesis.chain_id = kebabCase(chainId);
 
   // token config
   defaults.forge.token = tokenDefaults;

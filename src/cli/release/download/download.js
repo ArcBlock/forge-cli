@@ -1,8 +1,7 @@
 /* eslint-disable no-restricted-syntax */
 const fs = require('fs');
 const chalk = require('chalk');
-const { getPlatform } = require('core/env');
-const { print, printError, printInfo, printSuccess } = require('core/util');
+const { getPlatform, print, printError, printInfo, printSuccess } = require('core/util');
 const { formatVersion, download, DOWNLOAD_FLAGS } = require('./lib');
 
 const { DEFAULT_MIRROR, RELEASE_ASSETS } = require('../../../constant');

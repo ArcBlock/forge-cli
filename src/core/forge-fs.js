@@ -4,22 +4,24 @@ const os = require('os');
 const shell = require('shelljs');
 const yaml = require('yaml');
 const semver = require('semver');
+const isEqual = require('lodash/isEqual');
 
 const debug = require('core/debug')('forge-fs');
 const {
+  chainSortHandler,
+  fetchReleaseAssetsInfo,
+  getPlatform,
   print,
   printWarning,
   printInfo,
   printSuccess,
   printError,
-  chainSortHandler,
 } = require('core/util');
 
 const {
   CHAIN_DATA_PATH_NAME,
   CONFIG_FILE_NAME,
   CLI_BASE_DIRECTORY,
-  RELEASE_ASSETS,
   REQUIRED_DIRS,
 } = require('../constant');
 
@@ -45,26 +47,49 @@ function isFile(x) {
   return fs.existsSync(x) && fs.statSync(x).isFile();
 }
 
-function listReleases() {
+async function listReleases() {
   const { release } = REQUIRED_DIRS;
-  return RELEASE_ASSETS.reduce((acc, x) => {
-    const dir = path.join(release, x);
+  const platform = await getPlatform();
+  const remoteReleasesInfo = (await fetchReleaseAssetsInfo(platform)) || [];
+  const localAllAssetNames = fs.readdirSync(release);
+  const versionAssetsMap = {};
+  localAllAssetNames.forEach(releaseName => {
+    const dir = path.join(release, releaseName);
     if (fs.existsSync(dir)) {
-      acc[x] = fs
+      const versions = fs
         .readdirSync(dir)
         .filter(y => isDirectory(path.join(dir, y)) && !isEmptyDirectory(path.join(dir, y)));
-    }
 
-    return acc;
-  }, {});
+      versions.forEach(v => {
+        if (versionAssetsMap[v] === undefined) {
+          versionAssetsMap[v] = [];
+        }
+
+        if (!versionAssetsMap[v].includes(releaseName)) {
+          versionAssetsMap[v].push(releaseName);
+        }
+      });
+    }
+  });
+
+  const result = [];
+
+  Object.keys(versionAssetsMap).forEach(version => {
+    const tmp = remoteReleasesInfo.find(x => semver.eq(x.version, version));
+    if (versionAssetsMap[version] && isEqual(versionAssetsMap[version], tmp.assets)) {
+      result.push({ version, assets: versionAssetsMap[version] });
+    }
+  });
+
+  return result;
 }
 
-function getLocalVersions() {
-  const releases = listReleases();
+async function getLocalVersions() {
+  const releases = await listReleases();
 
   const versions = [];
-  Object.keys(releases).forEach(item => {
-    versions.push(...releases[item]);
+  releases.forEach(({ version }) => {
+    versions.push(version);
   });
 
   return [...new Set(versions)];

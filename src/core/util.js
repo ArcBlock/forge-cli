@@ -7,6 +7,7 @@ const figlet = require('figlet');
 const shell = require('shelljs');
 const chalk = require('chalk');
 const url = require('url');
+const getos = require('getos');
 const semver = require('semver');
 const tar = require('tar');
 const getPort = require('get-port');
@@ -14,7 +15,13 @@ const prettyMilliseconds = require('pretty-ms');
 const moment = require('moment');
 
 const { symbols, hr } = require('./ui');
-const { DEFAULT_CHAIN_NAME, MIRRORS, REQUIRED_DIRS, ASSETS_PATH } = require('../constant');
+const {
+  DEFAULT_CHAIN_NAME,
+  MIRRORS,
+  REQUIRED_DIRS,
+  ASSETS_PATH,
+  SHIFT_WIDTH,
+} = require('../constant');
 const debug = require('./debug')('util');
 
 /**
@@ -202,6 +209,25 @@ const fetchAssetRace = async urlPath => {
 
 const fetchAsset = async assetPath => fetchAssetRace(assetPath);
 
+const fetchReleaseAssetsInfo = async platform => {
+  const data = await fetchAsset(ASSETS_PATH.VERSIONS);
+  const result = [];
+  if (Array.isArray(data)) {
+    data.forEach(({ version, assets }) => {
+      const tmp = { version, assets: [] };
+      result.push(tmp);
+      assets.forEach(({ name }) => {
+        const index = name.indexOf(`_${platform}_`);
+        if (index > 0) {
+          tmp.assets.push(name.substring(0, index));
+        }
+      });
+    });
+  }
+
+  return result;
+};
+
 const fetchAssetsByVersion = async (version, platform) => {
   const versionsInfo = await fetchAsset(ASSETS_PATH.VERSIONS);
   const release = versionsInfo.find(x => semver.eq(version, x.version));
@@ -247,16 +273,55 @@ const downloadPackageFromNPM = async (name, dest, registry = '') => {
   return dest;
 };
 
+function getPlatform() {
+  return new Promise((resolve, reject) => {
+    const platform = process.env.FORGE_CLI_PLATFORM;
+    if (platform && ['darwin', 'centos'].includes(platform)) {
+      shell.echo(
+        `${symbols.info} ${chalk.yellow(
+          `Using custom platform: ${process.env.FORGE_CLI_PLATFORM}`
+        )}`
+      );
+      resolve(platform);
+      return;
+    }
+
+    getos((err, info) => {
+      if (err) {
+        return reject(err);
+      }
+
+      if (info.os === 'darwin') {
+        return resolve(info.os);
+      }
+
+      if (info.os === 'linux') {
+        return resolve('centos');
+      }
+
+      debug(`${info.os} is not supported by forge currently`);
+      return resolve(info.os);
+    });
+  });
+}
+
+function highlightOfList(func, value, leftPad = SHIFT_WIDTH) {
+  print(`${func() ? chalk.cyan(`->${leftPad}${value}`) : `  ${leftPad}${value}`}`);
+}
+
 module.exports = {
   chainSortHandler,
   downloadPackageFromNPM,
   fetchAsset,
   fetchAssetsByVersion,
+  fetchReleaseAssetsInfo,
+  getPlatform,
   getPort,
   getPackageConfig,
   getFreePort,
   makeRange,
   md5,
+  highlightOfList,
   parseTimeStrToMS,
   prettyStringify,
   prettyTime,

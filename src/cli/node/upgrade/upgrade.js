@@ -117,9 +117,10 @@ async function main({ args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
   try {
     const client = createRpcClient();
     const current = config.get('cli.currentVersion');
-    const releases = listReleases()
-      .forge.filter(x => semver.gt(x, current))
-      .sort((v1, v2) => semver.gt(v2, v1));
+    const releases = (await listReleases())
+      .filter(({ version }) => semver.gt(version, current))
+      .sort((v1, v2) => semver.gt(v2.version, v1.version))
+      .map(({ version }) => version);
 
     if (!releases.length) {
       printSuccess('Abort because no available newer version to upgrade!');

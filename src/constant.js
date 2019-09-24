@@ -1,7 +1,6 @@
 const path = require('path');
 const os = require('os');
 
-const shiftWidth = ' '.repeat(4);
 const CLI_BASE_DIRECTORY = path.join(os.homedir(), '.forge_cli');
 const BLOCKLET_DIR = path.join(os.homedir(), '.blocklets');
 
@@ -24,7 +23,7 @@ module.exports = {
     'forge_workshop',
     'forge_swap',
   ],
-  SHIFT_WIDTH: shiftWidth,
+  SHIFT_WIDTH: ' '.repeat(4),
   MIRRORS: [
     'https://releases.arcblock.io',
     'https://arcblock.oss-cn-beijing.aliyuncs.com',

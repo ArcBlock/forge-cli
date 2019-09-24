@@ -22,7 +22,7 @@ const debug = require('core/debug')('config:lib');
 const { getChainDirectory } = require('core/forge-fs');
 const { setFilePathOfConfig } = require('core/forge-config');
 
-const { REQUIRED_DIRS, DEFAULT_CHAIN_NAME } = require('../../../constant');
+const { REQUIRED_DIRS, DEFAULT_CHAIN_NAME, RESERVED_CHAIN_NAMES } = require('../../../constant');
 const { generateDefaultAccount } = require('../../account/lib/index');
 
 const DAYS_OF_YEAR = 365;
@@ -104,6 +104,10 @@ function pokeBalanceValidator(v, answers) {
   return true;
 }
 
+function isReservedChainName(chainName = '', reservedChainNames = []) {
+  return reservedChainNames.includes(chainName);
+}
+
 async function readUserConfigs(
   configs,
   chainName = '',
@@ -159,6 +163,10 @@ async function readUserConfigs(
     if (!v) return 'The chain name should not be empty';
     if (!/^[a-zA-Z][a-zA-Z0-9_\-\s]{3,23}$/.test(v)) {
       return 'The chain name should start with a letter, only contain 0-9,a-z,A-Z, and length between 4~24';
+    }
+
+    if (isReservedChainName(v, RESERVED_CHAIN_NAMES)) {
+      return `${chalk.cyan(v)} is reserved, please use another one`;
     }
 
     if (fs.existsSync(getChainDirectory(v))) {

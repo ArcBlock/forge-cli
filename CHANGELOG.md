@@ -1,9 +1,6 @@
 ## 0.38.21 (September 24, 2019)
 
-- chore: support adding new peer to current node
-- chore: initial working version of production config generating
-- chore: add prepare command
-- fix: typo
+- fix: error chain_id when first run forge config set #232
 
 ## 0.38.20 (September 22, 2019)
 

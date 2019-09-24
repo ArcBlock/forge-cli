@@ -4,6 +4,7 @@ const inquirer = require('inquirer');
 const shell = require('shelljs');
 const publicIp = require('public-ip');
 const privateIp = require('internal-ip');
+const fsExtra = require('fs-extra');
 const toml = require('@iarna/toml');
 const uniqBy = require('lodash/uniqBy');
 const { getSpinner } = require('core/ui');
@@ -38,8 +39,8 @@ async function main({ opts: { mode = 'init', writeConfig = false } }) {
   // TODO: detect that this node has already started
 
   if (mode === 'init') {
-    shell.exec(`rm -rf ${chainRoot}/forge_release`);
-    shell.exec(`rm -rf ${chainRoot}/keys`);
+    fsExtra.removeSync(`${chainRoot}/forge_release`);
+    fsExtra.removeSync(`${chainRoot}/keys`);
 
     // 1. initialize the node using forge executable
     let command = `FORGE_CONFIG=${configPath} ${forgePath} eval 'Application.ensure_all_started(:consensus)'`;
@@ -56,7 +57,7 @@ async function main({ opts: { mode = 'init', writeConfig = false } }) {
     // 2. create persistent_peers string
     command = `${tmPath} --home ${chainRoot}/forge_release/tendermint show_node_id`;
     const result = shell.exec(command, { silent: true });
-    if (result.code !== 0) {
+    if (result.code !== 0 || !result.stdout.trim()) {
       spinner.fail('Cannot get node id, abort');
       process.exit(1);
       return;
@@ -103,9 +104,9 @@ async function main({ opts: { mode = 'init', writeConfig = false } }) {
     }
 
     // 5. cleanup the generated mess
-    shell.exec(`rm -rf ${chainRoot}/forge_release/tendermint`);
-    shell.exec(`rm -rf ${chainRoot}/forge_release/core`);
-    shell.exec(`rm -rf ${chainRoot}/forge_release/cache`);
+    fsExtra.removeSync(`${chainRoot}/forge_release/tendermint`);
+    fsExtra.removeSync(`${chainRoot}/forge_release/core`);
+    fsExtra.removeSync(`${chainRoot}/forge_release/cache`);
     shell.exec(`mkdir -p ${chainRoot}/forge_release/tendermint/data`);
     fs.writeFileSync(
       `${chainRoot}/forge_release/tendermint/data/priv_validator_state.json`,

@@ -1,4 +1,5 @@
-// eslint-disable-next-line import/no-unresolved
+const shell = require('shelljs');
+const chalk = require('chalk');
 const { cli, action } = require('core/cli');
 const { execute, run } = require('./prepare');
 
@@ -13,6 +14,22 @@ cli(
       rpcClient: false,
       wallet: false,
     },
-    options: [],
+    options: [
+      ['-m, --mode <mode>', 'Whether we want to init or add peer to this node, default init'],
+      ['-w, --write-config', 'Persist config to local file, default false'],
+    ],
+    handlers: {
+      '--help': () => {
+        shell.echo(`
+Examples:
+  - ${chalk.cyan(
+    'forge prepare'
+  )}                  Reinitialize local node and just print the config
+  - ${chalk.cyan('forge prepare --write-config')}   Reinitialize local node and update it's config
+  - ${chalk.cyan('forge prepare --mode join')}      Add a new peer to current node
+  - ${chalk.cyan('forge prepare --mode init')}      Initialize local node
+        `);
+      },
+    },
   }
 );

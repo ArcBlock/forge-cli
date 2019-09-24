@@ -99,6 +99,7 @@ Commands:
   logs [type]                            Show logs for various forge components
   ls                                     List forge releases installed locally
   ls:remote                              List remote forge releases available for install
+  prepare [options]                      Prepare node for deploying a multi-node chain
   protocol:activate [name|address]       Activate a transaction protocol by name or address
   protocol:compile [sourceDir]           Compile a forge transaction protocol
   protocol:deactivate [name|adderss]     Deactivate a transaction protocol

@@ -1,3 +1,7 @@
+## 0.38.24 (September 25, 2019)
+
+- hotfix: getLocalVersions function call error
+
 ## 0.38.23 (September 24, 2019)
 
 - fix: 'forge ls/upgrade/ls:remote' list incomplete releases #239

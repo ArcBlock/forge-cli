@@ -27,7 +27,7 @@ async function main({
   args: [chainName = process.env.FORGE_CURRENT_CHAIN],
 }) {
   const tmp = await start(chainName, dryRun, allowMultiChain);
-  process.exit(tmp ? 0 : 1);
+  process.exit(tmp === true ? 0 : 1);
 }
 
 async function start(chainName, dryRun = false, allowMultiChain) {
@@ -36,13 +36,13 @@ async function start(chainName, dryRun = false, allowMultiChain) {
     if (runningChains.length > 0) {
       printInfo(`Chain ${chalk.cyan(chalk.cyan(chainName))} is already started!`);
       await printAllProcesses();
-      process.exit(0);
+      return true;
     }
   }
 
   if (await isForgeStarted(chainName)) {
     printInfo(`Chain ${chalk.cyan(chalk.cyan(chainName))} is already started!`);
-    return;
+    return true;
   }
 
   const { starterBinPath, forgeBinPath, forgeConfigPath } = config.get('cli');
@@ -73,7 +73,8 @@ async function start(chainName, dryRun = false, allowMultiChain) {
     printInfo(
       `Please create an issue on ${chalk.cyan(url)} with output after running above command`
     );
-    process.exit(0);
+
+    return true;
   }
 
   const command = `${startCommandPrefix} ${startType}`;

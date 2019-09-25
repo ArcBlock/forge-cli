@@ -1,13 +1,14 @@
 const semver = require('semver');
-const { fetchAsset, print, printError, highlightOfList } = require('core/util');
+const { fetchAsset, print, printError, printWarning, highlightOfList } = require('core/util');
 const { getLocalVersions } = require('core/forge-fs');
 
-const { ASSETS_PATH, SHIFT_WIDTH } = require('../../../constant');
+const { ASSETS_PATH } = require('../../../constant');
 
 const printList = (list = [], localVersions = []) => {
   if (list.length === 0) {
-    print(`${SHIFT_WIDTH}-`);
+    printWarning('Forge releases not found.');
   } else {
+    print('Forge releases:');
     list.forEach(x =>
       highlightOfList(() => localVersions.find(localVersion => semver.eq(localVersion, x)), x)); // prettier-ignore
   }

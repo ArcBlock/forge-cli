@@ -63,6 +63,10 @@ function sleep(timeout = 1000) {
  */
 const logError = args => {
   const content = args.map(item => (item instanceof Error ? item.stack : item)).join(os.EOL);
+  if (!fs.existsSync(REQUIRED_DIRS.logs)) {
+    fs.mkdirSync(REQUIRED_DIRS.logs, { recursive: true });
+  }
+
   fs.writeFileSync(
     path.join(REQUIRED_DIRS.logs, 'error.log'),
     `${moment().format('YYYY-MM-DD HH:mm:ss.ms')} ${content}${os.EOL}`,

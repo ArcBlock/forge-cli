@@ -1,3 +1,8 @@
+## 0.38.25 (September 25, 2019)
+
+- chore: prompt user to install when no release found #247
+- fix: forge install didn't work with ansible(script) #243
+
 ## 0.38.24 (September 25, 2019)
 
 - hotfix: getLocalVersions function call error

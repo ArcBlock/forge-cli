@@ -19,6 +19,7 @@ const { parse } = require('@arcblock/forge-config');
 const { getChainDirectory, isDirectory, getChainReleaseFilePath } = require('core/forge-fs');
 const { ensureForgeRelease } = require('core/forge-config');
 const { isForgeStarted, getProcessTag } = require('./forge-process');
+const { inquire } = require('./interaction');
 const { print, printInfo, printSuccess, printLogo } = require('./util');
 
 const { REQUIRED_DIRS } = require('../constant');
@@ -354,7 +355,7 @@ function readCache(key) {
   }
 }
 
-async function checkUpdate({ defaults, npmRegistry: registry, autoUpgrade }) {
+async function checkUpdate({ silent, defaults, yes, npmRegistry: registry, autoUpgrade }) {
   if (autoUpgrade === false) {
     return;
   }
@@ -389,20 +390,21 @@ async function checkUpdate({ defaults, npmRegistry: registry, autoUpgrade }) {
       )
     );
 
-    if (!defaults) {
-      const { confirm } = await inquirer.prompt([
+    const { confirm } = await inquire(
+      [
         {
           name: 'confirm',
           type: 'confirm',
           message: 'Upgrade?',
           default: false,
         },
-      ]);
+      ],
+      { defaults, silent, yes }
+    );
 
-      if (confirm) {
-        printSuccess(`Updating to ${latest.trim()}...`);
-        execa.commandSync('npm install -g @arcblock/forge-cli', { stdio: [0, 1, 2] });
-      }
+    if (confirm) {
+      printSuccess(`Updating to ${latest.trim()}...`);
+      execa.commandSync('npm install -g @arcblock/forge-cli', { stdio: [0, 1, 2] });
     }
   }
 }

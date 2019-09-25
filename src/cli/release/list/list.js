@@ -1,41 +1,31 @@
-const fs = require('fs');
-const path = require('path');
-const yaml = require('yaml');
 const chalk = require('chalk');
 const semver = require('semver');
+const { print, printInfo, printError, highlightOfList } = require('core/util');
 const debug = require('core/debug')('list');
-const { printInfo, printError, highlightOfList } = require('core/util');
-const { listReleases } = require('core/forge-fs');
-
-const { REQUIRED_DIRS } = require('../../../constant');
+const { getGlobalForgeVersion, listReleases } = require('core/forge-fs');
 
 async function main() {
-  let current = '';
   try {
-    const { release } = REQUIRED_DIRS;
-    if (fs.existsSync(path.join(release, 'forge')) === true) {
-      const filePath = path.join(release, 'forge', 'release.yml');
-      const yamlObj = fs.existsSync(filePath)
-        ? yaml.parse(fs.readFileSync(filePath).toString()) || {}
-        : {};
-      // eslint-disable-next-line prefer-destructuring
-      current = yamlObj.current;
-    }
-  } catch (err) {
-    debug.error(err);
-  }
+    const globalVersion = getGlobalForgeVersion();
+    debug('global version:', globalVersion);
 
-  try {
     const releases = (await listReleases()) || [];
     if (releases.length === 0) {
       printInfo(`Forge release not found, please run ${chalk.cyan('forge install')} first`);
     } else {
+      print('Installed:');
       releases.forEach(({ version }) => {
-        highlightOfList(() => semver.eq(version, current), version);
+        highlightOfList(
+          () =>
+            semver.valid(version) &&
+            semver.valid(globalVersion) &&
+            semver.eq(version, globalVersion),
+          version
+        );
       });
     }
   } catch (err) {
-    debug(err);
+    printError(err);
     printError(
       `Cannot list installed forge releases, ensure you have run ${chalk.cyan(
         'forge download'

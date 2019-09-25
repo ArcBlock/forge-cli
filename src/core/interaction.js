@@ -6,7 +6,7 @@ async function inquire(questions = [], { defaults = false, yes = false, silent =
     debug('exec in inactive mode', { defaults, yes, silent });
 
     const defaultAnswers = questions.reduce((acc, cur) => {
-      if (cur.default) {
+      if (typeof cur.default !== 'undefined') {
         acc[cur.name] = cur.default;
       }
 

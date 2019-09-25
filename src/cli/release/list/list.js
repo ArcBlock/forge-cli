@@ -4,7 +4,7 @@ const yaml = require('yaml');
 const chalk = require('chalk');
 const semver = require('semver');
 const debug = require('core/debug')('list');
-const { print, printError, highlightOfList } = require('core/util');
+const { printInfo, printError, highlightOfList } = require('core/util');
 const { listReleases } = require('core/forge-fs');
 
 const { REQUIRED_DIRS } = require('../../../constant');
@@ -13,17 +13,14 @@ async function main() {
   let current = '';
   try {
     const { release } = REQUIRED_DIRS;
-    if (fs.existsSync(path.join(release, 'forge')) === false) {
-      printError(`Forge release not found, please run ${chalk.cyan('forge install')} first`);
-      process.exit(1);
-      return;
+    if (fs.existsSync(path.join(release, 'forge')) === true) {
+      const filePath = path.join(release, 'forge', 'release.yml');
+      const yamlObj = fs.existsSync(filePath)
+        ? yaml.parse(fs.readFileSync(filePath).toString()) || {}
+        : {};
+      // eslint-disable-next-line prefer-destructuring
+      current = yamlObj.current;
     }
-    const filePath = path.join(release, 'forge', 'release.yml');
-    const yamlObj = fs.existsSync(filePath)
-      ? yaml.parse(fs.readFileSync(filePath).toString()) || {}
-      : {};
-    // eslint-disable-next-line prefer-destructuring
-    current = yamlObj.current;
   } catch (err) {
     debug.error(err);
   }
@@ -31,7 +28,7 @@ async function main() {
   try {
     const releases = (await listReleases()) || [];
     if (releases.length === 0) {
-      print('  -');
+      printInfo(`Forge release not found, please run ${chalk.cyan('forge install')} first`);
     } else {
       releases.forEach(({ version }) => {
         highlightOfList(() => semver.eq(version, current), version);

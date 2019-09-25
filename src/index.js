@@ -13,11 +13,12 @@ const chalk = require('chalk');
 const shell = require('shelljs');
 const program = require('commander');
 const fs = require('fs');
+const path = require('path');
 const { getChainDirectory, ensureChainDirectory } = require('./core/forge-fs');
 const { getAllProcesses } = require('./core/forge-process');
 
 const { printError, printInfo, printLogo, printCurrentChain } = require('./core/util');
-const { DEFAULT_CHAIN_NAME } = require('./constant');
+const { DEFAULT_CHAIN_NAME, REQUIRED_DIRS } = require('./constant');
 const debug = require('./core/debug')('main');
 const { symbols, hr } = require('./core/ui');
 const checkCompatibility = require('./core/migration');
@@ -33,9 +34,19 @@ const onError = error => {
     command += ' -v';
   }
 
-  printInfo(`Run ${chalk.cyan('forge logs cli')} to get detail error`);
   printInfo(`Run ${chalk.cyan(`forge ${command}`)} to debug`);
+  process.exit(1);
 };
+
+process.on('exit', code => {
+  if (code !== 0) {
+    printInfo(
+      `Logs of this run can be found in ${chalk.cyan(
+        path.join(path.join(REQUIRED_DIRS.logs, 'error.log'))
+      )}`
+    );
+  }
+});
 
 process.on('unhandledRejection', onError);
 process.on('uncaughtException', onError);

@@ -93,10 +93,11 @@ function initCli(program) {
           globalOpts.autoUpgrade = true;
         }
 
-        await setupEnv(globalArgs.args, x.requirements, globalOpts);
+        const opts = Object.assign({}, globalOpts, command.opts());
+        await setupEnv(globalArgs.args, x.requirements, opts);
         await x.handler({
           args: params.filter(p => typeof p === 'string'),
-          opts: Object.assign(globalOpts, command.opts()),
+          opts,
         });
       });
     });

@@ -6,7 +6,6 @@ const yaml = require('yaml');
 const semver = require('semver');
 const isEqual = require('lodash/isEqual');
 const get = require('lodash/get');
-
 const TOML = require('@iarna/toml');
 
 const debug = require('core/debug')('forge-fs');

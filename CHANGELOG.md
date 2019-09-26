@@ -1,3 +1,7 @@
+## 0.38.27 (September 26, 2019)
+
+- fix: error process exit code during start chain
+
 ## 0.38.26 (September 26, 2019)
 
 - chore: bump forge sdk version

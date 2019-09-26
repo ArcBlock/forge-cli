@@ -55,7 +55,10 @@ async function getTendermintProcess(chainName) {
   const homeDir = escapseHomeDir(getTendermintHomeDir(chainName));
 
   const tmp = tendermintProcess.find(({ cmd }) => cmd.includes(homeDir));
-  result.pid = tmp ? tmp.pid : 0;
+  if (tmp) {
+    result.pid = tmp.pid;
+  }
+
   return result;
 }
 

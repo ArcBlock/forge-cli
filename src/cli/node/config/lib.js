@@ -458,7 +458,7 @@ async function readUserConfigs(
     tokenHolderPk,
   } = answers;
 
-  const chainId = strEqual(chainName, DEFAULT_CHAIN_NAME) ? 'forge' : chainName;
+  const chainId = strEqual(name, DEFAULT_CHAIN_NAME) ? 'forge' : name;
 
   defaults.tendermint.moniker = chainId;
   defaults.app.name = name;

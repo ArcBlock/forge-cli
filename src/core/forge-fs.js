@@ -402,6 +402,10 @@ function getReleaseDir() {
   return path.join(CLI_BASE_DIRECTORY, 'release');
 }
 
+function isChainExists(chainName) {
+  return fs.existsSync(getChainDirectory(chainName));
+}
+
 module.exports = {
   clearDataDirectories,
   checkStartError,
@@ -434,6 +438,7 @@ module.exports = {
   getStorageEnginePath,
   getChainKeyFilePath,
   getLocalVersions,
+  isChainExists,
   isEmptyDirectory,
   isForgeBinExists,
   isReleaseBinExists,

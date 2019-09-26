@@ -13,6 +13,7 @@ cli(
     requirements: {
       forgeRelease: false,
       rpcClient: false,
+      chainName: false,
     },
     options: [
       ['-s, --silent', 'Install release silently, do not prompt for config customization'],

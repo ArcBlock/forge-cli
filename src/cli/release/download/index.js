@@ -13,6 +13,7 @@ cli(
       runningNode: false,
       rpcClient: false,
       wallet: false,
+      chainName: false,
     },
     options: [['-f, --force', 'Clean local downloaded assets before download']],
     handlers: {

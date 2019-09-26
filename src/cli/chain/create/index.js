@@ -9,11 +9,16 @@ cli(
   input => action(execute, run, input),
   {
     alias: 'create-chain',
+    parseArgs: chainName => ({
+      chainName,
+    }),
     requirements: {
       forgeRelease: true,
       rpcClient: false,
       runningNode: false,
       wallet: false,
+      chainName: false,
+      chainExists: false,
     },
     handlers: {
       '--help': () => {

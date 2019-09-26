@@ -1,6 +1,9 @@
 const shell = require('shelljs');
 const chalk = require('chalk');
 const { cli, action } = require('core/cli');
+const { getAllProcesses } = require('core/forge-process');
+const { printWarning } = require('core/util');
+
 const { execute, run } = require('./stop');
 
 cli(
@@ -12,7 +15,22 @@ cli(
       forgeRelease: true,
       runningNode: false,
       rpcClient: false,
+      chainName: async ({ chainName }) => {
+        if (chainName) {
+          return chainName;
+        }
+
+        const allProcesses = await getAllProcesses();
+
+        if (allProcesses.length === 0) {
+          printWarning('No running processes');
+          process.exit(0);
+        }
+
+        return allProcesses[0].name;
+      },
     },
+    parseArgs: chainName => chainName,
     options: [
       ['-a, --all', 'Stop all forge related processes'],
       ['-f, --force', '[Deprecated] Stop all forge related processes'],

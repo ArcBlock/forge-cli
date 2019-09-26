@@ -3,6 +3,7 @@ const path = require('path');
 const last = require('lodash/last');
 const rcfile = require('rcfile');
 const registryUrl = require('registry-url');
+const pickBy = require('lodash/pickBy');
 
 const { setupEnv } = require('./env');
 
@@ -20,9 +21,10 @@ function cli(
   command,
   desc,
   handler,
-  { requirements = {}, options = [], alias, handlers = {} } = {}
+  { requirements = {}, options = [], alias, handlers = {}, parseArgs } = {}
 ) {
   allCommands.push({
+    parseArgs,
     command,
     desc,
     handler,
@@ -93,7 +95,16 @@ function initCli(program) {
           globalOpts.autoUpgrade = true;
         }
 
-        const opts = Object.assign({}, globalOpts, command.opts());
+        const opts = Object.assign(
+          {},
+          pickBy(globalOpts, k => k !== undefined),
+          pickBy(command.opts(), k => k !== undefined)
+        );
+
+        if (typeof x.parseArgs === 'function') {
+          Object.assign(opts, pickBy(x.parseArgs(...params) || {}), k => k !== undefined);
+        }
+
         await setupEnv(globalArgs.args, x.requirements, opts);
         await x.handler({
           args: params.filter(p => typeof p === 'string'),

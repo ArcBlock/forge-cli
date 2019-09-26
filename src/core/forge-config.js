@@ -26,7 +26,6 @@ const {
   getChainDirectory,
   getChainReleaseFilePath,
   getLocalVersions,
-  updateChainConfig,
 } = require('./forge-fs');
 const {
   makeRange,
@@ -38,6 +37,7 @@ const {
   printSuccess,
 } = require('./util');
 const { hr, symbols } = require('./ui');
+const { applyForgeVersion, hasReleases } = require('./libs/common');
 const debug = require('./debug')('forge-config');
 const { version, engines } = require('../../package.json');
 
@@ -283,6 +283,7 @@ async function copyReleaseConfig(currentVersion, overwrite = true) {
 /**
  * Ensure we have a forge release to work with, in which we find forge bin
  *
+ * TODO: Do one thing, do it better.
  * @param {boolean} [exitOn404=true]
  * @param {string} [chainName=process.env.FORGE_CURRENT_CHAIN]
  * @returns
@@ -298,10 +299,15 @@ async function ensureForgeRelease({
   };
 
   const cliReleaseDir = REQUIRED_DIRS.release;
-  const releaseYamlPath = path.join(cliReleaseDir, './forge/release.yml');
-  if (fs.existsSync(cliReleaseDir)) {
+  if (await hasReleases()) {
     try {
       // Read global release version
+      const releaseYamlPath = path.join(cliReleaseDir, './forge/release.yml');
+      if (!fs.existsSync(releaseYamlPath)) {
+        const localLatestVersion = (await getLocalVersions()).pop();
+        applyForgeVersion(localLatestVersion);
+      }
+
       const curVersion = getForgeVersionFromYaml(releaseYamlPath, 'current');
 
       if (!semver.valid(curVersion)) {
@@ -321,16 +327,11 @@ async function ensureForgeRelease({
       } else {
         // Write chain-wise config to use global version
         cliConfig.currentVersion = cliConfig.globalVersion;
-        updateChainConfig(chainName, { version: cliConfig.globalVersion });
+        // updateChainConfig(chainName, { version: cliConfig.globalVersion });
       }
     } catch (err) {
-      debug.error('ensureForgeRelease.readConfig.error', err);
-      const latestLocal = (await getLocalVersions()).pop();
-
-      cliConfig.globalVersion = latestLocal;
-      cliConfig.currentVersion = latestLocal;
-
-      return false;
+      printError(err);
+      process.exit(1);
     }
 
     // simulator
@@ -365,7 +366,7 @@ async function ensureForgeRelease({
           );
           process.exit(1);
         }
-        return false;
+        return cliConfig;
       }
     }
 
@@ -401,10 +402,6 @@ async function ensureForgeRelease({
       debug(`${symbols.success} Using forge executable: ${forgeBinPath}`);
 
       if (semver.satisfies(currentVersion, engines.forge)) {
-        if (process.env.FORGE_CURRENT_CHAIN === DEFAULT_CHAIN_NAME) {
-          await copyReleaseConfig(currentVersion, false);
-        }
-
         return cliConfig;
       }
 
@@ -426,10 +423,10 @@ async function ensureForgeRelease({
       process.exit(1);
     }
   } else if (exitOn404) {
-    printError(`forge release dir does not exist
+    printError(`Forge releases not found.
 
   You can either run ${chalk.cyan('forge install')} to get the latest forge release.
-  Or start node with custom forge release folder
+  Or start node with custom forge release folder:
   > ${chalk.cyan('forge start --release-dir ~/Downloads/forge/')}
   > ${chalk.cyan('FORGE_RELEASE_DIR=~/Downloads/forge/ forge start')}
       `);

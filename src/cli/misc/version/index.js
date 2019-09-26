@@ -7,6 +7,7 @@ cli('version', 'Output version for all forge components', input => action(execut
     forgeRelease: true,
     rpcClient: true,
     wallet: false,
+    chainName: true,
   },
   options: [],
 });

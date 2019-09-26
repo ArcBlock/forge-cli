@@ -8,6 +8,7 @@ cli('help <subcommand>', 'Show help of a sub command', input => action(execute, 
     runningNode: false,
     rpcClient: false,
     wallet: false,
+    chainName: false,
   },
   options: [],
 });

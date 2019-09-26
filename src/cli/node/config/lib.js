@@ -183,7 +183,10 @@ async function readUserConfigs(
     if (chainNameValidateResult === true) {
       printSuccess(`chain name: ${chainName}`);
     } else {
-      printError(chainNameValidateResult);
+      if (!isCreate) {
+        printError(chainNameValidateResult);
+      }
+
       if (interactive === false) {
         return process.exit(1);
       }

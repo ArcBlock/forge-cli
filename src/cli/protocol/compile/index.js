@@ -12,6 +12,7 @@ cli(
       runningNode: false,
       rpcClient: false,
       wallet: false,
+      chainName: false,
     },
     options: [],
   }

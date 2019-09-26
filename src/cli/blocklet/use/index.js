@@ -12,6 +12,7 @@ cli('blocklet:use', 'Download and install a blocklet', input => action(execute, 
     runningNode: false,
     rpcClient: false,
     wallet: false,
+    chainName: false,
   },
   options: [
     ['--target <target>', 'Target directory, default is current directory'],

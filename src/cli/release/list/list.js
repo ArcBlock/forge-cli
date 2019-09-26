@@ -11,7 +11,7 @@ async function main() {
 
     const releases = (await listReleases()) || [];
     if (releases.length === 0) {
-      printInfo(`Forge release not found, please run ${chalk.cyan('forge install')} first`);
+      printInfo(`Forge releases not found, please run ${chalk.cyan('forge install')} first`);
     } else {
       print('Installed:');
       releases.forEach(({ version }) => {

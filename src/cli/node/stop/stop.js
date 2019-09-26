@@ -31,14 +31,6 @@ function waitUntilStopped(chainName) {
 
 async function stop(chainName, all = false) {
   try {
-    const allProcesses = await getAllRunningProcesses();
-    if (!allProcesses || !allProcesses.length) {
-      printWarning('No running processes');
-      process.exit(0);
-    }
-
-    debug(`all processes ${allProcesses.map(x => x.pid)}`);
-
     if (all) {
       printWarning(chalk.yellow('Stopping all chains'));
       const spinner = getSpinner('Waiting for all chains to stop...');
@@ -76,6 +68,14 @@ async function main({ opts: { force, all }, args: [chainName = process.env.FORGE
   if (force) {
     deprecated('forge stop --force: Use forge stop --all instead');
   }
+
+  const allProcesses = await getAllRunningProcesses();
+  if (!allProcesses || !allProcesses.length) {
+    printWarning('No running processes');
+    process.exit(0);
+  }
+
+  debug(`all processes ${allProcesses.map(x => x.pid)}`);
 
   if (!all) {
     const processes = await getRunningProcesses(chainName);

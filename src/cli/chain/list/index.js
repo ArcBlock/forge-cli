@@ -9,5 +9,6 @@ cli('chain:ls', 'List all chains', input => action(execute, run, input), {
     rpcClient: false,
     runningNode: false,
     wallet: false,
+    chainName: false,
   },
 });

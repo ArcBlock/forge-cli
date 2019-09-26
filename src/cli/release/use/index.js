@@ -13,14 +13,15 @@ cli(
       runningNode: false,
       rpcClient: false,
       wallet: false,
+      chainName: false,
     },
     options: [],
     handlers: {
       '--help': () => {
         shell.echo(`
 Examples:
-  - ${chalk.cyan('forge use 0.22.0')}      activate forge v0.22.0
-  - ${chalk.cyan('forge use v0.22.0')}     activate forge v0.22.0
+  - ${chalk.cyan('forge use 0.38.0')}      activate forge v0.38.0
+  - ${chalk.cyan('forge use v0.38.0')}     activate forge v0.38.0
         `);
       },
     },

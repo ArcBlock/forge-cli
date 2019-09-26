@@ -313,8 +313,17 @@ function highlightOfList(func, value, leftPad = SHIFT_WIDTH) {
   print(`${func() ? chalk.cyan(`->${leftPad}${value}`) : `  ${leftPad}${value}`}`);
 }
 
+function escapseHomeDir(homeDir = '') {
+  if (homeDir[0] === '~') {
+    return path.join(os.homedir(), homeDir.substring(1));
+  }
+
+  return homeDir;
+}
+
 module.exports = {
   chainSortHandler,
+  escapseHomeDir,
   downloadPackageFromNPM,
   fetchAsset,
   fetchAssetsByVersion,

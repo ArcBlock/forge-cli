@@ -1,3 +1,7 @@
+## 0.38.28 (September 26, 2019)
+
+- fix search tendermint process bug #250
+
 ## 0.38.27 (September 26, 2019)
 
 - fix: error process exit code during start chain

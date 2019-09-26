@@ -1,3 +1,7 @@
+## 0.38.26 (September 26, 2019)
+
+- chore: bump forge sdk version
+
 ## 0.38.25 (September 25, 2019)
 
 - chore: prompt user to install when no release found #247

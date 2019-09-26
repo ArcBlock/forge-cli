@@ -5,6 +5,9 @@ const shell = require('shelljs');
 const yaml = require('yaml');
 const semver = require('semver');
 const isEqual = require('lodash/isEqual');
+const get = require('lodash/get');
+
+const TOML = require('@iarna/toml');
 
 const debug = require('core/debug')('forge-fs');
 const {
@@ -209,7 +212,13 @@ function isForgeBinExists(version) {
 }
 
 function getTendermintHomeDir(chainName) {
-  return path.join(getDataDirectory(chainName), 'tendermint');
+  const filePath = getChainReleaseFilePath(chainName);
+  if (!fs.existsSync(filePath)) {
+    return '';
+  }
+
+  const config = TOML.parse(fs.readFileSync(filePath).toString());
+  return get(config, 'tendermint.path', '');
 }
 
 function getRootConfigDirectory() {

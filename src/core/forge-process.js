@@ -10,7 +10,15 @@ const path = require('path');
 const debug = require('./debug')('forge-process');
 const { getTendermintHomeDir, getAllChainNames } = require('./forge-fs');
 const { readChainConfig } = require('./forge-config');
-const { printError, prettyTime, md5, strEqual, sleep, chainSortHandler } = require('./util');
+const {
+  escapseHomeDir,
+  printError,
+  prettyTime,
+  md5,
+  strEqual,
+  sleep,
+  chainSortHandler,
+} = require('./util');
 const { symbols } = require('./ui');
 
 const sortHandler = (x, y) => chainSortHandler(x.name, y.name);
@@ -38,11 +46,17 @@ async function findServicePid(n) {
 }
 
 async function getTendermintProcess(chainName) {
-  const homeDir = getTendermintHomeDir(chainName);
+  const result = { name: 'tendermint', pid: 0 };
   const tendermintProcess = await findProcess('name', 'tendermint');
+  if (tendermintProcess.length === 0) {
+    return result;
+  }
+
+  const homeDir = escapseHomeDir(getTendermintHomeDir(chainName));
 
   const tmp = tendermintProcess.find(({ cmd }) => cmd.includes(homeDir));
-  return { name: 'tendermint', pid: tmp ? tmp.pid : 0 };
+  result.pid = tmp ? tmp.pid : 0;
+  return result;
 }
 
 async function findForgeEpmdDeamon() {
@@ -230,7 +244,7 @@ async function getRunningProcessEndpoints(chainName) {
   const result = {};
   processes.forEach(({ name }) => {
     if (strEqual(name, 'web')) {
-      result[name] = `http://127.0.0.1:${get(cfg, 'forge.web.port')}/api`;
+      result[name] = `http://127.0.0.1:${get(cfg, 'forge.web.port', 8210)}/api`; // forge web's default port is 8210
     } else if (strEqual(name, 'forge')) {
       const grpcUri = get(cfg, 'forge.sock_grpc', '');
       result[name] = `${grpcUri}`;

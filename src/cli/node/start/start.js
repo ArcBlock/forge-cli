@@ -170,4 +170,3 @@ function waitUntilStarted(chainName, timeout = 30000) {
 
 exports.execute = main;
 exports.run = main;
-exports.start = start;

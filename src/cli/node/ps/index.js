@@ -7,7 +7,7 @@ cli('ps', 'List running forge component processes', input => action(execute, run
   requirements: {
     forgeRelease: true,
     runningNode: false,
-    rpcClient: false,
+    rpcClient: true,
     wallet: false,
     chainName: defaultChainNameHandler,
   },

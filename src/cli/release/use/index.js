@@ -14,6 +14,7 @@ cli(
       rpcClient: false,
       wallet: false,
       chainName: false,
+      chainExists: false,
     },
     options: [],
     handlers: {

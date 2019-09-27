@@ -61,7 +61,6 @@ async function main({
       print();
       print(`Now you can start forge with ${chalk.cyan(`forge start ${chainName}`)}`);
     }
-    print();
   } catch (err) {
     printError(err);
     printError('Forge release activate failed');

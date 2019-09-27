@@ -10,5 +10,6 @@ cli('chain:ls', 'List all chains', input => action(execute, run, input), {
     runningNode: false,
     wallet: false,
     chainName: false,
+    chainExists: false,
   },
 });

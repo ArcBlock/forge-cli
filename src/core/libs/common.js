@@ -23,6 +23,11 @@ async function hasReleases() {
   return releases.length > 0;
 }
 
+async function hasChains() {
+  const chains = getAllChainNames() || [];
+  return chains.length > 0;
+}
+
 async function applyForgeVersion(version) {
   updateReleaseYaml('forge', version);
   updateReleaseYaml('simulator', version);
@@ -31,6 +36,7 @@ async function applyForgeVersion(version) {
 module.exports = {
   applyForgeVersion,
   defaultChainNameHandler,
+  hasChains,
   hasReleases,
   DEFAULT_CHAIN_NAME_RETURN,
 };

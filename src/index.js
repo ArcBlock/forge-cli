@@ -48,25 +48,7 @@ process.on('exit', code => {
 process.on('unhandledRejection', onError);
 process.on('uncaughtException', onError);
 
-// const shouldPrintCurrentChain = (currentChainName, command) => {
-//   if (
-//     ['chain:remove', 'protocol:compile', 'chain:create', 'ls:remote', 'ls', 'help'].includes(
-//       command
-//     )
-//   ) {
-//     return false;
-//   }
-
-//   if (currentChainName !== DEFAULT_CHAIN_NAME) {
-//     return true;
-//   }
-
-//   return false;
-// };
-
 const run = async () => {
-  // ensureChainDirectory(DEFAULT_CHAIN_NAME);
-
   program
     .version(version)
     .option('-v, --verbose', 'Output runtime info when execute subcommand, useful for debug')

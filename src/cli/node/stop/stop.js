@@ -7,7 +7,6 @@ const { symbols, getSpinner } = require('core/ui');
 const debug = require('core/debug')('stop');
 
 const {
-  getAllRunningProcesses,
   isForgeStarted,
   stopForgeProcesses,
   stopAllForgeProcesses,
@@ -68,14 +67,6 @@ async function main({ opts: { force, all }, args: [chainName = process.env.FORGE
   if (force) {
     deprecated('forge stop --force: Use forge stop --all instead');
   }
-
-  const allProcesses = await getAllRunningProcesses();
-  if (!allProcesses || !allProcesses.length) {
-    printWarning('No running processes');
-    process.exit(0);
-  }
-
-  debug(`all processes ${allProcesses.map(x => x.pid)}`);
 
   if (!all) {
     const processes = await getRunningProcesses(chainName);

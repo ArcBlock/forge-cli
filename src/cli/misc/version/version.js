@@ -1,3 +1,4 @@
+const chalk = require('chalk');
 const fs = require('fs');
 const shell = require('shelljs');
 const {
@@ -10,15 +11,23 @@ const debug = require('core/debug')('version');
 
 const { print, printSuccess, getPlatform } = require('core/util');
 const { getConsensusEnginBinPath, getStorageEnginePath } = require('core/forge-fs');
+const { getChainVersion } = require('core/libs/common');
 const { version: forgeCliVersion } = require('../../../../package.json');
 
-async function main() {
-  const { currentVersion } = config.get('cli');
+async function main({ opts: { chainName } }) {
+  const currentVersion = getChainVersion(chainName);
+
+  if (!currentVersion) {
+    throw new Error(`invalid chain version, chain: ${chainName}`);
+  }
+
   const { storageEngine = 'ipfs', consensusEngine = 'tendermint' } = config.get('forge');
   const storageEnginePath = getStorageEnginePath(currentVersion);
   const consensusEnginePath = getConsensusEnginBinPath(currentVersion);
 
   // core
+  print(`Versions of ${chalk.cyan(chainName)} chain:`);
+  print();
   print(`forge-core version ${currentVersion} on ${await getPlatform()}`);
   print(`forge-cli version ${forgeCliVersion}`);
 

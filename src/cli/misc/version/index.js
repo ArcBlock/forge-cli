@@ -11,10 +11,9 @@ cli(
       forgeRelease: true,
       rpcClient: true,
       wallet: false,
-      chainName: true,
+      chainName: 'required',
       chainExists: true,
     },
     parseArgs: chainName => ({ chainName }),
-    options: [],
   }
 );

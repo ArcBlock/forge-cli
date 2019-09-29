@@ -123,6 +123,9 @@ async function ensureChainName(requirement = true, chainExistsRequirement, args)
       }
 
       process.env.FORGE_CURRENT_CHAIN = chainName;
+    } else if (requirement === 'required') {
+      printError(`${chalk.cyan('chainName')} argument is required`);
+      process.exit(1);
     } else {
       const chainName = getTopChainName();
       if (!chainName) {

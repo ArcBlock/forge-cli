@@ -3,7 +3,13 @@
  */
 
 const semver = require('semver');
-const { getAllChainNames, listReleases, updateReleaseYaml } = require('../forge-fs');
+const {
+  getAllChainNames,
+  getChainConfigPath,
+  getForgeVersionFromYaml,
+  listReleases,
+  updateReleaseYaml,
+} = require('../forge-fs');
 const { engines } = require('../../../package');
 
 const DEFAULT_CHAIN_NAME_RETURN = { NO_CHAINS: 1 };
@@ -52,8 +58,14 @@ function getMinSupportForgeVersion() {
   throw new Error(`invlaid forge engine version: ${engines}`);
 }
 
+function getChainVersion(chainName) {
+  const currentVersion = getForgeVersionFromYaml(getChainConfigPath(chainName), 'version');
+  return currentVersion || '';
+}
+
 module.exports = {
   applyForgeVersion,
+  getChainVersion,
   getDefaultChainNameHandlerByChains,
   getMinSupportForgeVersion,
   getTopChainName,

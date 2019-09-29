@@ -19,6 +19,7 @@ const { getAllProcesses } = require('./core/forge-process');
 
 const { printError, printInfo, printLogo, printCurrentChain } = require('./core/util');
 const { DEFAULT_CHAIN_NAME, REQUIRED_DIRS } = require('./constant');
+const tabtab = require('./core/tabtab');
 const debug = require('./core/debug')('main');
 const { symbols, hr } = require('./core/ui');
 const checkCompatibility = require('./core/migration');
@@ -157,12 +158,16 @@ Examples:
   const { initCli } = require('./core/cli'); // eslint-disable-line
   initCli(program);
 
+  tabtab.init(program, 'forge');
+
   program.on('command:*', () => {
-    shell.echo(hr);
-    shell.echo(`${symbols.error} Unsupported command: ${chalk.cyan(program.args.join(' '))}`);
-    shell.echo(hr);
-    program.help();
-    process.exit(1);
+    if (program.args.includes('completion') === false) {
+      shell.echo(hr);
+      shell.echo(`${symbols.error} Unsupported command: ${chalk.cyan(program.args.join(' '))}`);
+      shell.echo(hr);
+      program.help();
+      process.exit(1);
+    }
   });
 
   program.parse(process.argv);

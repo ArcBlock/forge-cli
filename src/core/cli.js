@@ -16,6 +16,7 @@ const globalConfig = rcfile('forge');
  * @param {String} command command line
  * @param {String} desc documentation of the cli
  * @param {Function} handler cli handler
+ * @param {Function} parseArg command's arg parser
  */
 function cli(
   command,

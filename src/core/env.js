@@ -45,6 +45,13 @@ const config = { cli: {} }; // global shared forge-cli run time config
  * TODO: args 参数应该可以去掉
  * @param {*} args
  * @param {*} requirements
+ * @param {boolean|function} requirements.runningNode Indicate whether the command need a running node
+ * @param {boolean|function} requirements.chainName Indicate whether the command need `chainName` arg
+ * @param {boolean} requirements.chainExists Indicate whether the command need the `chain` to exists, if the attribute is true, the `requirements.chainName` will be true
+ * @param {boolean} requirements.currentChainRunning Indicate whether the command need the `chain` to be running
+ * @param {boolean|function} requirements.forgeRelease Indicate whether the command need forge release to exits
+ * @param {boolean|function} requirements.wallet Indicate whether the command need a wallet
+ * @param {boolean|function} requirements.rpcClient Indicate whether the command need RPC source
  * @param {*} opts
  */
 async function setupEnv(args, requirements, opts = {}) {

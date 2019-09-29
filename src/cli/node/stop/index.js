@@ -15,6 +15,7 @@ cli(
       forgeRelease: true,
       runningNode: false,
       rpcClient: false,
+      currentChainRunning: true,
       chainName: async ({ chainName }) => {
         if (chainName) {
           return chainName;
@@ -30,7 +31,7 @@ cli(
         return allProcesses[0].name;
       },
     },
-    parseArgs: chainName => chainName,
+    parseArgs: chainName => ({ chainName }),
     options: [
       ['-a, --all', 'Stop all forge related processes'],
       ['-f, --force', '[Deprecated] Stop all forge related processes'],

@@ -63,10 +63,6 @@ async function getUsedPortsByForge() {
   };
 
   configDirectories.forEach(tmp => {
-    if (tmp === `forge_${DEFAULT_CHAIN_NAME}`) {
-      return;
-    }
-
     const dir = path.join(getRootConfigDirectory(), tmp);
     const forgeReleasePath = path.join(dir, 'forge_release.toml');
     if (!fs.existsSync(forgeReleasePath)) {

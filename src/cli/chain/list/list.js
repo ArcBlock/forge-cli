@@ -36,7 +36,7 @@ const getChainStatusColor = status => {
 async function printChains() {
   const chains = getAllChainNames();
   if (chains.length === 0) {
-    printInfo(`There is no chains, you can create by run ${chalk.cyan('forge chain:create')}`);
+    printInfo(`There are no chains, you can create by run ${chalk.cyan('forge chain:create')}`);
     return;
   }
 

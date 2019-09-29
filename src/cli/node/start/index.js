@@ -2,7 +2,7 @@ const shell = require('shelljs');
 const chalk = require('chalk');
 
 const { cli, action } = require('core/cli');
-const { defaultChainNameHandler } = require('core/libs/common');
+const { getDefaultChainNameHandlerByChains } = require('core/libs/common');
 
 const { execute, run } = require('./start');
 
@@ -14,7 +14,7 @@ cli(
     requirements: {
       forgeRelease: true,
       rpcClient: true,
-      chainName: defaultChainNameHandler,
+      chainName: getDefaultChainNameHandlerByChains,
       chainExists: true,
     },
     parseArgs: chainName => ({ chainName }),

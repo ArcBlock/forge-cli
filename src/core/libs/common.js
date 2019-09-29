@@ -5,7 +5,7 @@ const { getAllChainNames, listReleases, updateReleaseYaml } = require('../forge-
 
 const DEFAULT_CHAIN_NAME_RETURN = { NO_CHAINS: 1 };
 
-async function defaultChainNameHandler({ chainName }) {
+async function getDefaultChainNameHandlerByChains({ chainName }) {
   if (chainName) {
     return chainName;
   }
@@ -43,9 +43,9 @@ async function applyForgeVersion(version) {
 
 module.exports = {
   applyForgeVersion,
-  defaultChainNameHandler,
+  getDefaultChainNameHandlerByChains,
+  getTopChainName,
   hasChains,
   hasReleases,
-  getTopChainName,
   DEFAULT_CHAIN_NAME_RETURN,
 };

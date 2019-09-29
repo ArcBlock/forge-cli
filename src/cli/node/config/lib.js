@@ -17,12 +17,12 @@ const { isValid, isFromPublicKey } = require('@arcblock/did');
 const { ensureConfigComment } = require('core/env');
 const { getModerator } = require('core/moderator');
 const { hr, pretty } = require('core/ui');
-const { print, printInfo, printError, printSuccess, strEqual } = require('core/util');
+const { print, printInfo, printError, printSuccess } = require('core/util');
 const debug = require('core/debug')('config:lib');
 const { getChainDirectory } = require('core/forge-fs');
 const { setFilePathOfConfig } = require('core/forge-config');
 
-const { REQUIRED_DIRS, DEFAULT_CHAIN_NAME, RESERVED_CHAIN_NAMES } = require('../../../constant');
+const { REQUIRED_DIRS, RESERVED_CHAIN_NAMES } = require('../../../constant');
 const { generateDefaultAccount } = require('../../account/lib/index');
 
 const DAYS_OF_YEAR = 365;
@@ -461,12 +461,10 @@ async function readUserConfigs(
     tokenHolderPk,
   } = answers;
 
-  const chainId = strEqual(name, DEFAULT_CHAIN_NAME) ? 'forge' : name;
-
-  defaults.tendermint.moniker = chainId;
+  defaults.tendermint.moniker = name;
   defaults.app.name = name;
   defaults.tendermint.timeout_commit = `${blockTime}s`;
-  defaults.tendermint.genesis.chain_id = kebabCase(chainId);
+  defaults.tendermint.genesis.chain_id = kebabCase(name);
 
   // token config
   defaults.forge.token = tokenDefaults;

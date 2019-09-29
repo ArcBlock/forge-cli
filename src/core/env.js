@@ -60,13 +60,13 @@ async function setupEnv(args, requirements, opts = {}) {
   ensureRequiredDirs();
   await checkUpdate(opts);
 
-  await ensureRunningNode(requirements.runningNode, process.env.FORGE_CURRENT_CHAIN);
   await ensureChainName(requirements.chainName, requirements.chainExists, opts);
   await ensureChainExists(requirements.chainExists, process.env.FORGE_CURRENT_CHAIN);
   await ensureCurrentChainRunning(
     requirements.currentChainRunning,
     process.env.FORGE_CURRENT_CHAIN
   );
+  await ensureRunningNode(requirements.runningNode, process.env.FORGE_CURRENT_CHAIN);
 
   // Support evaluating requirements at runtime
   Object.keys(requirements).forEach(x => {
@@ -119,7 +119,7 @@ async function ensureChainName(requirement = true, chainExistsRequirement, args)
       const chainName = await requirement(args);
       if (chainName === DEFAULT_CHAIN_NAME_RETURN.NO_CHAINS) {
         printWarning(
-          `There is no chains, please create it by run ${chalk.cyan('forge chain:create')}`
+          `There are no chains, please create it by run ${chalk.cyan('forge chain:create')}`
         );
         process.exit(0);
       }
@@ -129,7 +129,7 @@ async function ensureChainName(requirement = true, chainExistsRequirement, args)
       const chainName = getTopChainName();
       if (!chainName) {
         printWarning(
-          `There is no chains, please create it by run ${chalk.cyan('forge chain:create')}`
+          `There are no chains, please create it by run ${chalk.cyan('forge chain:create')}`
         );
         process.exit(0);
       }

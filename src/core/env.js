@@ -44,7 +44,7 @@ const config = { cli: {} }; // global shared forge-cli run time config
  * An unlocked wallet requires a valid config
  * @param {*} requirements
  * @param {boolean|function} requirements.runningNode Indicate whether the command need a running node
- * @param {boolean|function} requirements.chainName Indicate whether the command need `chainName` arg
+ * @param {boolean|string|function} requirements.chainName Indicate whether the command need `chainName` arg, possible: boolean, 'required', function
  * @param {boolean} requirements.chainExists Indicate whether the command need the `chain` to exists, if the attribute is true, the `requirements.chainName` will be true
  * @param {boolean} requirements.currentChainRunning Indicate whether the command need the `chain` to be running
  * @param {boolean|function} requirements.forgeRelease Indicate whether the command need forge release to exits

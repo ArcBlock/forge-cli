@@ -12,6 +12,9 @@ cli(
       runningNode: {{ requireRunningNode }},
       rpcClient: {{ requireRpcClient }},
       wallet: {{ requireWallet }},
+      chainName: {{ requireChainName }},
+      chainExists: {{ requireChainExists }},
+      currentChainRunning: {{ requireCurrentChainRunning }},
     },
     options: [],
   }

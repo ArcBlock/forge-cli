@@ -4,9 +4,8 @@ const chalk = require('chalk');
 const fs = require('fs');
 const inquirer = require('inquirer');
 const { spawn } = require('child_process');
-const { applyForgeVersion } = require('core/libs/common');
+const { applyForgeVersion, hasChains } = require('core/libs/common');
 const { getPlatform, print, printError, printInfo, printSuccess } = require('core/util');
-const { getAllChainNames } = require('core/forge-fs');
 const { isForgeStarted } = require('core/forge-process');
 const { formatVersion, download, DOWNLOAD_FLAGS } = require('../../release/download/lib');
 
@@ -62,8 +61,7 @@ async function main({
     print();
 
     if (!silent) {
-      const chainsCount = getAllChainNames().length;
-      if (chainsCount > 0) {
+      if (hasChains()) {
         printInfo(`If you want to custom the config, run: ${chalk.cyan('forge config set')}`);
         process.exit(0);
       }

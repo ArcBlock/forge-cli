@@ -18,7 +18,6 @@ const { parse } = require('@arcblock/forge-config');
 
 const {
   getChainDirectory,
-  getAllChainNames,
   isChainExists,
   isDirectory,
   getChainReleaseFilePath,
@@ -27,7 +26,7 @@ const { ensureForgeRelease } = require('core/forge-config');
 const { isForgeStarted, getProcessTag, getAllProcesses } = require('./forge-process');
 const { inquire } = require('./libs/interaction');
 const { printError, print, printInfo, printLogo, printSuccess, printWarning } = require('./util');
-const { hasChains, DEFAULT_CHAIN_NAME_RETURN } = require('./libs/common');
+const { hasChains, getTopChainName, DEFAULT_CHAIN_NAME_RETURN } = require('./libs/common');
 
 const { REQUIRED_DIRS } = require('../constant');
 const { version } = require('../../package.json');
@@ -109,28 +108,26 @@ async function ensureChainName(requirement = true, chainExistsRequirement, args)
   }
 
   if (requirement || chainExistsRequirement) {
-    const chainNames = getAllChainNames();
-    if (chainNames.length === 0) {
-      printWarning(
-        `There is no chains, please create it by run ${chalk.cyan('forge chain:create')}`
-      );
-      process.exit(1);
-    }
-
-    if (requirement === true) {
-      process.env.FORGE_CURRENT_CHAIN = chainNames[0][0]; // eslint-disable-line
-    }
-
     if (typeof requirement === 'function') {
       const chainName = await requirement(args);
       if (chainName === DEFAULT_CHAIN_NAME_RETURN.NO_CHAINS) {
         printWarning(
           `There is no chains, please create it by run ${chalk.cyan('forge chain:create')}`
         );
-        process.exit(1);
+        process.exit(0);
       }
 
       process.env.FORGE_CURRENT_CHAIN = chainName;
+    } else {
+      const chainName = getTopChainName();
+      if (!chainName) {
+        printWarning(
+          `There is no chains, please create it by run ${chalk.cyan('forge chain:create')}`
+        );
+        process.exit(0);
+      }
+
+      process.env.FORGE_CURRENT_CHAIN = chainName; // eslint-disable-line
     }
   }
 }

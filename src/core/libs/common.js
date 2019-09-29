@@ -10,12 +10,12 @@ async function defaultChainNameHandler({ chainName }) {
     return chainName;
   }
 
-  const chainNames = getAllChainNames();
-  if (chainNames.length === 0) {
+  const name = getTopChainName();
+  if (!name) {
     return DEFAULT_CHAIN_NAME_RETURN.NO_CHAINS;
   }
 
-  return chainNames[0][0];
+  return name;
 }
 
 async function hasReleases() {
@@ -28,6 +28,14 @@ async function hasChains() {
   return chains.length > 0;
 }
 
+/**
+ * Get top chain name of local chains
+ */
+function getTopChainName() {
+  const chains = getAllChainNames() || [];
+  return chains.length > 0 ? chains[0][0] : '';
+}
+
 async function applyForgeVersion(version) {
   updateReleaseYaml('forge', version);
   updateReleaseYaml('simulator', version);
@@ -38,5 +46,6 @@ module.exports = {
   defaultChainNameHandler,
   hasChains,
   hasReleases,
+  getTopChainName,
   DEFAULT_CHAIN_NAME_RETURN,
 };

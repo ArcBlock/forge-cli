@@ -3,7 +3,7 @@
  */
 const { getAllChainNames, listReleases, updateReleaseYaml } = require('../forge-fs');
 
-const DEFAULT_CHAIN_NAME_RETURN = { no_chains: 1 };
+const DEFAULT_CHAIN_NAME_RETURN = { NO_CHAINS: 1 };
 
 async function defaultChainNameHandler({ chainName }) {
   if (chainName) {
@@ -12,7 +12,7 @@ async function defaultChainNameHandler({ chainName }) {
 
   const chainNames = getAllChainNames();
   if (chainNames.length === 0) {
-    return DEFAULT_CHAIN_NAME_RETURN.no_chains;
+    return DEFAULT_CHAIN_NAME_RETURN.NO_CHAINS;
   }
 
   return chainNames[0][0];

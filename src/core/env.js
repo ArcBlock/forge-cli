@@ -123,7 +123,7 @@ async function ensureChainName(requirement = true, chainExistsRequirement, args)
 
     if (typeof requirement === 'function') {
       const chainName = await requirement(args);
-      if (chainName === DEFAULT_CHAIN_NAME_RETURN.no_chains) {
+      if (chainName === DEFAULT_CHAIN_NAME_RETURN.NO_CHAINS) {
         printWarning(
           `There is no chains, please create it by run ${chalk.cyan('forge chain:create')}`
         );
@@ -138,7 +138,7 @@ async function ensureChainName(requirement = true, chainExistsRequirement, args)
 async function ensureChainExists(requirement = true, chainName) {
   if (requirement === true) {
     if (!hasChains()) {
-      printWarning(
+      printError(
         `There are no chains found, please run ${chalk.cyan('forge chain:create')} to create.`
       );
       process.exit(1);
@@ -205,14 +205,9 @@ function ensureRpcClient(args, chainName) {
       `${symbols.success} Using forge config: ${util.inspect(config, { depth: 5, colors: true })}`
     );
   } else {
-    printError(`forge-cli requires a valid forge config file to start
-If you have not setup any forge core release on this machine, run this first:
-> ${chalk.cyan('forge install')}
-Or you can run forge-cli with custom config path
-> ${chalk.cyan('forge start --config-path ~/Downloads/forge/forge_release.toml')}
-> ${chalk.cyan('FORGE_CONFIG=~/Downloads/forge/forge_release.toml forge start')}
-    `);
-    process.exit(1);
+    throw new Error(
+      `No valid rpc configuration, socketGrpc: ${socketGrpc}, configPath: ${configPath}`
+    );
   }
 }
 

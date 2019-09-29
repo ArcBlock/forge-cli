@@ -95,7 +95,7 @@ async function main({
         return;
       }
     }
-    print(`Now you can create a forge node with ${chalk.cyan('forge chain:create')}`);
+    print(`Now you can create a chain with ${chalk.cyan('forge chain:create')}`);
     print();
   } catch (err) {
     printError(err);

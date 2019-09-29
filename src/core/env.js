@@ -42,8 +42,6 @@ const config = { cli: {} }; // global shared forge-cli run time config
  * Setup running env for various commands, the check order for each requirement is important
  * Since a running node requires a release directory
  * An unlocked wallet requires a valid config
- * TODO: args 参数应该可以去掉
- * @param {*} args
  * @param {*} requirements
  * @param {boolean|function} requirements.runningNode Indicate whether the command need a running node
  * @param {boolean|function} requirements.chainName Indicate whether the command need `chainName` arg
@@ -52,15 +50,15 @@ const config = { cli: {} }; // global shared forge-cli run time config
  * @param {boolean|function} requirements.forgeRelease Indicate whether the command need forge release to exits
  * @param {boolean|function} requirements.wallet Indicate whether the command need a wallet
  * @param {boolean|function} requirements.rpcClient Indicate whether the command need RPC source
- * @param {*} opts
+ * @param {*} args
  */
-async function setupEnv(args, requirements, opts = {}) {
+async function setupEnv(requirements, args = {}) {
   await ensureNonRoot();
 
   ensureRequiredDirs();
-  await checkUpdate(opts);
+  await checkUpdate(args);
 
-  await ensureChainName(requirements.chainName, requirements.chainExists, opts);
+  await ensureChainName(requirements.chainName, requirements.chainExists, args);
   await ensureChainExists(requirements.chainExists, process.env.FORGE_CURRENT_CHAIN);
   await ensureCurrentChainRunning(
     requirements.currentChainRunning,
@@ -78,8 +76,8 @@ async function setupEnv(args, requirements, opts = {}) {
   if (requirements.forgeRelease || requirements.runningNode) {
     const cliConfig = await ensureForgeRelease({
       exitOn404: true,
-      chainName: opts.chainName,
-      allowMultiChain: opts.allowMultiChain,
+      chainName: args.chainName,
+      allowMultiChain: args.allowMultiChain,
     });
     Object.assign(config.cli, cliConfig);
   }

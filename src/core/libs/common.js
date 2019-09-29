@@ -1,7 +1,10 @@
 /**
  * Common functions, different from `core/util`, this module is at higher level than `core/util`
  */
+
+const semver = require('semver');
 const { getAllChainNames, listReleases, updateReleaseYaml } = require('../forge-fs');
+const { engines } = require('../../../package');
 
 const DEFAULT_CHAIN_NAME_RETURN = { NO_CHAINS: 1 };
 
@@ -41,9 +44,18 @@ async function applyForgeVersion(version) {
   updateReleaseYaml('simulator', version);
 }
 
+function getMinSupportForgeVersion() {
+  if (engines && engines.forge && semver.valid(semver.coerce(engines.forge))) {
+    return semver.minVersion(engines.forge);
+  }
+
+  throw new Error(`invlaid forge engine version: ${engines}`);
+}
+
 module.exports = {
   applyForgeVersion,
   getDefaultChainNameHandlerByChains,
+  getMinSupportForgeVersion,
   getTopChainName,
   hasChains,
   hasReleases,

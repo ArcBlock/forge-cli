@@ -1,7 +1,10 @@
 const shell = require('shelljs');
 const chalk = require('chalk');
 const { cli, action } = require('core/cli');
+const { getMinSupportForgeVersion } = require('core/libs/common');
 const { execute, run } = require('./use');
+
+const minSupportVersion = getMinSupportForgeVersion();
 
 cli(
   'use [version]',
@@ -21,8 +24,8 @@ cli(
       '--help': () => {
         shell.echo(`
 Examples:
-  - ${chalk.cyan('forge use 0.38.0')}      activate forge v0.38.0
-  - ${chalk.cyan('forge use v0.38.0')}     activate forge v0.38.0
+  - ${chalk.cyan(`forge use ${minSupportVersion}`)}      activate forge v${minSupportVersion}
+  - ${chalk.cyan(`forge use v${minSupportVersion}`)}     activate forge v${minSupportVersion}
         `);
       },
     },

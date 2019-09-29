@@ -66,7 +66,7 @@ async function setupEnv(args, requirements, opts = {}) {
     requirements.currentChainRunning,
     process.env.FORGE_CURRENT_CHAIN
   );
-  await ensureRunningNode(requirements.runningNode, process.env.FORGE_CURRENT_CHAIN);
+  await ensureRunningChain(requirements.runningNode, process.env.FORGE_CURRENT_CHAIN);
 
   // Support evaluating requirements at runtime
   Object.keys(requirements).forEach(x => {
@@ -95,7 +95,7 @@ async function setupEnv(args, requirements, opts = {}) {
   }
 }
 
-async function ensureRunningNode(requirement) {
+async function ensureRunningChain(requirement) {
   if (!requirement) {
     return;
   }

@@ -55,7 +55,7 @@ async function setupEnv(args, requirements, opts = {}) {
   await checkUpdate(opts);
 
   await ensureRunningNode(requirements.runningNode, process.env.FORGE_CURRENT_CHAIN);
-  await ensureChainName(requirements.chainName, opts);
+  await ensureChainName(requirements.chainName, requirements.chainExists, opts);
   await ensureChainExists(requirements.chainExists, process.env.FORGE_CURRENT_CHAIN);
   await ensureCurrentChainRunning(
     requirements.currentChainRunning,
@@ -102,36 +102,36 @@ async function ensureRunningNode(requirement) {
   }
 }
 
-async function ensureChainName(requirement = true, args) {
+async function ensureChainName(requirement = true, chainExistsRequirement, args) {
   if (args.chainName) {
     process.env.FORGE_CURRENT_CHAIN = args.chainName;
     return;
   }
 
-  if (!requirement) {
-    return;
-  }
-
-  const chainNames = getAllChainNames();
-  if (chainNames.length === 0) {
-    printWarning(`There is no chains, please create it by run ${chalk.cyan('forge chain:create')}`);
-    process.exit(1);
-  }
-
-  if (requirement === true) {
-    process.env.FORGE_CURRENT_CHAIN = chainNames[0][0]; // eslint-disable-line
-  }
-
-  if (typeof requirement === 'function') {
-    const chainName = await requirement(args);
-    if (chainName === DEFAULT_CHAIN_NAME_RETURN.no_chains) {
+  if (requirement || chainExistsRequirement) {
+    const chainNames = getAllChainNames();
+    if (chainNames.length === 0) {
       printWarning(
         `There is no chains, please create it by run ${chalk.cyan('forge chain:create')}`
       );
       process.exit(1);
     }
 
-    process.env.FORGE_CURRENT_CHAIN = chainName;
+    if (requirement === true) {
+      process.env.FORGE_CURRENT_CHAIN = chainNames[0][0]; // eslint-disable-line
+    }
+
+    if (typeof requirement === 'function') {
+      const chainName = await requirement(args);
+      if (chainName === DEFAULT_CHAIN_NAME_RETURN.no_chains) {
+        printWarning(
+          `There is no chains, please create it by run ${chalk.cyan('forge chain:create')}`
+        );
+        process.exit(1);
+      }
+
+      process.env.FORGE_CURRENT_CHAIN = chainName;
+    }
   }
 }
 

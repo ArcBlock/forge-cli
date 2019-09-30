@@ -32,18 +32,13 @@ const onError = error => {
   }
 
   printInfo(`Run ${chalk.cyan(`forge ${command}`)} to debug`);
+  printInfo(
+    `Logs of this run can be found in ${chalk.cyan(
+      path.join(path.join(REQUIRED_DIRS.logs, 'error.log'))
+    )}`
+  );
   process.exit(1);
 };
-
-process.on('exit', code => {
-  if (code !== 0) {
-    printInfo(
-      `Logs of this run can be found in ${chalk.cyan(
-        path.join(path.join(REQUIRED_DIRS.logs, 'error.log'))
-      )}`
-    );
-  }
-});
 
 process.on('unhandledRejection', onError);
 process.on('uncaughtException', onError);

@@ -156,6 +156,7 @@ async function readUserConfigs(
 
   // moderator
   const moderator = getModerator();
+  debug('moderator', moderator);
 
   const questions = [];
 
@@ -427,13 +428,21 @@ async function readUserConfigs(
     answers = await inquirer.prompt(questions);
   } else {
     answers = questions.reduce((acc, x) => {
-      acc[x.name] = x.default;
+      // Conditional defaults
+      if (typeof x.when === 'function') {
+        if (x.when(acc)) {
+          acc[x.name] = x.default;
+        }
+      } else {
+        acc[x.name] = x.default;
+      }
       return acc;
     }, {});
   }
 
   if (answers.accountSourceType === 'Generate') {
     const wallet = generateDefaultAccount();
+    debug('random token holder', wallet);
     answers.tokenHolderAddress = wallet.address;
     answers.tokenHolderPk = wallet.pk_base64_url;
     answers.tokenHolderSk = wallet.sk_base64_url;

@@ -11,6 +11,7 @@ cli(
       forgeRelease: false,
       runningNode: true,
       rpcClient: true,
+      chainExists: true,
     },
   }
 );

@@ -145,7 +145,7 @@ async function ensureChainName(requirement = true, chainExistsRequirement, args)
 }
 
 async function ensureChainExists(requirement = true, chainNameRequirement, chainName) {
-  if (!chainNameRequirement) {
+  if (chainNameRequirement === false) {
     return;
   }
 

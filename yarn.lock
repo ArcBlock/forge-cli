@@ -2,25 +2,25 @@
 # yarn lockfile v1
 
 
-"@arcblock/did-util@^0.38.0":
-  version "0.38.0"
-  resolved "https://registry.yarnpkg.com/@arcblock/did-util/-/did-util-0.38.0.tgz#4bf3ab3ba6b78973a12b526d164ec30979189e8a"
-  integrity sha512-2m7vP76VeIQ9N9jfpfeE9djFzOZEO39Kn2q6pwOIldHZVdvGMBFw1Onah1kvP0a7Ep9MZQKj9klcbjFxqZTI6Q==
+"@arcblock/did-util@^0.38.5":
+  version "0.38.5"
+  resolved "https://registry.npm.taobao.org/@arcblock/did-util/download/@arcblock/did-util-0.38.5.tgz#7d596d6dcca5ce69ba360ed7f5744b30b2d8d989"
+  integrity sha1-fVltbcylzmm6Ng7X9XRLMLLY2Yk=
   dependencies:
-    "@arcblock/did" "^0.38.0"
-    "@arcblock/forge-message" "^0.38.0"
-    "@arcblock/forge-proto" "^0.38.0"
-    "@arcblock/forge-util" "^0.38.0"
-    "@arcblock/forge-wallet" "^0.38.0"
-    "@arcblock/mcrypto" "^0.38.0"
+    "@arcblock/did" "^0.38.5"
+    "@arcblock/forge-message" "^0.38.5"
+    "@arcblock/forge-proto" "^0.38.2"
+    "@arcblock/forge-util" "^0.38.5"
+    "@arcblock/forge-wallet" "^0.38.5"
+    "@arcblock/mcrypto" "^0.38.5"
 
-"@arcblock/did@^0.38.0":
-  version "0.38.0"
-  resolved "https://registry.yarnpkg.com/@arcblock/did/-/did-0.38.0.tgz#89e70f2b1cdaabbdc63998c93ba112811400ee6f"
-  integrity sha512-atkZND90RFQhdaUhAxxvv98CO4aPngozWH07r+9p0nMxkJii6MKXdZq06aggLrQ6A9o6nHWx0YXsw0yQb0d2Qw==
+"@arcblock/did@^0.38.5":
+  version "0.38.5"
+  resolved "https://registry.npm.taobao.org/@arcblock/did/download/@arcblock/did-0.38.5.tgz#709c4daa2122dc33087ddd7ee721008907c74ecc"
+  integrity sha1-cJxNqiEi3DMIfd1+5yEAiQfHTsw=
   dependencies:
-    "@arcblock/forge-util" "^0.38.0"
-    "@arcblock/mcrypto" "^0.38.0"
+    "@arcblock/forge-util" "^0.38.5"
+    "@arcblock/mcrypto" "^0.38.5"
     bn.js "^5.0.0"
     debug "^4.1.1"
     lodash "^4.17.14"
@@ -33,57 +33,57 @@
     "@iarna/toml" "^2.2.1"
     camelize "^1.0.0"
 
-"@arcblock/forge-message@^0.38.0":
-  version "0.38.0"
-  resolved "https://registry.yarnpkg.com/@arcblock/forge-message/-/forge-message-0.38.0.tgz#6a3b8c1fe81be9c806e05271fba19b6460441981"
-  integrity sha512-g1TuciGY/Z81kH8sPPSuC+J1dQEvHyB6Ap8o2MYGdVsG7NtgWMav+UpUudQ+Gj3foK8Dba8wzlCvu6F7AVkNxA==
+"@arcblock/forge-message@^0.38.5":
+  version "0.38.5"
+  resolved "https://registry.npm.taobao.org/@arcblock/forge-message/download/@arcblock/forge-message-0.38.5.tgz#97bef047dcf0304c1aa23649bccc302fcbdcef2a"
+  integrity sha1-l77wR9zwMEwaojZJvMwwL8vc7yo=
   dependencies:
-    "@arcblock/forge-proto" "^0.38.0"
-    "@arcblock/forge-util" "^0.38.0"
+    "@arcblock/forge-proto" "^0.38.2"
+    "@arcblock/forge-util" "^0.38.5"
     debug "^4.1.1"
     google-protobuf "^3.9.0"
     lodash "^4.17.15"
 
-"@arcblock/forge-proto@^0.38.0":
-  version "0.38.0"
-  resolved "https://registry.yarnpkg.com/@arcblock/forge-proto/-/forge-proto-0.38.0.tgz#43e3de463aacdac777ffdaaca8161fdbfa207eee"
-  integrity sha512-h1ucnbbfj8CIg9CowUSHGjJRAkPYFC1KnMDaaPOhXJTR2YgGOE2JOkQCvaAYUcC96pNKOsazL9PkJFzKTvolhw==
+"@arcblock/forge-proto@^0.38.2":
+  version "0.38.2"
+  resolved "https://registry.npm.taobao.org/@arcblock/forge-proto/download/@arcblock/forge-proto-0.38.2.tgz#fb25a4b881277c5216d9dbed944f8a75a7628f46"
+  integrity sha1-+yWkuIEnfFIW2dvtlE+Kdadij0Y=
   dependencies:
     debug "^4.1.1"
     lodash "^4.17.15"
 
-"@arcblock/forge-util@^0.38.0":
-  version "0.38.0"
-  resolved "https://registry.yarnpkg.com/@arcblock/forge-util/-/forge-util-0.38.0.tgz#65829ed65b2dd193d3b11071951b8306f4290ed9"
-  integrity sha512-TW/Bm/I6XzlumsejQWm9lx6ljSh1mIdshUeMs3dw1rbnp9gcgph9n6GELAt/PA5gIGhNYly9UEfKAtvfacRqLA==
+"@arcblock/forge-util@^0.38.5":
+  version "0.38.5"
+  resolved "https://registry.npm.taobao.org/@arcblock/forge-util/download/@arcblock/forge-util-0.38.5.tgz#06dc53bc141b7b62391dfdb87be67541e3b0865b"
+  integrity sha1-BtxTvBQbe2I5Hf24e+Z1QeOwhls=
   dependencies:
+    base64-url "^2.3.2"
     bn.js "4.11.6"
     lodash "^4.17.14"
     multibase "^0.6.0"
     number-to-bn "^1.7.0"
     utf8 "^3.0.0"
 
-"@arcblock/forge-wallet@^0.38.0":
-  version "0.38.0"
-  resolved "https://registry.yarnpkg.com/@arcblock/forge-wallet/-/forge-wallet-0.38.0.tgz#cef1cf2e472bd7a51b64c4c9db048e0814cfe6a1"
-  integrity sha512-5gx8rPbvA/0TTi/jDq80p7fLZdTw8zA/mk7HcjwFTYdBS1VRCVyWohVtApg2OI273l+itjE5rH91TYjXxLvfPA==
+"@arcblock/forge-wallet@^0.38.5":
+  version "0.38.5"
+  resolved "https://registry.npm.taobao.org/@arcblock/forge-wallet/download/@arcblock/forge-wallet-0.38.5.tgz#8153e5b69222f305fb26d62f398907f54c9ec626"
+  integrity sha1-gVPltpIi8wX7JtYvOYkH9UyexiY=
   dependencies:
-    "@arcblock/did" "^0.38.0"
-    "@arcblock/mcrypto" "^0.38.0"
+    "@arcblock/did" "^0.38.5"
+    "@arcblock/mcrypto" "^0.38.5"
     lodash.upperfirst "^4.3.1"
 
-"@arcblock/graphql-client@^0.38.0":
-  version "0.38.0"
-  resolved "https://registry.yarnpkg.com/@arcblock/graphql-client/-/graphql-client-0.38.0.tgz#04b1eeb49fe1f338027600a521b98948e1b3ae41"
-  integrity sha512-mPe/aDHy7DxAQTvVsBePHbxFCSnMOihm8EXREACC2e2TrL7PR5SRwFYzTfPseDqUVebbw6Wra+9lBiM+5MweWA==
+"@arcblock/graphql-client@^0.38.5":
+  version "0.38.5"
+  resolved "https://registry.npm.taobao.org/@arcblock/graphql-client/download/@arcblock/graphql-client-0.38.5.tgz#5d01d5049c1108fb2a35dc74a31f70a52a33c88c"
+  integrity sha1-XQHVBJwRCPsqNdx0ox9wpSozyIw=
   dependencies:
-    "@arcblock/forge-message" "^0.38.0"
-    "@arcblock/forge-proto" "^0.38.0"
-    "@arcblock/forge-util" "^0.38.0"
-    "@arcblock/forge-wallet" "^0.38.0"
-    "@arcblock/mcrypto" "^0.38.0"
+    "@arcblock/forge-message" "^0.38.5"
+    "@arcblock/forge-proto" "^0.38.2"
+    "@arcblock/forge-util" "^0.38.5"
+    "@arcblock/forge-wallet" "^0.38.5"
+    "@arcblock/mcrypto" "^0.38.5"
     "@arcblock/sdk-util" "^0.24.0"
-    base64-url "^2.3.2"
     blueimp-md5 "^2.10.0"
     debug "^4.1.1"
     jsonpack "^1.1.5"
@@ -92,29 +92,28 @@
     react-app-polyfill "^1.0.1"
     wolfy87-eventemitter "^5.2.5"
 
-"@arcblock/grpc-client@^0.38.0":
-  version "0.38.0"
-  resolved "https://registry.yarnpkg.com/@arcblock/grpc-client/-/grpc-client-0.38.0.tgz#65acb343cdd4e590bf50605a1093e1431630aff2"
-  integrity sha512-QkdHnCtZ73qf33TEQ6BDjQklZqU5dWfLlY1Hc3ClreQfqH9+2ICZXFGcvJamkbSOcEpOyzaGYVKV9/OOBEQ2gQ==
+"@arcblock/grpc-client@^0.38.5":
+  version "0.38.5"
+  resolved "https://registry.npm.taobao.org/@arcblock/grpc-client/download/@arcblock/grpc-client-0.38.5.tgz#da243aad85fee5460bd2e47e7d8328abf5b26812"
+  integrity sha1-2iQ6rYX+5UYL0uR+fYMoq/WyaBI=
   dependencies:
-    "@arcblock/did-util" "^0.38.0"
+    "@arcblock/did-util" "^0.38.5"
     "@arcblock/forge-config" "^0.38.0"
-    "@arcblock/forge-message" "^0.38.0"
-    "@arcblock/forge-proto" "^0.38.0"
-    "@arcblock/forge-util" "^0.38.0"
-    "@arcblock/forge-wallet" "^0.38.0"
-    "@arcblock/mcrypto" "^0.38.0"
-    base64-url "^2.3.2"
+    "@arcblock/forge-message" "^0.38.5"
+    "@arcblock/forge-proto" "^0.38.2"
+    "@arcblock/forge-util" "^0.38.5"
+    "@arcblock/forge-wallet" "^0.38.5"
+    "@arcblock/mcrypto" "^0.38.5"
     debug "^4.1.1"
     grpc "^1.22.2"
     lodash "^4.17.15"
 
-"@arcblock/mcrypto@^0.38.0":
-  version "0.38.0"
-  resolved "https://registry.yarnpkg.com/@arcblock/mcrypto/-/mcrypto-0.38.0.tgz#571783ad51bfdbce309cce15df0a5df70435f55c"
-  integrity sha512-njycYccib8fD5MfKMpmdfFcwyX6ydIJzy3qeuYAwm8kWtAUS29OzweQCiHQ7CNn+ASObdf0nbbr4OLnhDvHixw==
+"@arcblock/mcrypto@^0.38.5":
+  version "0.38.5"
+  resolved "https://registry.npm.taobao.org/@arcblock/mcrypto/download/@arcblock/mcrypto-0.38.5.tgz#4b8e9dfa7b45fcd81500bed8989939a039c78327"
+  integrity sha1-S46d+ntF/NgVAL7YmJk5oDnHgyc=
   dependencies:
-    "@arcblock/forge-util" "^0.38.0"
+    "@arcblock/forge-util" "^0.38.5"
     bn.js "4.11.8"
     crypto-js "^3.1.9-1"
     elliptic "^6.4.1"

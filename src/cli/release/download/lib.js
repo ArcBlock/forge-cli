@@ -205,7 +205,7 @@ function getUnDownloadAssets({ downloadVersion, whitelistAssets = [], versionAss
 }
 
 function formatVersion({ version, mirror, releaseDir }) {
-  if (!version) {
+  if (!version || version === 'latest') {
     const latestVersion = fetchReleaseVersion({ mirror, releaseDir });
 
     return { isLatest: true, version: latestVersion };

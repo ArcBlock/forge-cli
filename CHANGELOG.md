@@ -1,3 +1,7 @@
+## 0.39.1 (September 30, 2019)
+
+- chore: bump sdk version
+
 ## 0.39.0 (September 27, 2019)
 
 - feature: no longer create a default chain before execute every command #245

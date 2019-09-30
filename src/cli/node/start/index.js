@@ -1,6 +1,9 @@
 const shell = require('shelljs');
 const chalk = require('chalk');
+
 const { cli, action } = require('core/cli');
+const { getDefaultChainNameHandlerByChains } = require('core/libs/common');
+
 const { execute, run } = require('./start');
 
 cli(
@@ -11,7 +14,10 @@ cli(
     requirements: {
       forgeRelease: true,
       rpcClient: true,
+      chainName: getDefaultChainNameHandlerByChains,
+      chainExists: true,
     },
+    parseArgs: chainName => ({ chainName }),
     options: [['--dry-run', 'Start in dry-run mode, print the start command']],
     handlers: {
       '--help': () => {

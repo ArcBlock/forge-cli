@@ -7,7 +7,6 @@ const { symbols, getSpinner } = require('core/ui');
 const debug = require('core/debug')('stop');
 
 const {
-  getAllRunningProcesses,
   isForgeStarted,
   stopForgeProcesses,
   stopAllForgeProcesses,
@@ -31,14 +30,6 @@ function waitUntilStopped(chainName) {
 
 async function stop(chainName, all = false) {
   try {
-    const allProcesses = await getAllRunningProcesses();
-    if (!allProcesses || !allProcesses.length) {
-      printWarning('No running processes');
-      process.exit(0);
-    }
-
-    debug(`all processes ${allProcesses.map(x => x.pid)}`);
-
     if (all) {
       printWarning(chalk.yellow('Stopping all chains'));
       const spinner = getSpinner('Waiting for all chains to stop...');

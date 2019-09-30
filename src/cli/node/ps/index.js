@@ -1,5 +1,6 @@
-// eslint-disable-next-line import/no-unresolved
 const { cli, action } = require('core/cli');
+const { getDefaultChainNameHandlerByChains } = require('core/libs/common');
+
 const { execute, run } = require('./ps');
 
 cli('ps', 'List running forge component processes', input => action(execute, run, input), {
@@ -8,6 +9,7 @@ cli('ps', 'List running forge component processes', input => action(execute, run
     runningNode: false,
     rpcClient: true,
     wallet: false,
+    chainName: getDefaultChainNameHandlerByChains,
   },
   options: [],
 });

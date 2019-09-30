@@ -16,11 +16,17 @@ const { bytesToHex, hexToBytes, isHexStrict } = require('@arcblock/forge-util');
 const GRpcClient = require('@arcblock/grpc-client');
 const { parse } = require('@arcblock/forge-config');
 
-const { getChainDirectory, isDirectory, getChainReleaseFilePath } = require('core/forge-fs');
+const {
+  getChainDirectory,
+  isChainExists,
+  isDirectory,
+  getChainReleaseFilePath,
+} = require('core/forge-fs');
 const { ensureForgeRelease } = require('core/forge-config');
-const { isForgeStarted, getProcessTag } = require('./forge-process');
-const { inquire } = require('./interaction');
-const { print, printInfo, printSuccess, printLogo } = require('./util');
+const { isForgeStarted, getProcessTag, getAllProcesses } = require('./forge-process');
+const { inquire } = require('./libs/interaction');
+const { printError, print, printInfo, printLogo, printSuccess, printWarning } = require('./util');
+const { hasChains, getTopChainName, DEFAULT_CHAIN_NAME_RETURN } = require('./libs/common');
 
 const { REQUIRED_DIRS } = require('../constant');
 const { version } = require('../../package.json');
@@ -36,12 +42,33 @@ const config = { cli: {} }; // global shared forge-cli run time config
  * Setup running env for various commands, the check order for each requirement is important
  * Since a running node requires a release directory
  * An unlocked wallet requires a valid config
- *
- * @param {*} args
  * @param {*} requirements
+ * @param {boolean|function} requirements.runningNode Indicate whether the command need a running node
+ * @param {boolean|string|function} requirements.chainName Indicate whether the command need `chainName` arg, possible: boolean, 'required', function
+ * @param {boolean} requirements.chainExists Indicate whether the command need the `chain` to exists, if the attribute is true, the `requirements.chainName` will be true
+ * @param {boolean} requirements.currentChainRunning Indicate whether the command need the `chain` to be running
+ * @param {boolean|function} requirements.forgeRelease Indicate whether the command need forge release to exits
+ * @param {boolean|function} requirements.wallet Indicate whether the command need a wallet
+ * @param {boolean|function} requirements.rpcClient Indicate whether the command need RPC source
+ * @param {*} args
  */
-async function setupEnv(args, requirements, opts = {}) {
+async function setupEnv(requirements, args = {}) {
   await ensureNonRoot();
+
+  ensureRequiredDirs();
+  await checkUpdate(args);
+
+  await ensureChainName(requirements.chainName, requirements.chainExists, args);
+  await ensureChainExists(
+    requirements.chainExists,
+    requirements.chainName,
+    process.env.FORGE_CURRENT_CHAIN
+  );
+  await ensureCurrentChainRunning(
+    requirements.currentChainRunning,
+    process.env.FORGE_CURRENT_CHAIN
+  );
+  await ensureRunningChain(requirements.runningNode, process.env.FORGE_CURRENT_CHAIN);
 
   // Support evaluating requirements at runtime
   Object.keys(requirements).forEach(x => {
@@ -50,14 +77,11 @@ async function setupEnv(args, requirements, opts = {}) {
     }
   });
 
-  ensureRequiredDirs();
-  await checkUpdate(opts);
-
   if (requirements.forgeRelease || requirements.runningNode) {
     const cliConfig = await ensureForgeRelease({
       exitOn404: true,
-      chainName: opts.chainName,
-      allowMultiChain: opts.allowMultiChain,
+      chainName: args.chainName,
+      allowMultiChain: args.allowMultiChain,
     });
     Object.assign(config.cli, cliConfig);
   }
@@ -65,11 +89,7 @@ async function setupEnv(args, requirements, opts = {}) {
   ensureSetupScript(args);
 
   if (requirements.wallet || requirements.rpcClient || requirements.runningNode) {
-    await ensureRpcClient(args);
-  }
-
-  if (requirements.runningNode) {
-    await ensureRunningNode(args);
+    await ensureRpcClient(args, process.env.FORGE_CURRENT_CHAIN);
   }
 
   if (requirements.wallet) {
@@ -77,11 +97,82 @@ async function setupEnv(args, requirements, opts = {}) {
   }
 }
 
-async function ensureRunningNode() {
-  const chainName = process.env.FORGE_CURRENT_CHAIN;
-  if (!(await isForgeStarted())) {
-    shell.echo(`${symbols.error} chain ${chalk.yellow(chainName)} is not started yet!`);
-    shell.echo(`${symbols.info} Please run ${chalk.cyan(`forge start -c ${chainName}`)} first!`);
+async function ensureRunningChain(requirement) {
+  if (!requirement) {
+    return;
+  }
+
+  const allProcesses = await getAllProcesses();
+  if (allProcesses.length === 0) {
+    printWarning('No running chains.');
+    printInfo(`You can create a chain by ${chalk.cyan('forge chain:create')}, and start it.`);
+    process.exit(0);
+  }
+}
+
+async function ensureChainName(requirement = true, chainExistsRequirement, args) {
+  if (args.chainName) {
+    process.env.FORGE_CURRENT_CHAIN = args.chainName;
+    return;
+  }
+
+  if (requirement || chainExistsRequirement) {
+    if (typeof requirement === 'function') {
+      const chainName = await requirement(args);
+      if (chainName === DEFAULT_CHAIN_NAME_RETURN.NO_CHAINS) {
+        printWarning(
+          `There are no chains, please create it by run ${chalk.cyan('forge chain:create')}`
+        );
+        process.exit(0);
+      }
+
+      process.env.FORGE_CURRENT_CHAIN = chainName;
+    } else if (requirement === 'required') {
+      printError(`${chalk.cyan('chainName')} argument is required`);
+      process.exit(1);
+    } else {
+      const chainName = getTopChainName();
+      if (!chainName) {
+        printWarning(
+          `There are no chains, please create it by run ${chalk.cyan('forge chain:create')}`
+        );
+        process.exit(0);
+      }
+
+      process.env.FORGE_CURRENT_CHAIN = chainName; // eslint-disable-line
+    }
+  }
+}
+
+async function ensureChainExists(requirement = true, chainNameRequirement, chainName) {
+  if (chainNameRequirement === false) {
+    return;
+  }
+
+  if (requirement === true) {
+    if (!hasChains()) {
+      printError(
+        `There are no chains found, please run ${chalk.cyan('forge chain:create')} to create.`
+      );
+      process.exit(1);
+    }
+
+    if (!isChainExists(chainName)) {
+      printError(`Chain ${chainName} does not exist`);
+      printInfo(`You can create it by run ${chalk.cyan(`forge chain:create ${chainName}`)}`);
+      process.exit(1);
+    }
+  }
+}
+
+async function ensureCurrentChainRunning(requirement, chainName) {
+  if (!requirement) {
+    return true;
+  }
+
+  if (!(await isForgeStarted(chainName))) {
+    printWarning(`Chain ${chalk.yellow(chainName)} is not started yet!`);
+    printInfo(`Please run ${chalk.cyan(`forge start ${chainName}`)} first!`);
     process.exit(0);
   }
 
@@ -94,15 +185,13 @@ async function ensureRunningNode() {
  *
  * @param {*} args
  */
-function ensureRpcClient(args) {
+function ensureRpcClient(args, chainName) {
   const socketGrpc = args.socketGrpc || process.env.FORGE_SOCK_GRPC;
-  const configPath = getChainReleaseFilePath();
+  const configPath = getChainReleaseFilePath(chainName);
 
   if (socketGrpc) {
-    shell.echo(
-      `${symbols.info} ${chalk.yellow(
-        `Using custom grpc socket endpoint: ${process.env.FORGE_SOCK_GRPC}`
-      )}`
+    printInfo(
+      `${chalk.yellow(`Using custom grpc socket endpoint: ${process.env.FORGE_SOCK_GRPC}`)}`
     );
     const forgeConfig = {
       forge: {
@@ -113,7 +202,7 @@ function ensureRpcClient(args) {
         },
       },
     };
-    debug(`${symbols.info} using forge-cli with remote node ${socketGrpc}`);
+    debug(`using forge-cli with remote node ${socketGrpc}`);
     Object.assign(config, forgeConfig);
   } else if (fs.existsSync(configPath)) {
     if (process.env.FORGE_CONFIG) {
@@ -129,14 +218,9 @@ function ensureRpcClient(args) {
       `${symbols.success} Using forge config: ${util.inspect(config, { depth: 5, colors: true })}`
     );
   } else {
-    shell.echo(`${symbols.error} forge-cli requires a valid forge config file to start
-If you have not setup any forge core release on this machine, run this first:
-> ${chalk.cyan('forge install')}
-Or you can run forge-cli with custom config path
-> ${chalk.cyan('forge start --config-path ~/Downloads/forge/forge_release.toml')}
-> ${chalk.cyan('FORGE_CONFIG=~/Downloads/forge/forge_release.toml forge start')}
-    `);
-    process.exit();
+    throw new Error(
+      `No valid rpc configuration, socketGrpc: ${socketGrpc}, configPath: ${configPath}`
+    );
   }
 }
 

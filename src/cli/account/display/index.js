@@ -14,6 +14,7 @@ cli('account <address>', 'Get an account info by address', input => action(execu
       }
       return false;
     },
+    chainExists: true,
   },
   options: [],
   handlers: {

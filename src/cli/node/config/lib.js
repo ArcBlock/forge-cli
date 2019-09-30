@@ -17,12 +17,12 @@ const { isValid, isFromPublicKey } = require('@arcblock/did');
 const { ensureConfigComment } = require('core/env');
 const { getModerator } = require('core/moderator');
 const { hr, pretty } = require('core/ui');
-const { print, printInfo, printError, printSuccess, strEqual } = require('core/util');
+const { print, printInfo, printError, printSuccess } = require('core/util');
 const debug = require('core/debug')('config:lib');
 const { getChainDirectory } = require('core/forge-fs');
 const { setFilePathOfConfig } = require('core/forge-config');
 
-const { REQUIRED_DIRS, DEFAULT_CHAIN_NAME, RESERVED_CHAIN_NAMES } = require('../../../constant');
+const { REQUIRED_DIRS, RESERVED_CHAIN_NAMES } = require('../../../constant');
 const { generateDefaultAccount } = require('../../account/lib/index');
 
 const DAYS_OF_YEAR = 365;
@@ -156,6 +156,7 @@ async function readUserConfigs(
 
   // moderator
   const moderator = getModerator();
+  debug('moderator', moderator);
 
   const questions = [];
 
@@ -183,11 +184,11 @@ async function readUserConfigs(
     if (chainNameValidateResult === true) {
       printSuccess(`chain name: ${chainName}`);
     } else {
-      printError(chainNameValidateResult);
       if (interactive === false) {
-        return process.exit(1);
+        throw new Error(chainNameValidateResult);
       }
 
+      printError(chainNameValidateResult);
       questions.push({
         type: 'text',
         name: 'name',
@@ -424,13 +425,21 @@ async function readUserConfigs(
     answers = await inquirer.prompt(questions);
   } else {
     answers = questions.reduce((acc, x) => {
-      acc[x.name] = x.default;
+      // Conditional defaults
+      if (typeof x.when === 'function') {
+        if (x.when(acc)) {
+          acc[x.name] = x.default;
+        }
+      } else {
+        acc[x.name] = x.default;
+      }
       return acc;
     }, {});
   }
 
   if (answers.accountSourceType === 'Generate') {
     const wallet = generateDefaultAccount();
+    debug('random token holder', wallet);
     answers.tokenHolderAddress = wallet.address;
     answers.tokenHolderPk = wallet.pk_base64_url;
     answers.tokenHolderSk = wallet.sk_base64_url;
@@ -458,12 +467,10 @@ async function readUserConfigs(
     tokenHolderPk,
   } = answers;
 
-  const chainId = strEqual(chainName, DEFAULT_CHAIN_NAME) ? 'forge' : chainName;
-
-  defaults.tendermint.moniker = chainId;
+  defaults.tendermint.moniker = name;
   defaults.app.name = name;
   defaults.tendermint.timeout_commit = `${blockTime}s`;
-  defaults.tendermint.genesis.chain_id = kebabCase(chainId);
+  defaults.tendermint.genesis.chain_id = kebabCase(name);
 
   // token config
   defaults.forge.token = tokenDefaults;
@@ -536,7 +543,7 @@ async function readUserConfigs(
   print(pretty(result));
   print(hr);
 
-  if (moderatorAsTokenHolder === false && answers.accountSourceType === 'Generate') {
+  if (!moderatorAsTokenHolder && answers.accountSourceType === 'Generate') {
     print('\n======================================================');
     printInfo(chalk.yellow('Generated Token Holder Account (Please Keep the SecretKey safe):'));
     print('======================================================');

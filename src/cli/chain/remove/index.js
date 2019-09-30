@@ -12,7 +12,11 @@ cli('chain:remove [<chainName>]', 'Remove chains', input => action(execute, run,
     runningNode: false,
     rpcClient: false,
     wallet: false,
+    chainExists: true,
   },
+  parseArgs: chainName => ({
+    chainName,
+  }),
   handlers: {
     '--help': () => {
       print(`

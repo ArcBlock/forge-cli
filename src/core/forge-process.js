@@ -18,6 +18,7 @@ const {
   strEqual,
   sleep,
   chainSortHandler,
+  printWarning,
 } = require('./util');
 const { symbols } = require('./ui');
 
@@ -89,7 +90,7 @@ async function getForgeProcessByTag(processName, chainName = process.env.FORGE_C
   return { name: processName, pid: forgeProcess ? forgeProcess.pid : 0 };
 }
 
-async function getForgeProcess(chainName = process.env.CHAIN_NAME) {
+async function getForgeProcess(chainName = process.env.FORGE_CURRENT_CHAIN) {
   const forgeProcesses = await findProcess('name', 'forge');
 
   const forgeProcess = forgeProcesses.find(
@@ -342,6 +343,21 @@ async function stopForgeProcesses(chainName) {
   return stopProcesses(processes);
 }
 
+async function getTopRunningChains({ chainName }) {
+  if (chainName) {
+    return chainName;
+  }
+
+  const allProcesses = await getAllProcesses();
+
+  if (allProcesses.length === 0) {
+    printWarning('No running processes');
+    process.exit(0);
+  }
+
+  return allProcesses[0].name;
+}
+
 module.exports = {
   findServicePid,
   isForgeStopped,
@@ -357,6 +373,7 @@ module.exports = {
   getRunningProcessEndpoints,
   getProcessTag,
   getSimulatorProcess,
+  getTopRunningChains,
   stopAllForgeProcesses,
   stopForgeProcesses,
 };

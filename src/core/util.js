@@ -15,13 +15,7 @@ const prettyMilliseconds = require('pretty-ms');
 const moment = require('moment');
 
 const { symbols, hr } = require('./ui');
-const {
-  DEFAULT_CHAIN_NAME,
-  MIRRORS,
-  REQUIRED_DIRS,
-  ASSETS_PATH,
-  SHIFT_WIDTH,
-} = require('../constant');
+const { MIRRORS, REQUIRED_DIRS, ASSETS_PATH, SHIFT_WIDTH } = require('../constant');
 const debug = require('./debug')('util');
 
 /**
@@ -182,15 +176,6 @@ const parseTimeStrToMS = time => {
  * @param {name} y
  */
 const chainSortHandler = (xName, yName) => {
-  // make default chain the first in order
-  if (xName === DEFAULT_CHAIN_NAME) {
-    return -1;
-  }
-
-  if (yName === DEFAULT_CHAIN_NAME) {
-    return 1;
-  }
-
   if (xName > yName) {
     return 1;
   }

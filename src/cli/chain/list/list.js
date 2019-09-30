@@ -1,7 +1,7 @@
 const chalk = require('chalk');
 const Table = require('cli-table-redemption');
 
-const { print } = require('core/util');
+const { print, printInfo } = require('core/util');
 const { getAllChainNames } = require('core/forge-fs');
 const { getAllProcesses } = require('core/forge-process');
 
@@ -36,6 +36,7 @@ const getChainStatusColor = status => {
 async function printChains() {
   const chains = getAllChainNames();
   if (chains.length === 0) {
+    printInfo(`There are no chains, you can create by run ${chalk.cyan('forge chain:create')}`);
     return;
   }
 

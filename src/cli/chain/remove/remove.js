@@ -5,9 +5,7 @@ const { clearDataDirectories } = require('core/forge-fs');
 const { print } = require('core/util');
 const { isForgeStarted } = require('core/forge-process');
 const { symbols } = require('core/ui');
-const { printError, printWarning } = require('core/util');
-
-const { DEFAULT_CHAIN_NAME } = require('../../../constant');
+const { printError } = require('core/util');
 
 async function main({ opts: { yes }, args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
   const isStarted = await isForgeStarted(chainName);
@@ -21,10 +19,6 @@ async function main({ opts: { yes }, args: [chainName = process.env.FORGE_CURREN
     );
     process.exit(0);
     return;
-  }
-
-  if (chainName === DEFAULT_CHAIN_NAME) {
-    printWarning(`Remove the ${chalk.cyan('default')} chain just reset the chain's data.`);
   }
 
   // Confirm

@@ -4,8 +4,8 @@ const chalk = require('chalk');
 const fs = require('fs');
 const inquirer = require('inquirer');
 const { spawn } = require('child_process');
+const { applyForgeVersion, hasChains } = require('core/libs/common');
 const { getPlatform, print, printError, printInfo, printSuccess } = require('core/util');
-const { getAllChainNames, updateReleaseYaml } = require('core/forge-fs');
 const { isForgeStarted } = require('core/forge-process');
 const { formatVersion, download, DOWNLOAD_FLAGS } = require('../../release/download/lib');
 
@@ -47,19 +47,21 @@ async function main({
       isLatest,
     });
 
+    if (downloadResult === DOWNLOAD_FLAGS.ALREADY_EXISTS) {
+      process.exit(0);
+    }
+
     if (downloadResult !== DOWNLOAD_FLAGS.SUCCESS) {
       process.exit(1);
     }
 
-    updateReleaseYaml('forge', version);
-    updateReleaseYaml('simulator', version);
+    applyForgeVersion(version);
 
     printSuccess(`Congratulations! forge v${version} installed successfully!`);
     print();
 
     if (!silent) {
-      const chainsCount = getAllChainNames().length;
-      if (chainsCount > 0) {
+      if (hasChains()) {
         printInfo(`If you want to custom the config, run: ${chalk.cyan('forge config set')}`);
         process.exit(0);
       }
@@ -91,7 +93,7 @@ async function main({
         return;
       }
     }
-    print(`Now you can start a forge node with ${chalk.cyan('forge start')}`);
+    print(`Now you can create a chain with ${chalk.cyan('forge chain:create')}`);
     print();
   } catch (err) {
     printError(err);

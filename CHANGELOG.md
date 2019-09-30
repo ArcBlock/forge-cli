@@ -1,3 +1,8 @@
+## 0.39.0 (September 27, 2019)
+
+- feature: no longer create a default chain before execute every command #245
+- fix: chain:create bug
+
 ## 0.38.28 (September 26, 2019)
 
 - fix search tendermint process bug #250

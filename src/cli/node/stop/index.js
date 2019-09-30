@@ -1,6 +1,8 @@
 const shell = require('shelljs');
 const chalk = require('chalk');
 const { cli, action } = require('core/cli');
+const { getTopRunningChains } = require('core/forge-process');
+
 const { execute, run } = require('./stop');
 
 cli(
@@ -12,7 +14,10 @@ cli(
       forgeRelease: true,
       runningNode: false,
       rpcClient: false,
+      currentChainRunning: true,
+      chainName: getTopRunningChains,
     },
+    parseArgs: chainName => ({ chainName }),
     options: [
       ['-a, --all', 'Stop all forge related processes'],
       ['-f, --force', '[Deprecated] Stop all forge related processes'],

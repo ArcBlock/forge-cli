@@ -1,3 +1,4 @@
+const chalk = require('chalk');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
@@ -28,7 +29,7 @@ const {
 } = require('../constant');
 
 function clearDataDirectories(chainName = process.env.FORGE_CURRENT_CHAIN) {
-  printWarning('Cleaning up chain data!');
+  printWarning(`Cleaning up ${chalk.cyan(chainName)} chain data!`);
 
   const dir = getChainDirectory(chainName);
   shell.exec(`rm -rf ${dir}`);
@@ -402,6 +403,10 @@ function getReleaseDir() {
   return path.join(CLI_BASE_DIRECTORY, 'release');
 }
 
+function isChainExists(chainName) {
+  return fs.existsSync(getChainDirectory(chainName));
+}
+
 module.exports = {
   clearDataDirectories,
   checkStartError,
@@ -434,6 +439,7 @@ module.exports = {
   getStorageEnginePath,
   getChainKeyFilePath,
   getLocalVersions,
+  isChainExists,
   isEmptyDirectory,
   isForgeBinExists,
   isReleaseBinExists,

@@ -44,6 +44,24 @@ const questions = [
   },
   {
     type: 'confirm',
+    name: 'requireChainName',
+    message: 'Does this command require a chainName argument?',
+    format: x => (x ? 1 : 0),
+  },
+  {
+    type: 'confirm',
+    name: 'requireChainExists',
+    message: 'Does this command require the chain exists?',
+    format: x => (x ? 1 : 0),
+  },
+  {
+    type: 'confirm',
+    name: 'requireCurrentChainRunning',
+    message: 'Does this command require the chain running?',
+    format: x => (x ? 1 : 0),
+  },
+  {
+    type: 'confirm',
     name: 'requireRunningNode',
     message: 'Does this command require a running forge node to work?',
     format: x => (x ? 1 : 0),
@@ -78,12 +96,15 @@ function createCli({
   requireRunningNode,
   requireRpcClient,
   requireWallet,
+  requireChainName,
+  requireChainExists,
+  requireCurrentChainRunning,
 }) {
   const [action, name] = cliName.split(':');
   const targetPath = path.join(cliPath, `${action}/${name}`);
   const templatePath = path.join(__dirname, 'templates');
   // eslint-disable-next-line max-len
-  const env = `NAME="${name}" ACTION=${action} DESCRIPTION="${description}" REQUIRE_RELEASE=${requireRelease} REQUIRE_RPC_CLIENT=${requireRpcClient} REQUIRE_RUNNING_NODE=${requireRunningNode} REQUIRE_WALLET=${requireWallet}`;
+  const env = `NAME="${name}" ACTION=${action} DESCRIPTION="${description}" REQUIRE_RELEASE=${requireRelease} REQUIRE_RPC_CLIENT=${requireRpcClient} REQUIRE_RUNNING_NODE=${requireRunningNode} REQUIRE_WALLET=${requireWallet} REQUIRE_CHAINNAME=${requireChainName} REQUIRE_CHAIN_EXISTS=${requireChainExists} REQUIRE_CURRENT_CHAIN_RUNNING=${requireCurrentChainRunning}`;
 
   shell.exec(`mkdir -p ${targetPath}`);
   shell.exec(`rsync -rt ${templatePath}/ ${targetPath}/`);

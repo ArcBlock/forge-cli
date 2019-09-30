@@ -543,7 +543,7 @@ async function readUserConfigs(
   print(pretty(result));
   print(hr);
 
-  if (moderatorAsTokenHolder === false && answers.accountSourceType === 'Generate') {
+  if (!moderatorAsTokenHolder && answers.accountSourceType === 'Generate') {
     print('\n======================================================');
     printInfo(chalk.yellow('Generated Token Holder Account (Please Keep the SecretKey safe):'));
     print('======================================================');

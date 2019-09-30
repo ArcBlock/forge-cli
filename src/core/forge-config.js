@@ -118,7 +118,7 @@ async function getAvailablePort() {
   const res = {
     forgeWebPort: forgeWebPort
       ? forgeWebPort + 1
-      : await getPort({ port: getPort.makeRange(8211, 8300) }),
+      : await getPort({ port: getPort.makeRange(8210, 8300) }),
     tendermintRpcPort: tendermintRpcPort
       ? tendermintRpcPort + 1
       : await getPort({ port: getPort.makeRange(32001, 34000) }),

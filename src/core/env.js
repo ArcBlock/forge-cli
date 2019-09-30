@@ -59,7 +59,11 @@ async function setupEnv(requirements, args = {}) {
   await checkUpdate(args);
 
   await ensureChainName(requirements.chainName, requirements.chainExists, args);
-  await ensureChainExists(requirements.chainExists, process.env.FORGE_CURRENT_CHAIN);
+  await ensureChainExists(
+    requirements.chainExists,
+    requirements.chainName,
+    process.env.FORGE_CURRENT_CHAIN
+  );
   await ensureCurrentChainRunning(
     requirements.currentChainRunning,
     process.env.FORGE_CURRENT_CHAIN
@@ -140,7 +144,11 @@ async function ensureChainName(requirement = true, chainExistsRequirement, args)
   }
 }
 
-async function ensureChainExists(requirement = true, chainName) {
+async function ensureChainExists(requirement = true, chainNameRequirement, chainName) {
+  if (!chainNameRequirement) {
+    return;
+  }
+
   if (requirement === true) {
     if (!hasChains()) {
       printError(

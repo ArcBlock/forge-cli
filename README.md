@@ -108,15 +108,11 @@ Commands:
   ps                                     List running forge component processes
   remote [shellName]                     Connects to the running system via a remote shell
   simulator [action]                     Start/stop simulator and generate random traffic
-  stake [options] [show]                 Stake to various entities: node/user/asset
   start [options] [<chainName>]          Start a chain daemon, if does not specify a chain name, it will start a default chain
   status [type]                          List info of the running chain/node
   stop [options] [<chainName>]           Stop the forge daemon and all forge components, if does not specify a chain name, it will start a default chain
   tx [hash]                              Get a tx detail and display
   tx:list                                List latest transactions
-  tx:send                                Send a signed tx to the network
-  tx:sign                                Sign a transaction (base64) according to sender’s wallet
-  unstake                                Revert stakes to various entities
   upgrade [<chainName>]                  Upgrade chain node to new version without reset
   use [version]                          Activate an already downloaded forge release
   version [<chainName>]                  Output version for all forge components

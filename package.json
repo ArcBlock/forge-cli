@@ -108,6 +108,7 @@
     "pidusage": "^2.0.17",
     "pretty-bytes": "^5.1.0",
     "pretty-ms": "^4.0.0",
+    "prettyjson": "^1.2.1",
     "progress": "^2.0.3",
     "public-ip": "^3.2.0",
     "ramda": "^0.25.0",

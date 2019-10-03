@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 
 const fs = require('fs');
-const util = require('util');
 const path = require('path');
 const chalk = require('chalk');
 const shell = require('shelljs');
@@ -30,7 +29,7 @@ const { hasChains, getTopChainName, DEFAULT_CHAIN_NAME_RETURN } = require('./lib
 
 const { REQUIRED_DIRS } = require('../constant');
 const { version } = require('../../package.json');
-const { symbols, hr, wrapSpinner } = require('./ui');
+const { symbols, hr, pretty, wrapSpinner } = require('./ui');
 const debug = require('./debug')('env');
 
 const CURRENT_WORKING_CHAIN = getChainDirectory(process.env.FORGE_CURRENT_CHAIN);
@@ -214,9 +213,7 @@ function ensureRpcClient(args, chainName) {
     config.cli.forgeConfigPath = configPath;
     Object.assign(config, forgeConfig);
     debug(`${symbols.success} Using forge config: ${configPath}`);
-    debug(
-      `${symbols.success} Using forge config: ${util.inspect(config, { depth: 5, colors: true })}`
-    );
+    debug(`${symbols.success} Using forge config: ${pretty(config)}`);
   } else {
     throw new Error(
       `No valid rpc configuration, socketGrpc: ${socketGrpc}, configPath: ${configPath}`

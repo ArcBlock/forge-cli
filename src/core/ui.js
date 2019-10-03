@@ -103,7 +103,7 @@ module.exports = {
   hr: new inquirer.Separator().line,
   pretty: (data, options) => {
     if (data && typeof data === 'object') {
-      return prettyjson.render(data, options);
+      return `\n${prettyjson.render(data, options)}\n`;
     }
 
     return util.inspect(data, Object.assign({ depth: 8, colors: true, compact: false }, options));

@@ -4,6 +4,7 @@ const chalk = require('chalk');
 const inquirer = require('inquirer');
 const progress = require('cli-progress');
 const symbols = require('log-symbols');
+const prettyjson = require('prettyjson');
 
 // https://github.com/sindresorhus/cli-spinners/blob/master/spinners.json
 const spinners = [
@@ -100,8 +101,13 @@ const wrapSpinner = async (message = '', func, ...args) => {
 module.exports = {
   symbols,
   hr: new inquirer.Separator().line,
-  pretty: (data, options) =>
-    util.inspect(data, Object.assign({ depth: 8, colors: true, compact: false }, options)),
+  pretty: (data, options) => {
+    if (data && typeof data === 'object') {
+      return `\n${prettyjson.render(data, options)}\n`;
+    }
+
+    return util.inspect(data, Object.assign({ depth: 8, colors: true, compact: false }, options));
+  },
   getProgress: ({ title, unit = 'MB' }) =>
     new progress.Bar({
       format: `${title} |${chalk.cyan('{bar}')} {percentage}% || {value}/{total} ${unit}`,

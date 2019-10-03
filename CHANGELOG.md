@@ -1,3 +1,9 @@
+## 0.39.2 (October 03, 2019)
+
+- chore: polish prettyjson
+- chore: use prettyjson
+- chore: remove tx methods
+
 ## 0.39.1 (September 30, 2019)
 
 - chore: bump sdk version

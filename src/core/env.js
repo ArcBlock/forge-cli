@@ -6,12 +6,9 @@ const chalk = require('chalk');
 const shell = require('shelljs');
 const execa = require('execa');
 const semver = require('semver');
-const base64 = require('base64-url');
 const inquirer = require('inquirer');
 const isElevated = require('is-elevated');
 const { get, set } = require('lodash');
-const { fromSecretKey } = require('@arcblock/forge-wallet');
-const { bytesToHex, hexToBytes, isHexStrict } = require('@arcblock/forge-util');
 const GRpcClient = require('@arcblock/grpc-client');
 const { parse } = require('@arcblock/forge-config');
 
@@ -498,33 +495,6 @@ function ensureConfigComment(str) {
   );
 }
 
-function getModeratorSecretKey() {
-  const sk = process.env.FORGE_MODERATOR_SK;
-
-  if (!sk) {
-    return undefined;
-  }
-
-  if (isHexStrict(sk)) {
-    return sk;
-  }
-
-  return bytesToHex(Buffer.from(base64.unescape(sk), 'base64'));
-}
-
-function getModerator() {
-  const sk = getModeratorSecretKey();
-  if (sk) {
-    const wallet = fromSecretKey(sk);
-    return {
-      address: wallet.toAddress(),
-      publicKey: base64.escape(base64.encode(hexToBytes(wallet.publicKey))),
-    };
-  }
-
-  return undefined;
-}
-
 debug.error = (...args) => {
   if (debug.enabled) {
     console.error(...args);
@@ -554,7 +524,6 @@ module.exports = {
   runNativeWebCommand: makeNativeCommandRunner('webBinPath', 'web'),
   runNativeWorkshopCommand: makeNativeCommandRunner('workshopBinPath', 'workshop'),
   runNativeSimulatorCommand: makeNativeCommandRunner('simulatorBinPath', 'simulator'),
-  getModerator,
   createRpcClient,
   isDirectory,
   printLogo,

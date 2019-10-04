@@ -24,6 +24,7 @@ Examples:
   - ${chalk.cyan('forge status net')}       display status of network
   - ${chalk.cyan('forge status validator')} display status of validators
   - ${chalk.cyan('forge status all')}       display status of all components
+  - ${chalk.cyan('forge status -c hello')}  display status for chain named hello
         `);
     },
   },

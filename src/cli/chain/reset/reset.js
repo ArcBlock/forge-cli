@@ -13,7 +13,7 @@ async function main({ opts: { yes }, args: [chainName = process.env.FORGE_CURREN
     printError(
       `Chain ${chalk.cyan(
         chainName
-      )} is running! If you still want to remove it, please run ${chalk.cyan(
+      )} is running! If you still want to reset it, please run ${chalk.cyan(
         `forge stop ${chainName}`
       )} first!`
     );
@@ -29,20 +29,20 @@ async function main({ opts: { yes }, args: [chainName = process.env.FORGE_CURREN
         type: 'confirm',
         name: 'confirm',
         default: false,
-        message: `${chalk.red('Are you sure to continue remove the')} ${chalk.cyan(
+        message: `${chalk.red('Are you sure to continue reset the')} ${chalk.cyan(
           chainName
         )} ${chalk.red('chain')}?`,
       },
     ];
 
-    print(chalk.red('Remove chain will erase chain state, logs and configuration!'));
+    print(chalk.red('Reset chain will erase chain state, logs!'));
     const answers = await inquirer.prompt(questions);
     // eslint-disable-next-line prefer-destructuring
     confirm = answers.confirm;
   }
 
   if (confirm) {
-    clearDataDirectories(chainName);
+    clearDataDirectories(chainName, true);
   } else {
     shell.echo(`${symbols.info} User abort, nothing changed!`);
     process.exit();

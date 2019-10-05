@@ -88,7 +88,8 @@ Commands:
   blocklet:use|project:create [options]  Download and install a blocklet
   chain:create|create-chain [chainName]  Create a new chain instance
   chain:ls|chains                        List all chains
-  chain:remove|reset [<chainName>]       Remove chains
+  chain:remove <chainName>               Remove chain state and config
+  chain:reset <chainName>                Reset chain state, but keeps the config
   checkin                                Send a poke tx to the network to get tokens for test
   config [options] [action]              Read/write chain/node config
   declare:node                           Declare the current node to be a validator candidate

@@ -14,11 +14,12 @@ const shell = require('shelljs');
 const program = require('commander');
 const path = require('path');
 
-const { printError, printInfo, printLogo } = require('./core/util');
+const { print, printError, printInfo, printLogo } = require('./core/util');
 const { REQUIRED_DIRS } = require('./constant');
 const debug = require('./core/debug')('main');
-const { symbols, hr } = require('./core/ui');
+const { hr } = require('./core/ui');
 const checkCompatibility = require('./core/migration');
+const getSuggest = require('./core/suggest');
 const { version } = require('../package.json');
 
 const onError = error => {
@@ -78,11 +79,19 @@ Examples:
   initCli(program);
 
   program.on('command:*', () => {
-    shell.echo(hr);
-    shell.echo(`${symbols.error} Unsupported command: ${chalk.cyan(program.args.join(' '))}`);
-    shell.echo(hr);
-    program.help();
-    process.exit(1);
+    // eslint-disable-next-line no-underscore-dangle
+    const commands = program.commands.map(x => x._name);
+    const keyword = program.args[0];
+
+    print(hr);
+    printError(`'${keyword}' is not a valid subcommand. See '${chalk.cyan('forge --help')}'`);
+    print(hr);
+
+    const suggestions = getSuggest(commands, keyword);
+    if (suggestions.length) {
+      printInfo('Did you mean this?');
+      suggestions.forEach(x => print(`  - ${chalk.cyan(`forge ${x.command}`)}`));
+    }
   });
 
   program.parse(process.argv);

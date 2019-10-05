@@ -38,7 +38,6 @@ const printEndpoints = async chainName => {
 
   print(hr);
   printSuccess(chalk.cyan('Endpoints'));
-  print(hr);
 
   print(pretty(ports));
 };
@@ -49,10 +48,9 @@ async function main({
 }) {
   const client = createRpcClient();
 
-  await printEndpoints(chainName);
-
   if (type === 'chain') {
     await getChainInfo(client);
+    await printEndpoints(chainName);
   }
   if (type === 'net') {
     await getNetInfo(client);

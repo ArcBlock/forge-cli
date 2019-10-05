@@ -28,14 +28,21 @@ const {
   REQUIRED_DIRS,
 } = require('../constant');
 
-function clearDataDirectories(chainName = process.env.FORGE_CURRENT_CHAIN) {
-  printWarning(`Cleaning up ${chalk.cyan(chainName)} chain data!`);
-
-  const dir = getChainDirectory(chainName);
-  shell.exec(`rm -rf ${dir}`);
-  printInfo(`rm -f ${dir}`);
-
-  printSuccess('Chain data cleaned!');
+function clearDataDirectories(chainName = process.env.FORGE_CURRENT_CHAIN, keepConfig = false) {
+  const doCleanup = dir => {
+    shell.exec(`rm -rf ${dir}`);
+    printInfo(`rm -f ${dir}`);
+  };
+  if (keepConfig) {
+    printWarning(`Resetting chain ${chalk.cyan(chainName)}`);
+    doCleanup(getDataDirectory(chainName));
+    doCleanup(getChainKeyFilePath(chainName));
+    printSuccess(`Chain ${chalk.cyan(chainName)} is reset`);
+  } else {
+    printWarning(`Removing chain ${chalk.cyan(chainName)}`);
+    doCleanup(getChainDirectory(chainName));
+    printSuccess(`Chain  ${chalk.cyan(chainName)} is removed`);
+  }
 }
 
 function isDirectory(x) {

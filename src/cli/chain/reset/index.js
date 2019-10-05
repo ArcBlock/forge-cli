@@ -3,11 +3,11 @@ const chalk = require('chalk');
 const { cli, action } = require('core/cli');
 const { print } = require('core/util');
 
-const { execute, run } = require('./remove');
+const { execute, run } = require('./reset');
 
 cli(
-  'chain:remove <chainName>',
-  'Remove chain state and config',
+  'chain:reset <chainName>',
+  'Reset chain state, but keeps the config',
   input => action(execute, run, input),
   {
     requirements: {
@@ -24,8 +24,8 @@ cli(
       '--help': () => {
         print(`
 Examples:
-- ${chalk.cyan('forge chain:remove chain-1')}           remove interactively
-- ${chalk.cyan('forge chain:remove chain-1 --yes')}     force remove
+- ${chalk.cyan('forge chain:reset chain-1')}           Reset interactively
+- ${chalk.cyan('forge chain:reset chain-1 --yes')}     Force reset
       `);
       },
     },

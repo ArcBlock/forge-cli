@@ -1,3 +1,8 @@
+## 0.39.3 (October 04, 2019)
+
+- chore: use moderator sk from global yaml config
+- chore: cleanup duplicate getModerator in env.js
+
 ## 0.39.2 (October 03, 2019)
 
 - chore: polish prettyjson

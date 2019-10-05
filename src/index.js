@@ -90,7 +90,7 @@ Examples:
     const suggestions = getSuggest(commands, keyword);
     if (suggestions.length) {
       printInfo('Did you mean this?');
-      suggestions.forEach(x => print(`    - ${chalk.cyan(`forge ${x.command}`)}`));
+      suggestions.forEach(x => print(`  - ${chalk.cyan(`forge ${x.command}`)}`));
     }
   });
 

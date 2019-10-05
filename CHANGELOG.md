@@ -1,3 +1,8 @@
+## 0.39.4 (October 05, 2019)
+
+- chore: polish auto suggestion
+- feat: support subcommand typo suggestion like git #261
+
 ## 0.39.3 (October 04, 2019)
 
 - chore: use moderator sk from global yaml config

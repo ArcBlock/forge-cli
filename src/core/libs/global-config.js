@@ -8,6 +8,7 @@ function getDefaultGlobalConfig() {
     autoUpgrade: true,
     defaults: false,
     mirror: undefined,
+    moderatorSecretKey: undefined,
     npmRegistry: registryUrl(),
   });
 }

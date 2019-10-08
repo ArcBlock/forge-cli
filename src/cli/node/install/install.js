@@ -2,9 +2,7 @@
 /* eslint-disable consistent-return */
 const chalk = require('chalk');
 const fs = require('fs');
-const inquirer = require('inquirer');
-const { spawn } = require('child_process');
-const { applyForgeVersion, hasChains } = require('core/libs/common');
+const { applyForgeVersion } = require('core/libs/common');
 const { getPlatform, print, printError, printInfo, printSuccess } = require('core/util');
 const { isForgeStarted } = require('core/forge-process');
 const { formatVersion, download, DOWNLOAD_FLAGS } = require('../../release/download/lib');
@@ -13,7 +11,7 @@ const { DEFAULT_MIRROR, RELEASE_ASSETS } = require('../../../constant');
 
 async function main({
   args: [userVersion],
-  opts: { mirror = DEFAULT_MIRROR, allowMultiChain, releaseDir, silent, force = false },
+  opts: { mirror = DEFAULT_MIRROR, allowMultiChain, releaseDir, force = false },
 }) {
   try {
     const platform = await getPlatform();
@@ -60,40 +58,7 @@ async function main({
     printSuccess(`Congratulations! forge v${version} installed successfully!`);
     print();
 
-    if (!silent) {
-      if (hasChains()) {
-        printInfo(`If you want to custom the config, run: ${chalk.cyan('forge config set')}`);
-        process.exit(0);
-      }
-
-      const questions = [
-        {
-          type: 'confirm',
-          name: 'customizeConfig',
-          message: 'Do you want to customize config for this chain?',
-          default: true,
-        },
-      ];
-      const { customizeConfig } = await inquirer.prompt(questions);
-
-      if (customizeConfig) {
-        const childProcess = spawn('forge', ['config', 'set'], {
-          stdio: 'inherit',
-          env: process.env,
-          cwd: process.cwd(),
-        });
-
-        childProcess.on('close', () => {
-          print();
-          print(`Configured! Now you can start a forge node with ${chalk.cyan('forge start')}`);
-          print();
-          process.exit(0);
-        });
-
-        return;
-      }
-    }
-    print(`Now you can create a chain with ${chalk.cyan('forge chain:create')}`);
+    print(`Now you can create a chain using v${version} with ${chalk.cyan('forge chain:create')}`);
     print();
   } catch (err) {
     printError(err);

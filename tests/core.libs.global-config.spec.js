@@ -8,7 +8,7 @@ const globalConfigLib = rewire('../src/core/libs/global-config');
 const getDefaultGlobalConfig = globalConfigLib.__get__('getDefaultGlobalConfig');
 const getConfig = globalConfigLib.__get__('getConfig');
 
-describe.only('core.libs.global-config', () => {
+describe('core.libs.global-config', () => {
   describe('getConfig', () => {
     test('should use default if global config is empty', () => {
       const defaultConfigs = getDefaultGlobalConfig();
@@ -22,6 +22,14 @@ describe.only('core.libs.global-config', () => {
       const mirror = 'http://demo.com';
 
       expect(getConfig({ mirror }, defaultConfigs).mirror).toEqual(mirror);
+    });
+
+    test('should not allow configs that not in whitelist', () => {
+      const defaultConfigs = getDefaultGlobalConfig();
+      const unSupportConfigX = 'http://demo.com';
+      const configs = getConfig({ unSupportConfigX }, defaultConfigs);
+
+      expect(unSupportConfigX in configs).toBeFalsy();
     });
   });
 });

@@ -1,11 +1,12 @@
-const rcfile = require('rcfile');
 const base64 = require('base64-url');
 const { fromSecretKey } = require('@arcblock/forge-wallet');
 const { bytesToHex, hexToBytes, isHexStrict } = require('@arcblock/forge-util');
 
+const { getGlobalConfig } = require('./libs/global-config');
+
 function getModeratorSecretKey() {
-  const config = rcfile('forge');
-  const sk = config.moderatorSecretKey || process.env.FORGE_MODERATOR_SK;
+  const { moderatorSecretKey } = getGlobalConfig();
+  const sk = moderatorSecretKey || process.env.FORGE_MODERATOR_SK;
 
   if (!sk) {
     return undefined;

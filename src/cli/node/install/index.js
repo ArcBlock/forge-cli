@@ -18,10 +18,7 @@ cli(
       chainName: false,
       chainExists: false,
     },
-    options: [
-      ['-s, --silent', 'Install release silently, do not prompt for config customization'],
-      ['-f, --force', 'Clean local downloaded assets before install'],
-    ],
+    options: [['-f, --force', 'Clean local downloaded assets before install']],
     handlers: {
       '--help': () => {
         shell.echo(`
@@ -29,7 +26,6 @@ Examples:
   - ${chalk.cyan(
     'forge install'
   )}             Download and activate latest version, prompt to customize config
-  - ${chalk.cyan('forge install --silent')}    Download and setup with default config
   - ${chalk.cyan(
     `forge install ${minSupportVersion}`
   )}      Download and activate forge v${minSupportVersion}

@@ -1,14 +1,12 @@
 /* eslint no-console:"off" */
 const path = require('path');
 const last = require('lodash/last');
-const rcfile = require('rcfile');
-const registryUrl = require('registry-url');
 const pickBy = require('lodash/pickBy');
 
+const { getGlobalConfig } = require('core/libs/global-config');
 const { setupEnv } = require('./env');
 
 const allCommands = [];
-const globalConfig = rcfile('forge');
 
 /**
  * create a cli
@@ -86,24 +84,18 @@ function initCli(program) {
 
           return acc;
         }, {});
-        const globalOpts = Object.assign({ allowMultiChain: true }, globalConfig, argsOpts);
+        const globalOpts = getGlobalConfig();
 
-        if (globalOpts.npmRegistry === undefined) {
-          globalOpts.npmRegistry = registryUrl();
-        }
-
-        if (globalOpts.autoUpgrade === undefined) {
-          globalOpts.autoUpgrade = true;
-        }
+        Object.assign(globalOpts, argsOpts);
 
         const opts = Object.assign(
           {},
-          pickBy(globalOpts, k => k !== undefined),
-          pickBy(command.opts(), k => k !== undefined)
+          pickBy(globalOpts, v => v !== undefined),
+          pickBy(command.opts(), v => v !== undefined)
         );
 
         if (typeof x.parseArgs === 'function') {
-          Object.assign(opts, pickBy(x.parseArgs(...params) || {}), k => k !== undefined);
+          Object.assign(opts, pickBy(x.parseArgs(...params) || {}), v => v !== undefined);
         }
 
         await setupEnv(x.requirements, opts);

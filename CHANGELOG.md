@@ -1,3 +1,7 @@
+## 0.39.5 (October 08, 2019)
+
+- feat: support `defaults` global config #264
+
 ## 0.39.4 (October 05, 2019)
 
 - chore: polish auto suggestion

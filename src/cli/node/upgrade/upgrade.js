@@ -23,9 +23,9 @@ const {
 } = require('core/forge-fs');
 const { isForgeStartedByStarter } = require('core/forge-process');
 const debug = require('core/debug')('upgrade');
+const { ensureModerator } = require('core/moderator');
 
 const { stop, waitUntilStopped } = require('../stop/stop');
-const { ensureModerator } = require('../../protocol/deploy/deploy');
 
 function isStoppedToUpgrade(chainName) {
   return new Promise(resolve => {

@@ -3,7 +3,7 @@ const inquirer = require('inquirer');
 const chalk = require('chalk');
 const { createRpcClient } = require('core/env');
 const { printError, printWarning, printInfo, printSuccess } = require('core/util');
-const { ensureModerator } = require('../deploy/deploy');
+const { ensureModerator } = require('core/moderator');
 const { ensureProtocols } = require('../list/list');
 
 const doActivate = async (client, address, moderator) => {

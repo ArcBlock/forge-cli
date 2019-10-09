@@ -237,11 +237,13 @@ function ensureRpcClient(args, chainName) {
     debug(`using forge-cli with remote node ${socketGrpc}`);
     Object.assign(config, forgeConfig);
   } else if (fs.existsSync(configPath)) {
-    if (process.env.FORGE_CONFIG) {
-      shell.echo(
-        `${symbols.info} ${chalk.yellow(`Using custom forge config: ${process.env.FORGE_CONFIG}`)}`
-      );
+    if (
+      process.env.FORGE_CONFIG &&
+      chainName === getChainNameFromForgeConfig(process.env.FORGE_CONFIG)
+    ) {
+      printInfo(`${chalk.yellow(`Using custom forge config: ${process.env.FORGE_CONFIG}`)}`);
     }
+
     const forgeConfig = parse(configPath);
     config.cli.forgeConfigPath = configPath;
     Object.assign(config, forgeConfig);

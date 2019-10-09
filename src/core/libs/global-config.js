@@ -1,7 +1,6 @@
 const pickBy = require('lodash/pickBy');
 const registryUrl = require('registry-url');
 const rcfile = require('rcfile');
-const os = require('os');
 
 function getDefaultGlobalConfig() {
   return {
@@ -25,7 +24,7 @@ function getConfig(globalConfig = {}, defaultGlobalConfigs = {}) {
 }
 
 function getGlobalConfig() {
-  return getConfig(rcfile('forge', { cwd: os.homedir() }), getDefaultGlobalConfig());
+  return getConfig(rcfile('forge'), getDefaultGlobalConfig());
 }
 
 module.exports = { getGlobalConfig };

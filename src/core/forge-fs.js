@@ -28,11 +28,15 @@ const {
   REQUIRED_DIRS,
 } = require('../constant');
 
+const getChainNameFromForgeConfig = configPath => {
+  const config = TOML.parse(fs.readFileSync(configPath).toString());
+  return get(config, 'tendermint.genesis.chain_id', '');
+};
+
 const readChainConfigFromEnv = () => {
-  const configPath = process.env.FORGE_CONFIG_PATH;
+  const configPath = process.env.FORGE_CONFIG;
   if (configPath && fs.existsSync(configPath)) {
-    const config = TOML.parse(fs.readFileSync(configPath).toString());
-    return { name: get(config, 'app.name', ''), config, configPath };
+    return { name: getChainNameFromForgeConfig(configPath), configPath };
   }
 
   return {};
@@ -440,6 +444,7 @@ module.exports = {
   ensureChainDirectory,
   getAllAppDirectories,
   getAllChainNames,
+  getChainNameFromForgeConfig,
   getConsensusEnginBinPath,
   getCurrentReleaseFilePath,
   getDataDirectory,
@@ -457,13 +462,13 @@ module.exports = {
   getReleaseAssets,
   getRootConfigDirectory,
   readTendermintHomeDir,
+  getLocalVersions,
   getForgeVersionFromYaml,
   getOriginForgeReleaseFilePath,
   getForgeReleaseDirectory,
   getReleaseDirectory,
   getStorageEnginePath,
   readChainKeyFilePath,
-  getLocalVersions,
   isChainExists,
   isEmptyDirectory,
   isForgeBinExists,

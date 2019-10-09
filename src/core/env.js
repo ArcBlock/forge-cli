@@ -9,7 +9,6 @@ const semver = require('semver');
 const inquirer = require('inquirer');
 const isElevated = require('is-elevated');
 const { get, set } = require('lodash');
-const TOML = require('@iarna/toml');
 const GRpcClient = require('@arcblock/grpc-client');
 const { parse } = require('@arcblock/forge-config');
 
@@ -18,6 +17,7 @@ const {
   isChainExists,
   isDirectory,
   getChainReleaseFilePath,
+  getChainNameFromForgeConfig,
 } = require('core/forge-fs');
 const { ensureForgeRelease } = require('core/forge-config');
 const { isForgeStarted, getProcessTag, getAllProcesses } = require('./forge-process');
@@ -55,7 +55,7 @@ async function setupEnv(requirements, args = {}) {
       throw new Error(`config path does not exit, config path: ${args.configPath}`);
     }
 
-    process.env.FORGE_CONFIG_PATH = args.configPath;
+    process.env.FORGE_CONFIG = args.configPath;
   }
 
   await ensureNonRoot();
@@ -68,7 +68,7 @@ async function setupEnv(requirements, args = {}) {
     requirement: requirements.chainExists,
     chainNameRequirement: requirements.chainName,
     chainName: process.env.FORGE_CURRENT_CHAIN,
-    configPath: process.env.FORGE_CONFIG_PATH,
+    configPath: process.env.FORGE_CONFIG,
   });
   await ensureCurrentChainRunning(
     requirements.currentChainRunning,
@@ -122,16 +122,15 @@ async function ensureChainName(requirement = true, chainExistsRequirement, args)
     return;
   }
 
-  if (process.env.FORGE_CONFIG_PATH) {
-    const forgeConfig = TOML.parse(fs.readFileSync(process.env.FORGE_CONFIG_PATH).toString());
-    const appName = get(forgeConfig, 'app.name', '');
-    if (!appName) {
+  if (process.env.FORGE_CONFIG) {
+    const chainId = getChainNameFromForgeConfig(process.env.FORGE_CONFIG);
+    if (!chainId) {
       throw new Error(
-        `Invalid config path: app name is invalid, config path: ${process.env.FORGE_CONFIG_PATH}`
+        `Invalid config path: app name is invalid, config path: ${process.env.FORGE_CONFIG}`
       );
     }
 
-    process.env.FORGE_CURRENT_CHAIN = appName;
+    process.env.FORGE_CURRENT_CHAIN = chainId;
     return;
   }
 
@@ -170,10 +169,9 @@ async function ensureChainExists({
   configPath,
 }) {
   if (configPath) {
-    const forgeConfig = TOML.parse(fs.readFileSync(process.env.FORGE_CONFIG_PATH).toString());
-    const appName = get(forgeConfig, 'app.name', '');
+    const chainId = getChainNameFromForgeConfig(process.env.FORGE_CONFIG);
 
-    if (appName === chainName) {
+    if (chainId === chainName) {
       // if the chain name is specified by config path, no longer check wether the chain does exit
       return;
     }

@@ -3,14 +3,15 @@ const registryUrl = require('registry-url');
 const rcfile = require('rcfile');
 
 function getDefaultGlobalConfig() {
-  return Object.assign({
+  return {
     allowMultiChain: true,
     autoUpgrade: true,
+    configPath: undefined,
     defaults: false,
     mirror: undefined,
     moderatorSecretKey: undefined,
     npmRegistry: registryUrl(),
-  });
+  };
 }
 
 function getConfig(globalConfig = {}, defaultGlobalConfigs = {}) {

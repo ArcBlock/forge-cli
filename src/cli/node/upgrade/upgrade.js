@@ -14,7 +14,13 @@ const {
   printSuccess,
   strEqual,
 } = require('core/util');
-const { checkStartError, listReleases, updateChainConfig } = require('core/forge-fs');
+const {
+  checkStartError,
+  listReleases,
+  readChainConfigFromEnv,
+  updateChainConfig,
+  updateReleaseYaml,
+} = require('core/forge-fs');
 const { isForgeStartedByStarter } = require('core/forge-process');
 const debug = require('core/debug')('upgrade');
 
@@ -43,17 +49,21 @@ function isStoppedToUpgrade(chainName) {
 }
 
 const execExceptionOnError = failedMessage => (...args) => {
-  const { code } = shell.exec(...args);
+  const { code, stderr } = shell.exec(...args);
   if (code !== 0) {
-    throw new Error(`${failedMessage}: ${code}`);
+    throw new Error(`${failedMessage}: ${stderr}, exit code: ${code}`);
   }
 };
 
 const useNewVersion = (chainName, version) => {
-  updateChainConfig(chainName, { version });
-  execExceptionOnError('stop web failed')(`forge web stop -c ${chainName} --color always`, {
-    silent: true,
-  });
+  const { name } = readChainConfigFromEnv();
+  if (name === chainName) {
+    updateReleaseYaml('forge', version);
+  } else {
+    updateChainConfig(chainName, { version });
+  }
+
+  execExceptionOnError('stop web failed')(`forge web stop -c ${chainName} --color always`);
   execExceptionOnError('start forge failed')(`forge start ${chainName} --color always`);
 };
 

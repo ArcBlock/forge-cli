@@ -28,6 +28,31 @@ const {
   REQUIRED_DIRS,
 } = require('../constant');
 
+const getChainNameFromForgeConfig = configPath => {
+  const config = TOML.parse(fs.readFileSync(configPath).toString());
+  return get(config, 'tendermint.genesis.chain_id', '');
+};
+
+const readChainConfigFromEnv = () => {
+  const configPath = process.env.FORGE_CONFIG;
+  if (configPath && fs.existsSync(configPath)) {
+    return { name: getChainNameFromForgeConfig(configPath), configPath };
+  }
+
+  return {};
+};
+
+const readChainConfig = (chainName, key, defaultValue = '') => {
+  const configPath = getChainReleaseFilePath(chainName);
+  const config = TOML.parse(fs.readFileSync(configPath).toString());
+
+  if (!key) {
+    return config;
+  }
+
+  return get(config, key, defaultValue);
+};
+
 function clearDataDirectories(chainName = process.env.FORGE_CURRENT_CHAIN, keepConfig = false) {
   const doCleanup = dir => {
     shell.exec(`rm -rf ${dir}`);
@@ -36,12 +61,12 @@ function clearDataDirectories(chainName = process.env.FORGE_CURRENT_CHAIN, keepC
   if (keepConfig) {
     printWarning(`Resetting chain ${chalk.cyan(chainName)}`);
     doCleanup(getDataDirectory(chainName));
-    doCleanup(getChainKeyFilePath(chainName));
+    doCleanup(readChainKeyFilePath(chainName));
     printSuccess(`Chain ${chalk.cyan(chainName)} is reset`);
   } else {
     printWarning(`Removing chain ${chalk.cyan(chainName)}`);
     doCleanup(getChainDirectory(chainName));
-    printSuccess(`Chain  ${chalk.cyan(chainName)} is removed`);
+    printSuccess(`Chain ${chalk.cyan(chainName)} is removed`);
   }
 }
 
@@ -115,10 +140,17 @@ function getAllAppDirectories() {
 }
 
 function getAllChainNames() {
-  return getAllAppDirectories()
+  const chainNames = getAllAppDirectories()
     .map(name => name.slice(name.indexOf('_') + 1))
     .sort(chainSortHandler)
     .map(x => [x, getChainConfig(x)]);
+
+  const { name } = readChainConfigFromEnv();
+  if (name) {
+    chainNames.push([name, { version: getGlobalForgeVersion() }]);
+  }
+
+  return chainNames;
 }
 
 function getCurrentWorkingDirectory() {
@@ -218,14 +250,8 @@ function isForgeBinExists(version) {
   return isReleaseBinExists('forge', version);
 }
 
-function getTendermintHomeDir(chainName) {
-  const filePath = getChainReleaseFilePath(chainName);
-  if (!fs.existsSync(filePath)) {
-    return '';
-  }
-
-  const config = TOML.parse(fs.readFileSync(filePath).toString());
-  return get(config, 'tendermint.path', '');
+function readTendermintHomeDir(chainName) {
+  return readChainConfig(chainName, 'tendermint.path', '');
 }
 
 function getRootConfigDirectory() {
@@ -249,15 +275,16 @@ function getChainDirectory(chainName = process.env.FORGE_CURRENT_CHAIN) {
 }
 
 function getChainReleaseFilePath(chainName = process.env.FORGE_CURRENT_CHAIN) {
+  const { name, configPath } = readChainConfigFromEnv();
+  if (name === chainName) {
+    return configPath;
+  }
+
   return path.join(getChainDirectory(chainName), 'forge_release.toml');
 }
 
-function getChainKeyFilePath(chainName = process.env.FORGE_CURRENT_CHAIN) {
-  return path.join(getChainDirectory(chainName), 'keys');
-}
-
-function getChainReleaseDirectory(chainName = process.env.FORGE_CURRENT_CHAIN) {
-  return path.join(getChainDirectory(chainName), 'forge_release');
+function readChainKeyFilePath(chainName = process.env.FORGE_CURRENT_CHAIN) {
+  return readChainConfig(chainName, 'tendermint.keypath');
 }
 
 function getChainWorkshopDirectory(chainName = process.env.FORGE_CURRENT_CHAIN) {
@@ -292,8 +319,11 @@ function ensureChainDirectory(chainName = process.env.FORGE_CURRENT_CHAIN) {
   return forgeChainDir;
 }
 
-function getLogfile(chainName = process.env.FORGE_CURRENT_CHAIN, fileName) {
-  return path.join(getChainReleaseDirectory(chainName), 'core', 'logs', fileName);
+function readLogPath(chainName = process.env.FORGE_CURRENT_CHAIN, fileName) {
+  const forgePath = readChainConfig(chainName, 'forge.path');
+  const logPath = readChainConfig(chainName, 'forge.logs');
+
+  return path.join(forgePath, logPath, fileName);
 }
 
 function getForgeVersionFromYaml(yamlPath, key = 'current') {
@@ -333,11 +363,17 @@ function updateReleaseYaml(asset, version) {
 }
 
 function getChainConfigPath(chainName) {
+  const { name, configPath } = readChainConfigFromEnv();
+  if (name === chainName) {
+    return configPath;
+  }
+
   return path.join(getChainDirectory(chainName), 'config.yml');
 }
 
 function getChainConfig(chainName) {
   const filePath = getChainConfigPath(chainName);
+  debug('chain config', filePath);
   try {
     return fs.existsSync(filePath) ? yaml.parse(fs.readFileSync(filePath).toString()) || {} : {};
   } catch (err) {
@@ -346,25 +382,12 @@ function getChainConfig(chainName) {
   }
 }
 
-/**
- * Read config from yaml file.
- * @param {string} filePath
- * @returns {json} return config of json format, if config is empty, return empty json object.
- */
-function readYamlConfig(filePath) {
-  const yamlObj = fs.existsSync(filePath)
-    ? yaml.parse(fs.readFileSync(filePath).toString()) || {}
-    : {};
-
-  return yamlObj;
-}
-
 function updateChainConfig(chainName, config = {}) {
   try {
     const filePath = getChainConfigPath(chainName);
     debug('updateChainConfig', { chainName, config });
 
-    const chainConfig = readYamlConfig(filePath);
+    const chainConfig = getChainConfig(filePath);
     fs.writeFileSync(filePath, yaml.stringify(Object.assign(chainConfig, config)), { flag: 'w+' });
   } catch (err) {
     printError(err);
@@ -380,7 +403,7 @@ function updateChainConfig(chainName, config = {}) {
  */
 function checkStartError(chainName, startAtMs = Date.now()) {
   return new Promise(resolve => {
-    const errorFilePath = getLogfile(chainName, 'exit_status.json');
+    const errorFilePath = readLogPath(chainName, 'exit_status.json');
     fs.stat(errorFilePath, (err, stats) => {
       if (!err && stats.ctimeMs > startAtMs) {
         try {
@@ -421,6 +444,7 @@ module.exports = {
   ensureChainDirectory,
   getAllAppDirectories,
   getAllChainNames,
+  getChainNameFromForgeConfig,
   getConsensusEnginBinPath,
   getCurrentReleaseFilePath,
   getDataDirectory,
@@ -436,16 +460,15 @@ module.exports = {
   getChainWorkshopDirectory,
   getReleaseDir,
   getReleaseAssets,
-  getLogfile,
   getRootConfigDirectory,
-  getTendermintHomeDir,
+  readTendermintHomeDir,
+  getLocalVersions,
   getForgeVersionFromYaml,
   getOriginForgeReleaseFilePath,
   getForgeReleaseDirectory,
   getReleaseDirectory,
   getStorageEnginePath,
-  getChainKeyFilePath,
-  getLocalVersions,
+  readChainKeyFilePath,
   isChainExists,
   isEmptyDirectory,
   isForgeBinExists,
@@ -453,6 +476,8 @@ module.exports = {
   isDirectory,
   isFile,
   listReleases,
+  readChainConfig,
+  readChainConfigFromEnv,
   updateReleaseYaml,
   updateChainConfig,
 };

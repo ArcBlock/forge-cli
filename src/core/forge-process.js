@@ -8,8 +8,7 @@ const { get } = require('lodash');
 const path = require('path');
 
 const debug = require('./debug')('forge-process');
-const { getTendermintHomeDir, getAllChainNames } = require('./forge-fs');
-const { readChainConfig } = require('./forge-config');
+const { readTendermintHomeDir, getAllChainNames, readChainConfig } = require('./forge-fs');
 const {
   escapseHomeDir,
   printError,
@@ -53,7 +52,7 @@ async function getTendermintProcess(chainName) {
     return result;
   }
 
-  const homeDir = escapseHomeDir(getTendermintHomeDir(chainName));
+  const homeDir = escapseHomeDir(readTendermintHomeDir(chainName));
 
   const tmp = tendermintProcess.find(({ cmd }) => cmd.includes(homeDir));
   if (tmp) {
@@ -80,6 +79,7 @@ async function isForgeStopped(chainName = process.env.FORGE_CURRENT_CHAIN) {
 }
 
 async function getForgeProcessByTag(processName, chainName = process.env.FORGE_CURRENT_CHAIN) {
+  debug('getForgeProcessByTag, chain name:', chainName);
   const forgeProcesses = await findProcess('name', processName);
 
   const forgeProcess = forgeProcesses.find(
@@ -101,6 +101,7 @@ async function getForgeProcess(chainName = process.env.FORGE_CURRENT_CHAIN) {
 }
 
 async function getForgeWebProcess(chainName) {
+  debug('get forge web process, chain name:', chainName);
   return getForgeProcessByTag('web', chainName);
 }
 

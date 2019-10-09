@@ -17,6 +17,7 @@ const {
   isChainExists,
   isDirectory,
   getChainReleaseFilePath,
+  getChainNameFromForgeConfig,
 } = require('core/forge-fs');
 const { ensureForgeRelease } = require('core/forge-config');
 const { isForgeStarted, getProcessTag, getAllProcesses } = require('./forge-process');
@@ -49,17 +50,26 @@ const config = { cli: {} }; // global shared forge-cli run time config
  * @param {*} args
  */
 async function setupEnv(requirements, args = {}) {
+  if (args.configPath) {
+    if (!fs.existsSync(args.configPath)) {
+      throw new Error(`config path does not exit, config path: ${args.configPath}`);
+    }
+
+    process.env.FORGE_CONFIG = args.configPath;
+  }
+
   await ensureNonRoot();
 
   ensureRequiredDirs();
   await checkUpdate(args);
 
   await ensureChainName(requirements.chainName, requirements.chainExists, args);
-  await ensureChainExists(
-    requirements.chainExists,
-    requirements.chainName,
-    process.env.FORGE_CURRENT_CHAIN
-  );
+  await ensureChainExists({
+    requirement: requirements.chainExists,
+    chainNameRequirement: requirements.chainName,
+    chainName: process.env.FORGE_CURRENT_CHAIN,
+    configPath: process.env.FORGE_CONFIG,
+  });
   await ensureCurrentChainRunning(
     requirements.currentChainRunning,
     process.env.FORGE_CURRENT_CHAIN
@@ -112,6 +122,18 @@ async function ensureChainName(requirement = true, chainExistsRequirement, args)
     return;
   }
 
+  if (process.env.FORGE_CONFIG) {
+    const chainId = getChainNameFromForgeConfig(process.env.FORGE_CONFIG);
+    if (!chainId) {
+      throw new Error(
+        `Invalid config path: app name is invalid, config path: ${process.env.FORGE_CONFIG}`
+      );
+    }
+
+    process.env.FORGE_CURRENT_CHAIN = chainId;
+    return;
+  }
+
   if (requirement || chainExistsRequirement) {
     if (typeof requirement === 'function') {
       const chainName = await requirement(args);
@@ -140,7 +162,21 @@ async function ensureChainName(requirement = true, chainExistsRequirement, args)
   }
 }
 
-async function ensureChainExists(requirement = true, chainNameRequirement, chainName) {
+async function ensureChainExists({
+  requirement = true,
+  chainNameRequirement,
+  chainName,
+  configPath,
+}) {
+  if (configPath) {
+    const chainId = getChainNameFromForgeConfig(process.env.FORGE_CONFIG);
+
+    if (chainId === chainName) {
+      // if the chain name is specified by config path, no longer check wether the chain does exit
+      return;
+    }
+  }
+
   if (chainNameRequirement === false) {
     return;
   }
@@ -201,11 +237,13 @@ function ensureRpcClient(args, chainName) {
     debug(`using forge-cli with remote node ${socketGrpc}`);
     Object.assign(config, forgeConfig);
   } else if (fs.existsSync(configPath)) {
-    if (process.env.FORGE_CONFIG) {
-      shell.echo(
-        `${symbols.info} ${chalk.yellow(`Using custom forge config: ${process.env.FORGE_CONFIG}`)}`
-      );
+    if (
+      process.env.FORGE_CONFIG &&
+      chainName === getChainNameFromForgeConfig(process.env.FORGE_CONFIG)
+    ) {
+      printInfo(`${chalk.yellow(`Using custom forge config: ${process.env.FORGE_CONFIG}`)}`);
     }
+
     const forgeConfig = parse(configPath);
     config.cli.forgeConfigPath = configPath;
     Object.assign(config, forgeConfig);

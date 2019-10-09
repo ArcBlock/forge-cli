@@ -99,7 +99,7 @@ async function main({ args: [action = 'none'], opts }) {
     case 'stop':
       if (!pid) {
         shell.echo(`${symbols.info} forge web not started yet`);
-        process.exit(1);
+        process.exit(0);
         return;
       }
 

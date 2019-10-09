@@ -28,7 +28,15 @@ const {
   REQUIRED_DIRS,
 } = require('../constant');
 
-const { getGlobalConfig } = require('./libs/global-config');
+const readChainConfigFromEnv = () => {
+  const configPath = process.env.FORGE_CONFIG_PATH;
+  if (configPath && fs.existsSync(configPath)) {
+    const config = TOML.parse(fs.readFileSync(configPath).toString());
+    return { name: get(config, 'app.name', ''), config, configPath };
+  }
+
+  return {};
+};
 
 const readChainConfig = (chainName, key, defaultValue = '') => {
   const configPath = getChainReleaseFilePath(chainName);
@@ -128,10 +136,17 @@ function getAllAppDirectories() {
 }
 
 function getAllChainNames() {
-  return getAllAppDirectories()
+  const chainNames = getAllAppDirectories()
     .map(name => name.slice(name.indexOf('_') + 1))
     .sort(chainSortHandler)
     .map(x => [x, getChainConfig(x)]);
+
+  const { name } = readChainConfigFromEnv();
+  if (name) {
+    chainNames.push([name, { version: getGlobalForgeVersion() }]);
+  }
+
+  return chainNames;
 }
 
 function getCurrentWorkingDirectory() {
@@ -256,12 +271,8 @@ function getChainDirectory(chainName = process.env.FORGE_CURRENT_CHAIN) {
 }
 
 function getChainReleaseFilePath(chainName = process.env.FORGE_CURRENT_CHAIN) {
-  const { configPath } = getGlobalConfig();
-  if (configPath) {
-    if (!fs.existsSync(configPath)) {
-      throw new Error(`config path does not exist: ${configPath}`);
-    }
-
+  const { name, configPath } = readChainConfigFromEnv();
+  if (name === chainName) {
     return configPath;
   }
 
@@ -348,11 +359,17 @@ function updateReleaseYaml(asset, version) {
 }
 
 function getChainConfigPath(chainName) {
+  const { name, configPath } = readChainConfigFromEnv();
+  if (name === chainName) {
+    return configPath;
+  }
+
   return path.join(getChainDirectory(chainName), 'config.yml');
 }
 
 function getChainConfig(chainName) {
   const filePath = getChainConfigPath(chainName);
+  debug('chain config', filePath);
   try {
     return fs.existsSync(filePath) ? yaml.parse(fs.readFileSync(filePath).toString()) || {} : {};
   } catch (err) {
@@ -361,25 +378,12 @@ function getChainConfig(chainName) {
   }
 }
 
-/**
- * Read config from yaml file.
- * @param {string} filePath
- * @returns {json} return config of json format, if config is empty, return empty json object.
- */
-function readYamlConfig(filePath) {
-  const yamlObj = fs.existsSync(filePath)
-    ? yaml.parse(fs.readFileSync(filePath).toString()) || {}
-    : {};
-
-  return yamlObj;
-}
-
 function updateChainConfig(chainName, config = {}) {
   try {
     const filePath = getChainConfigPath(chainName);
     debug('updateChainConfig', { chainName, config });
 
-    const chainConfig = readYamlConfig(filePath);
+    const chainConfig = getChainConfig(filePath);
     fs.writeFileSync(filePath, yaml.stringify(Object.assign(chainConfig, config)), { flag: 'w+' });
   } catch (err) {
     printError(err);
@@ -468,6 +472,7 @@ module.exports = {
   isFile,
   listReleases,
   readChainConfig,
+  readChainConfigFromEnv,
   updateReleaseYaml,
   updateChainConfig,
 };

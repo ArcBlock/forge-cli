@@ -1,9 +1,10 @@
 const pickBy = require('lodash/pickBy');
 const registryUrl = require('registry-url');
 const rcfile = require('rcfile');
+const os = require('os');
 
 function getDefaultGlobalConfig() {
-  return Object.assign({
+  return {
     allowMultiChain: true,
     autoUpgrade: true,
     configPath: undefined,
@@ -11,7 +12,7 @@ function getDefaultGlobalConfig() {
     mirror: undefined,
     moderatorSecretKey: undefined,
     npmRegistry: registryUrl(),
-  });
+  };
 }
 
 function getConfig(globalConfig = {}, defaultGlobalConfigs = {}) {
@@ -24,7 +25,7 @@ function getConfig(globalConfig = {}, defaultGlobalConfigs = {}) {
 }
 
 function getGlobalConfig() {
-  return getConfig(rcfile('forge'), getDefaultGlobalConfig());
+  return getConfig(rcfile('forge', { cwd: os.homedir() }), getDefaultGlobalConfig());
 }
 
 module.exports = { getGlobalConfig };

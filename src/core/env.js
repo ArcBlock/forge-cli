@@ -9,6 +9,7 @@ const semver = require('semver');
 const inquirer = require('inquirer');
 const isElevated = require('is-elevated');
 const { get, set } = require('lodash');
+const TOML = require('@iarna/toml');
 const GRpcClient = require('@arcblock/grpc-client');
 const { parse } = require('@arcblock/forge-config');
 
@@ -49,17 +50,26 @@ const config = { cli: {} }; // global shared forge-cli run time config
  * @param {*} args
  */
 async function setupEnv(requirements, args = {}) {
+  if (args.configPath) {
+    if (!fs.existsSync(args.configPath)) {
+      throw new Error(`config path does not exit, config path: ${args.configPath}`);
+    }
+
+    process.env.FORGE_CONFIG_PATH = args.configPath;
+  }
+
   await ensureNonRoot();
 
   ensureRequiredDirs();
   await checkUpdate(args);
 
   await ensureChainName(requirements.chainName, requirements.chainExists, args);
-  await ensureChainExists(
-    requirements.chainExists,
-    requirements.chainName,
-    process.env.FORGE_CURRENT_CHAIN
-  );
+  await ensureChainExists({
+    requirement: requirements.chainExists,
+    chainNameRequirement: requirements.chainName,
+    chainName: process.env.FORGE_CURRENT_CHAIN,
+    configPath: process.env.FORGE_CONFIG_PATH,
+  });
   await ensureCurrentChainRunning(
     requirements.currentChainRunning,
     process.env.FORGE_CURRENT_CHAIN
@@ -112,6 +122,19 @@ async function ensureChainName(requirement = true, chainExistsRequirement, args)
     return;
   }
 
+  if (process.env.FORGE_CONFIG_PATH) {
+    const forgeConfig = TOML.parse(fs.readFileSync(process.env.FORGE_CONFIG_PATH).toString());
+    const appName = get(forgeConfig, 'app.name', '');
+    if (!appName) {
+      throw new Error(
+        `Invalid config path: app name is invalid, config path: ${process.env.FORGE_CONFIG_PATH}`
+      );
+    }
+
+    process.env.FORGE_CURRENT_CHAIN = appName;
+    return;
+  }
+
   if (requirement || chainExistsRequirement) {
     if (typeof requirement === 'function') {
       const chainName = await requirement(args);
@@ -140,7 +163,22 @@ async function ensureChainName(requirement = true, chainExistsRequirement, args)
   }
 }
 
-async function ensureChainExists(requirement = true, chainNameRequirement, chainName) {
+async function ensureChainExists({
+  requirement = true,
+  chainNameRequirement,
+  chainName,
+  configPath,
+}) {
+  if (configPath) {
+    const forgeConfig = TOML.parse(fs.readFileSync(process.env.FORGE_CONFIG_PATH).toString());
+    const appName = get(forgeConfig, 'app.name', '');
+
+    if (appName === chainName) {
+      // if the chain name is specified by config path, no longer check wether the chain does exit
+      return;
+    }
+  }
+
   if (chainNameRequirement === false) {
     return;
   }

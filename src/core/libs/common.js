@@ -3,13 +3,8 @@
  */
 
 const semver = require('semver');
-const {
-  getAllChainNames,
-  getChainConfigPath,
-  getForgeVersionFromYaml,
-  listReleases,
-  updateReleaseYaml,
-} = require('../forge-fs');
+
+const { getAllChainNames, listReleases, updateReleaseYaml } = require('../forge-fs');
 const { engines } = require('../../../package');
 
 const DEFAULT_CHAIN_NAME_RETURN = { NO_CHAINS: 1 };
@@ -59,8 +54,10 @@ function getMinSupportForgeVersion() {
 }
 
 function getChainVersion(chainName) {
-  const currentVersion = getForgeVersionFromYaml(getChainConfigPath(chainName), 'version');
-  return currentVersion || '';
+  const allChainNames = getAllChainNames();
+  const chain = allChainNames.find(([name]) => name === chainName);
+
+  return chain ? chain[1].version : '';
 }
 
 module.exports = {

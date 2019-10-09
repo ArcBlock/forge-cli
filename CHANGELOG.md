@@ -1,3 +1,9 @@
+## 0.39.5 (October 09, 2019)
+
+- fix: stop a not existed web should exit normally
+- feat: make `--config-path` work again #172
+- refact: read forge relative path from forge config file(forge_release.toml)
+
 ## 0.39.5 (October 08, 2019)
 
 - feat: support `defaults` global config #264

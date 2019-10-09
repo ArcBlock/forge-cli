@@ -49,9 +49,9 @@ function isStoppedToUpgrade(chainName) {
 }
 
 const execExceptionOnError = failedMessage => (...args) => {
-  const { code } = shell.exec(...args);
+  const { code, stderr } = shell.exec(...args);
   if (code !== 0) {
-    throw new Error(`${failedMessage}: ${code}`);
+    throw new Error(`${failedMessage}: ${stderr}, exit code: ${code}`);
   }
 };
 
@@ -63,9 +63,7 @@ const useNewVersion = (chainName, version) => {
     updateChainConfig(chainName, { version });
   }
 
-  execExceptionOnError('stop web failed')(`forge web stop -c ${chainName} --color always`, {
-    silent: true,
-  });
+  execExceptionOnError('stop web failed')(`forge web stop -c ${chainName} --color always`);
   execExceptionOnError('start forge failed')(`forge start ${chainName} --color always`);
 };
 

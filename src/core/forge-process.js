@@ -79,6 +79,7 @@ async function isForgeStopped(chainName = process.env.FORGE_CURRENT_CHAIN) {
 }
 
 async function getForgeProcessByTag(processName, chainName = process.env.FORGE_CURRENT_CHAIN) {
+  debug('getForgeProcessByTag, chain name:', chainName);
   const forgeProcesses = await findProcess('name', processName);
 
   const forgeProcess = forgeProcesses.find(
@@ -100,6 +101,7 @@ async function getForgeProcess(chainName = process.env.FORGE_CURRENT_CHAIN) {
 }
 
 async function getForgeWebProcess(chainName) {
+  debug('get forge web process, chain name:', chainName);
   return getForgeProcessByTag('web', chainName);
 }
 

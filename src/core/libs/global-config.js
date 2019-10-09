@@ -6,6 +6,7 @@ function getDefaultGlobalConfig() {
   return Object.assign({
     allowMultiChain: true,
     autoUpgrade: true,
+    configPath: undefined,
     defaults: false,
     mirror: undefined,
     moderatorSecretKey: undefined,

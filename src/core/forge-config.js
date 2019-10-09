@@ -432,15 +432,10 @@ async function ensureForgeRelease({
   return cliConfig;
 }
 
-function readChainConfig(chainName) {
-  return TOML.parse(fs.readFileSync(getChainReleaseFilePath(chainName)).toString());
-}
-
 module.exports = {
   copyReleaseConfig,
   ensureForgeRelease,
   getDefaultChainConfigs,
   setConfigToChain,
   setFilePathOfConfig,
-  readChainConfig,
 };

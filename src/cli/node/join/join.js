@@ -9,7 +9,7 @@ const get = require('lodash/get');
 const set = require('lodash/set');
 const GraphQLClient = require('@arcblock/graphql-client');
 const { config, ensureConfigComment } = require('core/env');
-const { getChainKeyFilePath } = require('core/forge-fs');
+const { readChainKeyFilePath } = require('core/forge-fs');
 const { isForgeStarted } = require('core/forge-process');
 const { symbols } = require('core/ui');
 const debug = require('core/debug');
@@ -90,7 +90,7 @@ async function main({ args: [endpoint = ''], opts: { yes, chainName } }) {
           shell.echo(`${symbols.info} all state backup to ${bakDir}`);
           shell.exec(`mv ${oldDir} ${bakDir}`);
 
-          const keyDataPath = getChainKeyFilePath(chainName);
+          const keyDataPath = readChainKeyFilePath(chainName);
           debug(` rm -rf ${keyDataPath}`);
           shell.exec(`rm -rf ${keyDataPath}`);
         } else {

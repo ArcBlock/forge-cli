@@ -1,3 +1,7 @@
+## 0.39.7 (October 10, 2019)
+
+- fix: allow mutiple chain judgement error when create chain
+
 ## 0.39.6 (October 10, 2019)
 
 - fix: stop a not existed web should exit normally

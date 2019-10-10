@@ -1,3 +1,8 @@
+## 0.39.8 (October 10, 2019)
+
+- rename `--npmRegistry` to `--npm-registry`.
+- change default grpc code starts from `28210` to `28300`
+
 ## 0.39.7 (October 10, 2019)
 
 - fix: allow mutiple chain judgement error when create chain

@@ -130,7 +130,7 @@ async function getAvailablePort() {
       : await getPort({ port: getPort.makeRange(37001, 38000) }),
     forgeGrpcPort: forgeGrpcPort
       ? forgeGrpcPort + 1
-      : await getPort({ port: getPort.makeRange(38210, 38300) }),
+      : await getPort({ port: getPort.makeRange(28210, 28300) }),
     workshopPort: workshopPort
       ? workshopPort + 1
       : await getPort({ port: getPort.makeRange(8807, 8900) }),

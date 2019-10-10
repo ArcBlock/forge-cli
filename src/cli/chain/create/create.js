@@ -9,13 +9,15 @@ const {
   getOriginForgeReleaseFilePath,
   getChainReleaseFilePath,
 } = require('core/forge-fs');
+const { hasChains } = require('core/libs/common');
 const { getCustomConfigs, writeConfigs } = require('../../node/config/lib');
 
 async function main({ args: [chainName = ''], opts: { defaults, allowMultiChain = false } }) {
-  if (allowMultiChain === false) {
+  if ((await hasChains()) && allowMultiChain === false) {
     printError('Forge CLI is configured to work with single chain only, abort!');
     process.exit(0);
   }
+
   try {
     const forgeCoreVersion = config.get('cli').globalVersion;
     let configs = toml.parse(

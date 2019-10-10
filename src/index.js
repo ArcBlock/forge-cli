@@ -53,7 +53,7 @@ const run = async () => {
       '-i, --config-path <path>',
       'Forge config used when starting forge node and initializing gRPC clients'
     )
-    .option('-r, --npmRegistry <registry>', 'Specify a custom npm registry')
+    .option('-r, --npm-registry <registry>', 'Specify a custom npm registry')
     .option('-y, --yes', 'Assume that the answer to any confirmation question is yes')
     .option('-d, --defaults', 'Run command using default values for all questions')
     .option('-m, --mirror <url>', 'Mirror host used to download forge release')

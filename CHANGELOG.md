@@ -1,4 +1,4 @@
-## 0.39.5 (October 09, 2019)
+## 0.39.6 (October 10, 2019)
 
 - fix: stop a not existed web should exit normally
 - feat: make `--config-path` work again #172

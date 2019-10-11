@@ -125,7 +125,7 @@ Examples:
 
   Please install a forge-release before running any other commands
   > forge install latest
-  > forge install --mirror http://arcblock.oss-cn-beijing.aliyuncs.com
+  > forge install --mirror https://releases.arcblockio.cn
 
   Curious about how to use a subcommand?
   > forge help install

@@ -1,3 +1,7 @@
+## 0.39.9 (October 11, 2019)
+
+- fix subcomamnds chain requirements errors #270
+
 ## 0.39.8 (October 10, 2019)
 
 - rename `--npmRegistry` to `--npm-registry`.

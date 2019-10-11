@@ -1,6 +1,7 @@
 const shell = require('shelljs');
 const chalk = require('chalk');
 const { cli, action } = require('core/cli');
+const { getTopRunningChains } = require('core/forge-process');
 const { execute, run } = require('./display');
 
 cli(
@@ -12,6 +13,8 @@ cli(
       forgeRelease: false,
       runningNode: true,
       rpcClient: true,
+      chainName: getTopRunningChains,
+      currentChainRunning: true,
     },
     options: [
       ['-d, --show-txs', 'Show transaction details'],

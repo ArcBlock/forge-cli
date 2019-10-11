@@ -1,7 +1,7 @@
 const shell = require('shelljs');
 const chalk = require('chalk');
 const { cli, action } = require('core/cli');
-const { getTopRunningChains } = require('core/libs/common');
+const { getTopRunningChains } = require('core/forge-process');
 const { execute, run } = require('./state');
 
 cli('status [type]', 'List info of the running chain/node', input => action(execute, run, input), {

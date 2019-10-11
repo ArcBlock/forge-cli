@@ -1,6 +1,7 @@
 const shell = require('shelljs');
 const chalk = require('chalk');
 const { cli, action } = require('core/cli');
+const { getTopRunningChains } = require('core/forge-process');
 const { execute, run } = require('./display');
 
 cli('tx [hash]', 'Get a tx detail and display', input => action(execute, run, input), {
@@ -9,6 +10,8 @@ cli('tx [hash]', 'Get a tx detail and display', input => action(execute, run, in
     runningNode: true,
     rpcClient: true,
     wallet: false,
+    chainName: getTopRunningChains,
+    currentChainRunning: true,
   },
   options: [],
   handlers: {

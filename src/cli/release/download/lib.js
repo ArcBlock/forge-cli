@@ -282,5 +282,6 @@ async function download({
 module.exports = {
   formatVersion,
   download,
+  downloadAsset,
   DOWNLOAD_FLAGS,
 };

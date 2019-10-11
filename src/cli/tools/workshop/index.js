@@ -1,6 +1,7 @@
 const shell = require('shelljs');
 const chalk = require('chalk');
 const { cli, action } = require('core/cli');
+const { getTopRunningChains } = require('core/forge-process');
 const { execute, run } = require('./workshop');
 
 cli('workshop [action]', 'Start/stop the dApps workshop', input => action(execute, run, input), {
@@ -9,6 +10,8 @@ cli('workshop [action]', 'Start/stop the dApps workshop', input => action(execut
     runningNode: true,
     rpcClient: true,
     wallet: false,
+    chainName: getTopRunningChains,
+    currentChainRunning: true,
   },
   handlers: {
     '--help': () => {

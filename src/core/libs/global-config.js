@@ -10,6 +10,7 @@ function getDefaultGlobalConfig() {
     defaults: false,
     mirror: undefined,
     moderatorSecretKey: undefined,
+    releaseDir: undefined,
     npmRegistry: registryUrl(),
   };
 }

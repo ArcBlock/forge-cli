@@ -5,7 +5,7 @@ const { execute, run } = require('./list');
 cli('chain:ls', 'List all chains', input => action(execute, run, input), {
   alias: 'chains',
   requirements: {
-    forgeRelease: true,
+    forgeRelease: false,
     rpcClient: false,
     runningNode: false,
     wallet: false,

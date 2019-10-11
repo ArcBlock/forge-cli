@@ -8,6 +8,8 @@ cli('ls', 'List forge releases installed locally', input => action(execute, run,
     runningNode: false,
     rpcClient: false,
     wallet: false,
+    chainName: false,
+    chainExists: false,
   },
   options: [],
 });

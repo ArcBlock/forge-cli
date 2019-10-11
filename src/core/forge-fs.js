@@ -82,10 +82,8 @@ function isFile(x) {
   return fs.existsSync(x) && fs.statSync(x).isFile();
 }
 
-async function listReleases() {
+async function getLocalReleases() {
   const { release } = REQUIRED_DIRS;
-  const platform = await getPlatform();
-  const remoteReleasesInfo = (await fetchReleaseAssetsInfo(platform)) || [];
   const localAllAssetNames = fs.readdirSync(release);
   const versionAssetsMap = {};
   localAllAssetNames.forEach(releaseName => {
@@ -106,6 +104,14 @@ async function listReleases() {
       });
     }
   });
+
+  return versionAssetsMap;
+}
+
+async function listReleases() {
+  const platform = await getPlatform();
+  const remoteReleasesInfo = (await fetchReleaseAssetsInfo(platform)) || [];
+  const versionAssetsMap = await getLocalReleases();
 
   const result = [];
 
@@ -458,6 +464,7 @@ module.exports = {
   getGlobalForgeVersion,
   getChainReleaseFilePath,
   getChainWorkshopDirectory,
+  getLocalReleases,
   getReleaseDir,
   getReleaseAssets,
   getRootConfigDirectory,

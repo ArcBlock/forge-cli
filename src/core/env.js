@@ -59,9 +59,13 @@ async function setupEnv(requirements, args = {}) {
   }
 
   await ensureNonRoot();
-
   ensureRequiredDirs();
-  await checkUpdate(args);
+
+  try {
+    await checkUpdate(args);
+  } catch (error) {
+    debug(error);
+  }
 
   await ensureChainName(requirements.chainName, requirements.chainExists, args);
   if (process.env.FORGE_CURRENT_CHAIN) {

@@ -25,7 +25,7 @@ Examples:
   - ${chalk.cyan('forge download 0.38.7')}    download forge v0.38.7
   - ${chalk.cyan('forge download v0.38.7')}   download forge v0.38.7
   - ${chalk.cyan(
-    'forge download --mirror http://arcblock.oss-cn-beijing.aliyuncs.com'
+    'forge download --mirror http://arcblockcn.oss-cn-beijing.aliyuncs.com'
   )}      specify a mirror
         `);
       },

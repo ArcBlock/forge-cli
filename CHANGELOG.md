@@ -1,3 +1,7 @@
+## 0.39.10 (October 11, 2019)
+
+- fix chain:ls and ls command's chain name requirement error
+
 ## 0.39.9 (October 11, 2019)
 
 - fix subcomamnds chain requirements errors #270

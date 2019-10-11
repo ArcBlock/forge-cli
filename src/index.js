@@ -68,7 +68,7 @@ Examples:
 
   Please install a forge-release before running any other commands
   > ${chalk.cyan('forge install latest')}
-  > ${chalk.cyan('forge install --mirror http://arcblock.oss-cn-beijing.aliyuncs.com')}
+  > ${chalk.cyan('forge install --mirror https://releases.arcblockio.cn')}
 
   Curious about how to use a subcommand?
   > ${chalk.cyan('forge help install')}

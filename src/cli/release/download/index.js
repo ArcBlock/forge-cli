@@ -1,7 +1,10 @@
 const shell = require('shelljs');
 const chalk = require('chalk');
 const { cli, action } = require('core/cli');
+const { getMinSupportForgeVersion } = require('core/libs/common');
 const { execute, run } = require('./download');
+
+const minSupportVersion = getMinSupportForgeVersion();
 
 cli(
   'download [version]',
@@ -22,11 +25,9 @@ cli(
         shell.echo(`
 Examples:
   - ${chalk.cyan('forge download')}           download latest version
-  - ${chalk.cyan('forge download 0.22.0')}    download forge v0.22.0
-  - ${chalk.cyan('forge download v0.22.0')}   download forge v0.22.0
-  - ${chalk.cyan(
-    'forge download --mirror http://arcblock.oss-cn-beijing.aliyuncs.com'
-  )}      specify a mirror
+  - ${chalk.cyan(`forge download ${minSupportVersion}`)}    download forge v${minSupportVersion}
+  - ${chalk.cyan(`forge download v${minSupportVersion}`)}   download forge v${minSupportVersion}
+  - ${chalk.cyan('forge download --mirror https://releases.arcblockio.cn')}      specify a mirror
         `);
       },
     },

@@ -2,6 +2,7 @@
 const { cli, action } = require('core/cli');
 const chalk = require('chalk');
 const { print } = require('core/util');
+const { getTopRunningChains } = require('core/forge-process');
 const { execute, run } = require('./remote');
 
 cli(
@@ -14,6 +15,8 @@ cli(
       runningNode: false,
       rpcClient: false,
       wallet: false,
+      chainName: getTopRunningChains,
+      currentChainRunning: true,
     },
     options: [],
     handlers: {

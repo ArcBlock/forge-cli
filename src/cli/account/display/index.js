@@ -1,6 +1,7 @@
 const chalk = require('chalk');
 const shell = require('shelljs');
 const { cli, action } = require('core/cli');
+const { getTopRunningChains } = require('core/forge-process');
 const { execute, run } = require('./display');
 
 cli('account <address>', 'Get an account info by address', input => action(execute, run, input), {
@@ -14,7 +15,8 @@ cli('account <address>', 'Get an account info by address', input => action(execu
       }
       return false;
     },
-    chainExists: true,
+    currentChainRunning: true,
+    chainName: getTopRunningChains,
   },
   options: [],
   handlers: {

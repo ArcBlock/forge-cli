@@ -6,7 +6,8 @@ const yaml = require('yaml');
 const { symbols, getSpinner } = require('core/ui');
 const debug = require('core/debug')('compile');
 const { isFile, isDirectory } = require('core/forge-fs');
-const { download } = require('../../node/install/install');
+const { printError } = require('core/util');
+const { downloadAsset } = require('../../release/download/lib');
 
 const { DEFAULT_MIRROR, REQUIRED_DIRS } = require('../../../constant');
 
@@ -78,7 +79,7 @@ async function ensureForgeCompiler() {
   // Download forge-compiler binary
   const version = fetchCompilerVersion();
   const asset = fetchCompilerInfo(version);
-  const compilerPath = await download(asset);
+  const compilerPath = await downloadAsset(asset);
   debug('download compiler to: ', compilerPath);
   shell.mv(compilerPath, targetPath);
   shell.exec(`chmod a+x ${targetPath}`);
@@ -253,7 +254,7 @@ async function main({ args: [dir], opts: { targets = 'elixir,javascript' } }) {
     }
   } catch (err) {
     debug.error(err);
-    shell.echo(`${symbols.error} transaction protocol compile failed`);
+    printError('transaction protocol compile failed');
   }
 }
 

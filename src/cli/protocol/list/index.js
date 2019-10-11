@@ -1,5 +1,6 @@
 // eslint-disable-next-line import/no-unresolved
 const { cli, action } = require('core/cli');
+const { getTopRunningChains } = require('core/forge-process');
 const { execute, run } = require('./list');
 
 cli('protocol:ls', 'List transaction protocols', input => action(execute, run, input), {
@@ -8,6 +9,8 @@ cli('protocol:ls', 'List transaction protocols', input => action(execute, run, i
     runningNode: true,
     rpcClient: true,
     wallet: false,
+    chainName: getTopRunningChains,
+    currentChainRunning: true,
   },
   options: [],
 });

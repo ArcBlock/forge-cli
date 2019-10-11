@@ -1,6 +1,7 @@
 const shell = require('shelljs');
 const chalk = require('chalk');
 const { cli, action } = require('core/cli');
+const { getTopRunningChains } = require('core/forge-process');
 const { execute, run } = require('./deactivate');
 
 cli(
@@ -13,6 +14,8 @@ cli(
       runningNode: true,
       rpcClient: true,
       wallet: false,
+      chainName: getTopRunningChains,
+      currentChainRunning: true,
     },
     options: [],
     handlers: {

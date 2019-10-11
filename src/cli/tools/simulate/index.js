@@ -1,5 +1,6 @@
 // eslint-disable-next-line import/no-unresolved
 const { cli, action } = require('core/cli');
+const { getTopRunningChains } = require('core/forge-process');
 const { execute, run } = require('./simulate');
 
 cli(
@@ -12,6 +13,8 @@ cli(
       runningNode: true,
       rpcClient: false,
       wallet: false,
+      chainName: getTopRunningChains,
+      currentChainRunning: true,
     },
     options: [],
   }

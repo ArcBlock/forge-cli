@@ -14,7 +14,6 @@ cli(
       forgeRelease: true,
       runningNode: false,
       rpcClient: false,
-      currentChainRunning: true,
       chainName: getTopRunningChains,
     },
     parseArgs: chainName => ({ chainName }),

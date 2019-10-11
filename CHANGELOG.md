@@ -1,3 +1,11 @@
+## 0.39.11 (October 11, 2019)
+
+- Merge branch 'master' into chore/updates
+- chore: use official aliyun oss
+- chore: update download help
+- chore: support `releaseDir` in global config
+- chore: bump forge sdk version
+
 ## 0.39.10 (October 11, 2019)
 
 - fix chain:ls and ls command's chain name requirement error

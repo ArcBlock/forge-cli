@@ -33,7 +33,7 @@ Examples:
     `forge install v${minSupportVersion}`
   )}     Download and activate forge v${minSupportVersion}
   - ${chalk.cyan(
-    'forge install --mirror http://arcblockcn.oss-cn-beijing.aliyuncs.com'
+    'forge install --mirror http://releases.arcblockio.cn'
   )}      Install latest forge from custom mirror
         `);
       },

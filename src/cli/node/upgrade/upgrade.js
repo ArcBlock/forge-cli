@@ -21,6 +21,7 @@ const {
   updateChainConfig,
   updateReleaseYaml,
 } = require('core/forge-fs');
+const { getChainVersion } = require('core/libs/common');
 const { isForgeStartedByStarter } = require('core/forge-process');
 const debug = require('core/debug')('upgrade');
 const { ensureModerator } = require('core/moderator');
@@ -138,7 +139,10 @@ async function main({ args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
       process.exit(0);
     }
 
-    const moderator = await ensureModerator(client);
+    const currentVersion = getChainVersion(chainName);
+    const moderator = await ensureModerator(client, {
+      currentVersion,
+    });
     if (!moderator) {
       return;
     }

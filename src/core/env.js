@@ -8,7 +8,7 @@ const execa = require('execa');
 const semver = require('semver');
 const inquirer = require('inquirer');
 const isElevated = require('is-elevated');
-const { get, set } = require('lodash');
+const { get, set, pickBy } = require('lodash');
 const GRpcClient = require('@arcblock/grpc-client');
 const { parse } = require('@arcblock/forge-config');
 
@@ -107,6 +107,12 @@ async function setupEnv(requirements, args = {}) {
   if (requirements.wallet) {
     await ensureWallet(args);
   }
+
+  const result = {
+    chainName: process.env.FORGE_CURRENT_CHAIN,
+  };
+
+  return pickBy(result, v => v !== undefined);
 }
 
 async function ensureRunningChain(requirement) {

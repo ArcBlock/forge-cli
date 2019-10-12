@@ -1,11 +1,12 @@
 const base64 = require('base64-url');
-const chalk = require('chalk');
+const get = require('lodash/get');
 const semver = require('semver');
+const TOML = require('@iarna/toml');
 const { fromSecretKey } = require('@arcblock/forge-wallet');
 const { bytesToHex, hexToBytes, isHexStrict } = require('@arcblock/forge-util');
 
 const { print, printError, printInfo, printSuccess } = require('core/util');
-const { config } = require('core/env');
+const debug = require('core/debug')('moderator');
 
 const { getGlobalConfig } = require('./libs/global-config');
 
@@ -26,83 +27,66 @@ function getModeratorSecretKey() {
 
 function getModerator() {
   const sk = getModeratorSecretKey();
-  if (sk) {
-    const wallet = fromSecretKey(sk);
-    const pk = base64.escape(base64.encode(hexToBytes(wallet.publicKey)));
-    return {
-      address: wallet.toAddress(),
-      pk,
-      publicKey: pk, // TODO: removed?
-    };
+  if (!sk) {
+    printInfo('moderator sk was not set');
+    return undefined;
   }
 
-  return undefined;
+  const wallet = fromSecretKey(sk);
+  const pk = base64.escape(base64.encode(hexToBytes(wallet.publicKey)));
+  return {
+    address: wallet.toAddress(),
+    pk,
+    publicKey: pk, // TODO: removed?
+  };
 }
 
-function ensureModeratorDeclared(client, wallet) {
-  return new Promise((resolve, reject) => {
-    const stream = client.getAccountState({ address: wallet.toAddress() });
-    let account = null;
-    stream.on('data', ({ code, state }) => {
-      if (code === 0 && state) {
-        account = state;
-      }
-    });
-    stream.on('end', async () => {
-      if (account) {
-        resolve(account);
-      } else {
-        const hash = await client.sendDeclareTx({
-          tx: {
-            itx: { moniker: 'moderator' },
-          },
-          wallet,
-        });
-        printInfo(`moderator declared ${hash}`);
-        resolve(hash);
-      }
-    });
+const getModeratorFromChain = async (client, currentVersion) => {
+  if (semver.lt(currentVersion, '0.38.0')) {
+    const res = await client.getConfig();
+    const configString = get(res.$format(), 'config');
+    const config = TOML.parse(configString);
 
-    stream.on('error', reject);
-  });
-}
+    return get(config, 'forge.moderator', null);
+  }
+
+  const res = await client.getForgeState();
+  return get(res.$format(), 'state.accountConfig.moderator', null);
+};
 
 // eslint-disable-next-line consistent-return
-const ensureModerator = async client => {
-  const moderator = getModerator();
-  printInfo(`moderator address ${moderator.toAddress()}`);
+const ensureModerator = async (client, { currentVersion }) => {
+  debug('ensureModerator:currentVersion', currentVersion);
 
-  let moderatorKey = 'forge.prime.moderator';
-  const currentVersion = config.get('cli.currentVersion');
-
-  if (semver.lt(currentVersion, '0.38.0')) {
-    moderatorKey = 'forge.moderator';
-  }
-
-  if (!config.get(`${moderatorKey}.address`)) {
-    printError('Abort because forge.moderator is not set in config file');
-    printInfo(
-      `Please add following content in config file ${chalk.cyan(
-        config.get('cli.forgeConfigPath')
-      )},`
-    );
-    printInfo(`${chalk.red('then restart current forge:')}`);
-    print(`
-[${moderatorKey}]
-address = "${moderator.toAddress()}"
-publicKey = "${base64.escape(base64.encode(hexToBytes(moderator.publicKey)))}"
-`);
-
+  const sk = getModeratorSecretKey();
+  if (!sk) {
+    printError('The moderator sk was not set in your environment.');
+    print();
+    printInfo('The moderator sk can be set by ways:');
+    print('  1. set moderatorSecretKey in ~/.forgerc.yml:');
+    print('    moderatorSecretKey: xxx');
+    print('  2. set FORGE_MODERATOR_SK in your shell profile:');
+    print('    export FORGE_MODERATOR_SK=xxx');
+    print();
     process.exit(1);
   }
 
-  try {
-    await ensureModeratorDeclared(client, moderator);
-    printSuccess('moderator declared on chain');
-    return moderator;
-  } catch (err) {
-    printError(`${err.message}`);
+  const chainModerator = await getModeratorFromChain(client, currentVersion);
+  debug('moderator on chain', chainModerator);
+
+  if (!chainModerator) {
+    printError('There is not moderator set on the chain, so the operation can\'t be done.'); // prettier-ignore
+    process.exit(1);
   }
+
+  const localModerator = fromSecretKey(sk);
+  if (localModerator.toAddress() !== chainModerator.address) {
+    printError('Local moderator sk does not match the chain\'s moderator'); // prettier-ignore
+    process.exit(1);
+  }
+
+  printSuccess('moderator checked success');
+  return localModerator;
 };
 
 module.exports = {

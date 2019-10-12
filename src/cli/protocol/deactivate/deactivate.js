@@ -3,6 +3,7 @@ const inquirer = require('inquirer');
 const chalk = require('chalk');
 const { createRpcClient } = require('core/env');
 const { printError, printWarning, printInfo, printSuccess } = require('core/util');
+const { getChainVersion } = require('core/libs/common');
 const { ensureModerator } = require('core/moderator');
 const { ensureProtocols } = require('../list/list');
 
@@ -22,9 +23,10 @@ const doDeactivate = async (client, address, moderator) => {
   }
 };
 
-async function main({ args: [id = ''] }) {
+async function main({ args: [id = ''], opts: { chainName } }) {
   const client = createRpcClient();
-  const moderator = await ensureModerator(client);
+  const currentVersion = getChainVersion(chainName);
+  const moderator = await ensureModerator(client, { currentVersion });
   const choices = await ensureProtocols(client, 'deactivate_protocol');
 
   // Fast return if all protocols are running

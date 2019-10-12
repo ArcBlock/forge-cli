@@ -98,7 +98,11 @@ function initCli(program) {
           Object.assign(opts, pickBy(x.parseArgs(...params) || {}), v => v !== undefined);
         }
 
-        await setupEnv(x.requirements, opts);
+        const configs = await setupEnv(x.requirements, opts);
+        if (configs) {
+          Object.assign(opts, configs);
+        }
+
         await x.handler({
           args: params.filter(p => typeof p === 'string'),
           opts,

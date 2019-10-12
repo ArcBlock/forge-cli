@@ -8,10 +8,11 @@ const { symbols } = require('core/ui');
 const { sleep } = require('core/util');
 const { isFile } = require('core/forge-fs');
 const { createRpcClient } = require('core/env');
+const { getChainVersion } = require('core/libs/common');
 const { ensureModerator } = require('core/moderator');
 const debug = require('core/debug')('deploy');
 
-async function main({ args: [itxPath] }) {
+async function main({ args: [itxPath], opts: { chainName } }) {
   try {
     const itxFile = path.resolve(itxPath);
     if (!isFile(itxFile)) {
@@ -20,7 +21,8 @@ async function main({ args: [itxPath] }) {
     }
 
     const client = createRpcClient();
-    const moderator = await ensureModerator(client);
+    const currentVersion = getChainVersion(chainName);
+    const moderator = await ensureModerator(client, { currentVersion });
     if (!moderator) {
       return;
     }

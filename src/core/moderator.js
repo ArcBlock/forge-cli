@@ -75,7 +75,7 @@ const ensureModerator = async (client, { currentVersion }) => {
   debug('moderator on chain', chainModerator);
 
   if (!chainModerator) {
-    printError('There is not moderator set on the chain, so the operation can\'t be done.'); // prettier-ignore
+    printError('There is no moderator on the chain, so the operation can\'t be done.'); // prettier-ignore
     process.exit(1);
   }
 

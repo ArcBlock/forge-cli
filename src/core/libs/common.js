@@ -2,6 +2,7 @@
  * Common functions, different from `core/util`, this module is at higher level than `core/util`
  */
 
+const os = require('os');
 const semver = require('semver');
 
 const { getAllChainNames, getLocalReleases, updateReleaseYaml } = require('../forge-fs');
@@ -60,11 +61,17 @@ function getChainVersion(chainName) {
   return chain ? chain[1].version : '';
 }
 
+function getOSUserInfo() {
+  const { shell: envShell, homedir } = os.userInfo();
+  return { shell: process.env.SHELL || envShell, homedir: process.env.HOME || homedir };
+}
+
 module.exports = {
   applyForgeVersion,
   getChainVersion,
   getDefaultChainNameHandlerByChains,
   getMinSupportForgeVersion,
+  getOSUserInfo,
   getTopChainName,
   hasChains,
   hasReleases,

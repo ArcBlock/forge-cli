@@ -82,3 +82,4 @@ async function main() {
 exports.run = main;
 exports.execute = main;
 exports.ensureProtocols = ensureProtocols;
+exports.fetchProtocols = fetchProtocols;

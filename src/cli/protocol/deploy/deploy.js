@@ -1,22 +1,24 @@
 const path = require('path');
-const shell = require('shelljs');
 const chalk = require('chalk');
 const base64 = require('base64-url');
 const { toItxAddress } = require('@arcblock/did-util');
 const { bytesToHex } = require('@arcblock/forge-util');
-const { symbols } = require('core/ui');
-const { sleep } = require('core/util');
+const { messages } = require('@arcblock/forge-proto');
+const { print, printError, printInfo, printSuccess, sleep } = require('core/util');
 const { isFile } = require('core/forge-fs');
 const { createRpcClient } = require('core/env');
 const { getChainVersion } = require('core/libs/common');
 const { ensureModerator } = require('core/moderator');
+const { pretty } = require('core/ui');
 const debug = require('core/debug')('deploy');
+
+const { fetchProtocols } = require('../list/list');
 
 async function main({ args: [itxPath], opts: { chainName } }) {
   try {
     const itxFile = path.resolve(itxPath);
     if (!isFile(itxFile)) {
-      shell.echo(`${symbols.error} itx.json file ${itxFile} not exists`);
+      printError(`itx.json file ${itxFile} not exists`);
       process.exit(1);
     }
 
@@ -28,7 +30,7 @@ async function main({ args: [itxPath], opts: { chainName } }) {
     }
 
     // eslint-disable-next-line no-underscore-dangle
-    shell.echo(`${symbols.info} deploy protocol to ${client._endpoint}`);
+    printInfo(`deploy protocol to ${client._endpoint}`);
 
     // eslint-disable-next-line
     const json = require(itxFile);
@@ -45,7 +47,21 @@ async function main({ args: [itxPath], opts: { chainName } }) {
     const DeployProtocolTx = client.getType('DeployProtocolTx');
     const itxObj = DeployProtocolTx.deserializeBinary(itxBuffer).toObject();
     itxObj.address = toItxAddress(itxObj, 'DeployProtocolTx');
-    shell.echo('transaction protocol detail', itxObj);
+
+    const protocols = await fetchProtocols(client);
+    const protocolOnChain = protocols.find(
+      ({ name, version }) => itxObj.name === name && itxObj.version === version
+    );
+
+    if (protocolOnChain) {
+      protocolOnChain.status = messages.ProtocolStatus[protocolOnChain.status].toLowerCase();
+      printError('Deploy failed: the protocol has been deployed.');
+      printInfo('Protocol info:');
+      print(pretty(protocolOnChain));
+      process.exit(1);
+    }
+
+    print('transaction protocol detail', itxObj);
 
     const hash = await client.sendDeployProtocolTx({
       tx: {
@@ -54,12 +70,12 @@ async function main({ args: [itxPath], opts: { chainName } }) {
       },
       wallet: moderator,
     });
-    shell.echo(`${symbols.success} transaction protocol deploy success`);
+    printSuccess('transaction protocol deploy success');
     await sleep(5000);
-    shell.echo(`${symbols.info} inspect tx with ${chalk.cyan(`forge tx ${hash}`)}`);
+    printInfo(`inspect tx with ${chalk.cyan(`forge tx ${hash}`)}`);
   } catch (err) {
     debug.error(err);
-    shell.echo(`${symbols.error} transaction protocol deploy failed: ${err.message}`);
+    printError(`transaction protocol deploy failed: ${err.message}`);
   }
 }
 

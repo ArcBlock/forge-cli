@@ -55,14 +55,7 @@ const config = { cli: {} }; // global shared forge-cli run time config
  * @param {*} args
  */
 async function setupEnv(requirements, args = {}) {
-  if (args.configPath) {
-    if (!fs.existsSync(args.configPath)) {
-      throw new Error(`config path does not exit, config path: ${args.configPath}`);
-    }
-
-    process.env.FORGE_CONFIG = args.configPath;
-  }
-
+  ensureEnv(args);
   await ensureNonRoot();
   ensureRequiredDirs();
 
@@ -382,6 +375,20 @@ async function ensureNonRoot() {
   } catch (err) {
     debug.error(err);
     shell.echo(`${symbols.error} cannot get current username`);
+  }
+}
+
+function ensureEnv({ configPath }) {
+  if (process.env.FORGE_CONFIG) {
+    if (!fs.existsSync(process.env.FORGE_CONFIG)) {
+      throw new Error(`env FORGE_CONFIG is invalid: ${process.env.FORGE_CONFIG}`);
+    }
+  } else if (configPath) {
+    if (!fs.existsSync(configPath)) {
+      throw new Error(`config path does not exit, config path: ${configPath}`);
+    }
+
+    process.env.FORGE_CONFIG = configPath;
   }
 }
 

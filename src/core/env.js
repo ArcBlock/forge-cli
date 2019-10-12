@@ -23,7 +23,12 @@ const { ensureForgeRelease } = require('core/forge-config');
 const { isForgeStarted, getProcessTag, getAllProcesses } = require('./forge-process');
 const { inquire } = require('./libs/interaction');
 const { printError, print, printInfo, printLogo, printSuccess, printWarning } = require('./util');
-const { hasChains, getTopChainName, DEFAULT_CHAIN_NAME_RETURN } = require('./libs/common');
+const {
+  hasChains,
+  getOSUserInfo,
+  getTopChainName,
+  DEFAULT_CHAIN_NAME_RETURN,
+} = require('./libs/common');
 
 const { REQUIRED_DIRS } = require('../constant');
 const { version } = require('../../package.json');
@@ -451,6 +456,9 @@ function makeNativeCommandRunner(executable, name, { env } = {}) {
         debug('makeNativeCommandRunner env:', env);
         command = `${env} ${command}`;
       }
+
+      const { shell: envShell, homedir } = getOSUserInfo();
+      command = `SHELL=${envShell} HOME=${homedir} ${command}`;
 
       debug(`runNativeCommand.${executable}:`, command);
       return shell.exec(command, options);

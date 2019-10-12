@@ -1,3 +1,7 @@
+## 0.39.12 (October 12, 2019)
+
+- fix: add SHELL and HOME variable when start forge*_release #280
+
 ## 0.39.11 (October 11, 2019)
 
 - Merge branch 'master' into chore/updates

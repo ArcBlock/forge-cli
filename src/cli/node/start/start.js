@@ -8,6 +8,7 @@ const { config } = require('core/env');
 const debug = require('core/debug')('start');
 const { checkStartError } = require('core/forge-fs');
 const { sleep, print, printError, printInfo } = require('core/util');
+const { getOSUserInfo } = require('core/libs/common');
 const { isForgeStarted, getProcessTag, getAllRunningProcesses } = require('core/forge-process');
 
 const { printAllProcesses } = require('../ps/ps');
@@ -47,16 +48,18 @@ async function start(chainName, dryRun = false, allowMultiChain) {
 
   const { starterBinPath, forgeBinPath, forgeConfigPath } = config.get('cli');
 
+  const { shell: envShell, homedir } = getOSUserInfo();
+
+  let startCommandPrefix = `SHELL=${envShell} HOME=${homedir}`;
   // add `-sname` parameter to enable start multiple forge processes
-  let startCommandPrefix = '';
   if (allowMultiChain) {
-    startCommandPrefix = `ERL_AFLAGS="-sname ${getProcessTag(
+    startCommandPrefix = `${startCommandPrefix} ERL_AFLAGS="-sname ${getProcessTag(
       'forge',
       chainName,
       allowMultiChain
     )}" FORGE_CONFIG=${forgeConfigPath} ${forgeBinPath}`;
   } else {
-    startCommandPrefix = `ERL_AFLAGS="-sname ${getProcessTag(
+    startCommandPrefix = `${startCommandPrefix} ERL_AFLAGS="-sname ${getProcessTag(
       'starter',
       chainName,
       allowMultiChain

@@ -3,7 +3,8 @@ const inquirer = require('inquirer');
 const chalk = require('chalk');
 const { createRpcClient } = require('core/env');
 const { printError, printWarning, printInfo, printSuccess } = require('core/util');
-const { ensureModerator } = require('../deploy/deploy');
+const { ensureModerator } = require('core/moderator');
+const { getChainVersion } = require('core/libs/common');
 const { ensureProtocols } = require('../list/list');
 
 const doActivate = async (client, address, moderator) => {
@@ -22,9 +23,10 @@ const doActivate = async (client, address, moderator) => {
   }
 };
 
-async function main({ args: [id = ''] }) {
+async function main({ args: [id = ''], opts: { chainName } }) {
   const client = createRpcClient();
-  const moderator = await ensureModerator(client);
+  const currentVersion = getChainVersion(chainName);
+  const moderator = await ensureModerator(client, { currentVersion });
   const choices = await ensureProtocols(client, 'activate_protocol');
 
   // Fast return if all protocols are running

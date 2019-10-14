@@ -1,3 +1,12 @@
+## 0.39.13 (October 12, 2019)
+
+- chore: update typo
+- chore: make output more friendly if the protocol has been deployed
+- fix: forge chain:ls not list all protocols
+- fix moderator validation error #263
+- chore: check FORGE_CONFIG is valid
+- refact: unified reading of moderator
+
 ## 0.39.12 (October 12, 2019)
 
 - fix: add SHELL and HOME variable when start forge*_release #280

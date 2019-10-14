@@ -8,7 +8,7 @@ const execa = require('execa');
 const semver = require('semver');
 const inquirer = require('inquirer');
 const isElevated = require('is-elevated');
-const { get, set } = require('lodash');
+const { get, set, pickBy } = require('lodash');
 const GRpcClient = require('@arcblock/grpc-client');
 const { parse } = require('@arcblock/forge-config');
 
@@ -55,14 +55,7 @@ const config = { cli: {} }; // global shared forge-cli run time config
  * @param {*} args
  */
 async function setupEnv(requirements, args = {}) {
-  if (args.configPath) {
-    if (!fs.existsSync(args.configPath)) {
-      throw new Error(`config path does not exit, config path: ${args.configPath}`);
-    }
-
-    process.env.FORGE_CONFIG = args.configPath;
-  }
-
+  ensureEnv(args);
   await ensureNonRoot();
   ensureRequiredDirs();
 
@@ -74,7 +67,7 @@ async function setupEnv(requirements, args = {}) {
 
   await ensureChainName(requirements.chainName, requirements.chainExists, args);
   if (process.env.FORGE_CURRENT_CHAIN) {
-    printInfo(`working on ${chalk.cyan(process.env.FORGE_CURRENT_CHAIN)} chain`);
+    printInfo(`Working on ${chalk.cyan(process.env.FORGE_CURRENT_CHAIN)} chain`);
   }
 
   await ensureChainExists({
@@ -114,6 +107,12 @@ async function setupEnv(requirements, args = {}) {
   if (requirements.wallet) {
     await ensureWallet(args);
   }
+
+  const result = {
+    chainName: process.env.FORGE_CURRENT_CHAIN,
+  };
+
+  return pickBy(result, v => v !== undefined);
 }
 
 async function ensureRunningChain(requirement) {
@@ -382,6 +381,20 @@ async function ensureNonRoot() {
   } catch (err) {
     debug.error(err);
     shell.echo(`${symbols.error} cannot get current username`);
+  }
+}
+
+function ensureEnv({ configPath }) {
+  if (process.env.FORGE_CONFIG) {
+    if (!fs.existsSync(process.env.FORGE_CONFIG)) {
+      throw new Error(`env FORGE_CONFIG is invalid: ${process.env.FORGE_CONFIG}`);
+    }
+  } else if (configPath) {
+    if (!fs.existsSync(configPath)) {
+      throw new Error(`config path does not exit, config path: ${configPath}`);
+    }
+
+    process.env.FORGE_CONFIG = configPath;
   }
 }
 

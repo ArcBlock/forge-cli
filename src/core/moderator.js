@@ -1,6 +1,7 @@
 const base64 = require('base64-url');
 const get = require('lodash/get');
 const semver = require('semver');
+const chalk = require('chalk');
 const TOML = require('@iarna/toml');
 const { fromSecretKey } = require('@arcblock/forge-wallet');
 const { bytesToHex, hexToBytes, isHexStrict } = require('@arcblock/forge-util');
@@ -60,12 +61,16 @@ const ensureModerator = async (client, { currentVersion }) => {
 
   const sk = getModeratorSecretKey();
   if (!sk) {
-    printError('The moderator sk was not set in your environment.');
+    printError('The moderator secret key not found in your environment.');
     print();
-    printInfo('The moderator sk can be set by ways:');
-    print('  1. set moderatorSecretKey in ~/.forgerc.yml:');
+    printInfo('The moderator secret key can be set in either of the following ways:');
+    print(`  1. set ${chalk.cyan('moderatorSecretKey')} in ${chalk.cyan('~/.forgerc.yml')}:`);
     print('    moderatorSecretKey: xxx');
-    print('  2. set FORGE_MODERATOR_SK in your shell profile:');
+    print(
+      `  2. set ${chalk.cyan('FORGE_MODERATOR_SK')} in ${chalk.cyan('~/.bashrc')} or ${chalk.cyan(
+        '~/.zshrc'
+      )}:`
+    );
     print('    export FORGE_MODERATOR_SK=xxx');
     print();
     process.exit(1);
@@ -81,7 +86,10 @@ const ensureModerator = async (client, { currentVersion }) => {
 
   const localModerator = fromSecretKey(sk);
   if (localModerator.toAddress() !== chainModerator.address) {
-    printError('Local moderator sk does not match the chain\'s moderator'); // prettier-ignore
+    printError('Abort because moderator address from your env does not match the moderator in chain state'); // prettier-ignore
+    print(`  - Local moderator: ${chalk.cyan(localModerator.toAddress())}`);
+    print(`  - Remote moderator: ${chalk.cyan(chainModerator.address)}`);
+    printInfo('To continue upgrade, please set the moderator secret key that have the same address in chain state in your env'); // prettier-ignore
     process.exit(1);
   }
 

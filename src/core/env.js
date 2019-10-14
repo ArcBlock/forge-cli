@@ -67,7 +67,7 @@ async function setupEnv(requirements, args = {}) {
 
   await ensureChainName(requirements.chainName, requirements.chainExists, args);
   if (process.env.FORGE_CURRENT_CHAIN) {
-    printInfo(`working on ${chalk.cyan(process.env.FORGE_CURRENT_CHAIN)} chain`);
+    printInfo(`Working on ${chalk.cyan(process.env.FORGE_CURRENT_CHAIN)} chain`);
   }
 
   await ensureChainExists({

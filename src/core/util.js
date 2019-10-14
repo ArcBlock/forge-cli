@@ -23,8 +23,8 @@ const debug = require('./debug')('util');
  * @param {object} json object
  * @returns {string} stringified json
  */
-function prettyStringify(json) {
-  return JSON.stringify(json, null, 4);
+function prettyStringify(json, { replacer = null, space = 4 } = {}) {
+  return JSON.stringify(json, replacer, space);
 }
 
 function prettyTime(ms) {
@@ -55,7 +55,7 @@ function sleep(timeout = 1000) {
  * Write log to file
  * @param {array} args
  */
-const logError = args => {
+const logError = (...args) => {
   const content = args.map(item => (item instanceof Error ? item.stack : item)).join(os.EOL);
   if (!fs.existsSync(REQUIRED_DIRS.logs)) {
     fs.mkdirSync(REQUIRED_DIRS.logs, { recursive: true });
@@ -88,7 +88,7 @@ function printWarning(...args) {
 
 function printError(...args) {
   debug(...args);
-  logError(args);
+  logError(...args);
   if (args.length && args[0] instanceof Error) {
     args[0] = args[0].message;
   }
@@ -320,6 +320,7 @@ module.exports = {
   makeRange,
   md5,
   highlightOfList,
+  logError,
   parseTimeStrToMS,
   prettyStringify,
   prettyTime,

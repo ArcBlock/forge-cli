@@ -29,7 +29,7 @@ const getPromptQuestions = defaults => {
       type: 'text',
       name: 'name',
       message: 'blocklet name:',
-      default: () => defaults.name || path.basename(process.cwd()),
+      default: defaults.name,
       validate: input => {
         // prettier-ignore
         if (!input || input.trim().length < 4) {
@@ -49,7 +49,7 @@ const getPromptQuestions = defaults => {
       type: 'autocomplete',
       name: 'group',
       message: 'What\'s group of the blocklet?', // prettier-ignore
-      default: defaults.group || BLOCKLET_GROUPS[0],
+      default: defaults.group,
       source: (_, inp) => {
         const input = inp || '';
         return new Promise(resolve => {
@@ -62,7 +62,7 @@ const getPromptQuestions = defaults => {
       type: 'autocomplete',
       name: 'color',
       message: 'Choose a color for your blocklet:',
-      default: defaults.color || 'primary',
+      default: defaults.color,
       source: (_, inp) => {
         const input = inp || '';
         return new Promise(resolve => {
@@ -75,7 +75,7 @@ const getPromptQuestions = defaults => {
       type: 'text',
       name: 'templates', // For array type parameter
       message: 'Blocklet templates folder name:',
-      default: defaults.templates || 'templates',
+      default: defaults.templates,
       validate: input => {
         if (!input || !input.trim()) return 'folder name should not be empty';
         return true;
@@ -88,7 +88,13 @@ const getPromptQuestions = defaults => {
 
 // Execute the cli silently.
 async function execute({ blockletJSONPath, packageJSONPath, configs }) {
-  print();
+  print('\n');
+
+  if (!fs.existsSync('blocklet.md')) {
+    fs.writeFileSync('blocklet.md', `# ${configs.name}`);
+    printSuccess(`Doc file ${chalk.cyan('blocklet.md')} was created`);
+  }
+
   if (configs.templates && !fs.existsSync(configs.templates)) {
     fs.mkdirSync(configs.templates);
     printSuccess(`Templates dir ${chalk.cyan(configs.templates)} was created`);
@@ -110,9 +116,6 @@ async function execute({ blockletJSONPath, packageJSONPath, configs }) {
     'on-complete': "echo 'no on-complete hooks'", // eslint-disable-line
   };
 
-  fs.writeFileSync(blockletJSONPath, prettyStringify(configs, { space: 2 }));
-  printSuccess(`Wrote to ${blockletJSONPath}`);
-
   const defaultPackageJSON = {
     name: configs.name,
     keywords: [],
@@ -129,12 +132,23 @@ async function execute({ blockletJSONPath, packageJSONPath, configs }) {
     ? JSON.parse(fs.readFileSync(packageJSONPath))
     : defaultPackageJSON;
   Object.assign(originalPackageJSON, pickCommonFieldsInBlockletAndPackage(configs));
-  fs.writeFileSync(packageJSONPath, prettyStringify(originalPackageJSON, { space: 2 }));
+
+  const blockletString = prettyStringify(configs, { space: 2 });
+  fs.writeFileSync(blockletJSONPath, blockletString);
+  printSuccess(`Wrote to ${blockletJSONPath}`);
+
+  const packageString = prettyStringify(originalPackageJSON, { space: 2 });
+  fs.writeFileSync(packageJSONPath, packageString);
   printSuccess(`Wrote to ${packageJSONPath}`);
+
+  print('\nblocklet.json:');
+  print(blockletString);
+  print('\npackage.json:');
+  print(packageString);
 }
 
 // Run the cli interactively
-async function run() {
+async function run({ opts: { defaults, yes } }) {
   const blockletJSONPath = path.join(process.cwd(), 'blocklet.json');
   const packageJSONPath = path.join(process.cwd(), 'package.json');
   let blockletJSON = {};
@@ -161,16 +175,41 @@ async function run() {
     }
   }
 
-  print(
-    'This utility will walk you through create a blocklet.json file and blocklet source code folder.'
-  );
+  print('This utility will walk you through create such files and folders(if not exists):');
+  print('- blocklet.json');
+  print('- blocklet.md');
+  print('- package.json');
+  print('- screenshots/');
+  print('- <templates folder>/(upon your input)');
+  print('\nIt only covers common items, if you want to check all items, please visit:');
+  print('https://github.com/ArcBlock/blocklets#keyinfo-blockletjson\n');
+  print('Press ^C to quit.');
+
   const mergedConfigs = Object.assign(
-    {},
+    {
+      name: path.basename(process.cwd()),
+      group: BLOCKLET_GROUPS[0],
+      color: 'primary',
+      templates: 'templates',
+    },
     blockletJSON,
     pickCommonFieldsInBlockletAndPackage(packageJSON)
   );
 
-  const answers = await inquirer.prompt(getPromptQuestions(mergedConfigs));
+  let answers = {};
+  const questions = getPromptQuestions(mergedConfigs);
+  if (defaults || yes) {
+    answers = questions.reduce((acc, item) => {
+      if (item.default) {
+        acc[item.name] = item.default;
+      }
+
+      return acc;
+    }, {});
+  } else {
+    answers = await inquirer.prompt(questions);
+  }
+
   Object.assign(mergedConfigs, answers);
 
   await execute({ blockletJSONPath, packageJSONPath, configs: mergedConfigs });

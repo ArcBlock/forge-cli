@@ -12,5 +12,4 @@ cli('blocklet:init', 'Init a blocklet project', input => action(execute, run, in
     chainExists: false,
     currentChainRunning: false,
   },
-  options: [],
 });

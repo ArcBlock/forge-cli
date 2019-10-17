@@ -17,7 +17,7 @@ cli('blocklet:use', 'Download and install a blocklet', input => action(execute, 
   },
   options: [
     ['--target <target>', 'Target directory, default is current directory'],
-    ['--localBlocklet <localBlocklet>', 'Local blocklet directory'],
+    ['--local-blocklet <localBlocklet>', 'Local blocklet directory'],
   ],
   handlers: {
     '--help': () => {

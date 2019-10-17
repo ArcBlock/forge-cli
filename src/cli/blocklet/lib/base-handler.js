@@ -70,27 +70,27 @@ class BaseHandler {
       return;
     }
 
-    if (hooks['pre-copy']) {
-      this.execExitOnError(hooks['pre-copy'], { cwd: this.blockletDir });
-    }
-
     if (scripts['install-dependencies']) {
       this.execExitOnError(`${scripts['install-dependencies']}`, {
         cwd: this.blockletDir,
       });
     }
 
-    copyFiles(this.blockletDir, this.blockletConfig[TEMPLATES_FIELD_NAME], this.targetDir);
-
-    if (hooks.configure) {
-      this.execExitOnError(hooks.configure, {
-        cwd: this.blockletDir,
-      });
+    if (hooks['pre-copy']) {
+      this.execExitOnError(hooks['pre-copy'], { cwd: this.blockletDir });
     }
+
+    copyFiles(this.blockletDir, this.blockletConfig[TEMPLATES_FIELD_NAME], this.targetDir);
 
     if (hooks['post-copy']) {
       this.execExitOnError(hooks['post-copy'], {
         cwd: this.targetDir,
+      });
+    }
+
+    if (hooks.configure) {
+      this.execExitOnError(hooks.configure, {
+        cwd: this.blockletDir,
       });
     }
 

@@ -1,3 +1,8 @@
+## 0.39.14 (October 15, 2019)
+
+- blocklet:init: add -d/-y args support
+- feat: add blocklet:init command
+
 ## 0.39.13 (October 12, 2019)
 
 - chore: update typo

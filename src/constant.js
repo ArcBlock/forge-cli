@@ -41,4 +41,6 @@ module.exports = {
     release: path.join(CLI_BASE_DIRECTORY, 'release'),
   },
   RESERVED_CHAIN_NAMES: ['forge'],
+  BLOCKLET_GROUPS: ['dApp', 'starter', 'contract'],
+  BLOCKLET_COLORS: ['primary', 'secondary', 'error'],
 };

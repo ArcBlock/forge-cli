@@ -113,6 +113,7 @@
     "progress": "^2.0.3",
     "public-ip": "^3.2.0",
     "ramda": "^0.25.0",
+    "rc": "^1.2.8",
     "rcfile": "^1.0.3",
     "registry-url": "^5.1.0",
     "safe-eval": "^0.4.1",

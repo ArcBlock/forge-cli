@@ -3,6 +3,7 @@ const fs = require('fs');
 const os = require('os');
 const axios = require('axios');
 const crypto = require('crypto');
+const get = require('lodash/get');
 const figlet = require('figlet');
 const shell = require('shelljs');
 const chalk = require('chalk');
@@ -13,6 +14,7 @@ const tar = require('tar');
 const getPort = require('get-port');
 const prettyMilliseconds = require('pretty-ms');
 const moment = require('moment');
+const rc = require('rc');
 
 const { symbols, hr } = require('./ui');
 const { MIRRORS, REQUIRED_DIRS, ASSETS_PATH, SHIFT_WIDTH } = require('../constant');
@@ -306,6 +308,11 @@ function escapseHomeDir(homeDir = '') {
   return homeDir;
 }
 
+function getNPMConfig(key) {
+  const conf = rc('npm');
+  return get(conf, key);
+}
+
 module.exports = {
   chainSortHandler,
   escapseHomeDir,
@@ -313,6 +320,7 @@ module.exports = {
   fetchAsset,
   fetchAssetsByVersion,
   fetchReleaseAssetsInfo,
+  getNPMConfig,
   getPlatform,
   getPort,
   getPackageConfig,

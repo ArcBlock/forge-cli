@@ -6,6 +6,7 @@ const path = require('path');
 const pickBy = require('lodash/pickBy');
 
 const {
+  getNPMConfig,
   logError,
   strEqual,
   print,
@@ -123,6 +124,15 @@ async function execute({ blockletJSONPath, packageJSONPath, configs }) {
     'on-complete': "echo 'no on-complete hooks'", // eslint-disable-line
   };
 
+  const npmAuthor = getNPMConfig('init.author.name');
+  const npmEmail = getNPMConfig('init.author.email');
+  let author = '';
+  if (npmAuthor) {
+    author = npmEmail ? `${npmAuthor} <${npmEmail}>` : npmAuthor;
+  }
+
+  configs.author = configs.author || author;
+
   const defaultPackageJSON = {
     name: configs.name,
     keywords: [],
@@ -131,14 +141,14 @@ async function execute({ blockletJSONPath, packageJSONPath, configs }) {
     scripts: {
       test: 'echo "Error: no test specified" && exit 1',
     },
-    author: '',
+    author,
     license: 'ISC',
     description: configs.description,
   };
   const originalPackageJSON = fs.existsSync(packageJSONPath)
     ? JSON.parse(fs.readFileSync(packageJSONPath))
     : defaultPackageJSON;
-  Object.assign(originalPackageJSON, pickCommonFieldsInBlockletAndPackage(configs));
+  Object.assign(pickCommonFieldsInBlockletAndPackage(configs), originalPackageJSON);
 
   const blockletString = prettyStringify(configs, { space: 2 });
   fs.writeFileSync(blockletJSONPath, blockletString);
@@ -199,8 +209,8 @@ async function run({ opts: { defaults, yes } }) {
       color: 'primary',
       templates: 'templates',
     },
-    blockletJSON,
-    pickCommonFieldsInBlockletAndPackage(packageJSON)
+    pickCommonFieldsInBlockletAndPackage(packageJSON),
+    blockletJSON
   );
 
   let answers = {};

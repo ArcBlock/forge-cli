@@ -33,7 +33,7 @@ const getPromptQuestions = defaults => {
       validate: input => {
         // prettier-ignore
         if (!input || input.trim().length < 4) {
-          return 'Name should be more than 4 characters long';
+          return 'Name length should be more than 4 characters';
         }
 
         return true;
@@ -61,7 +61,7 @@ const getPromptQuestions = defaults => {
     {
       type: 'autocomplete',
       name: 'color',
-      message: 'Choose a color for your blocklet:',
+      message: 'Choose a theme for your blocklet:',
       default: defaults.color,
       source: (_, inp) => {
         const input = inp || '';
@@ -74,7 +74,7 @@ const getPromptQuestions = defaults => {
     {
       type: 'text',
       name: 'templates', // For array type parameter
-      message: 'Blocklet templates folder name:',
+      message: 'Blocklet templates folder:',
       default: defaults.templates,
       validate: input => {
         if (!input || !input.trim()) return 'folder name should not be empty';

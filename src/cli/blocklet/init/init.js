@@ -118,7 +118,7 @@ async function execute({ blockletJSONPath, packageJSONPath, configs }) {
     'install-dependencies': "echo 'no dependencies scripts'", // eslint-disable-line
   };
   configs.hooks = configs.hooks || {
-    'pre-copy': "echo 'no configure hooks'", // eslint-disable-line
+    'pre-copy': "echo 'no pre-copy hooks'", // eslint-disable-line
     configure: "echo 'no configure hooks'", // eslint-disable-line
     'post-copy': "echo 'no post-copy hooks'", // eslint-disable-line
     'on-complete': "echo 'no on-complete hooks'", // eslint-disable-line

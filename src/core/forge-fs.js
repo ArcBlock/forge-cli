@@ -218,6 +218,10 @@ function getAllChainNames() {
   return chainNames;
 }
 
+function getForgeSwapConfigFile() {
+  return path.join(CLI_BASE_DIRECTORY, 'atomic_config.toml');
+}
+
 function getCurrentWorkingDirectory() {
   return process.env.CURRENT_WORKING_CHAIN;
 }
@@ -257,6 +261,10 @@ function getForgeSimulatorReleaseDirectory(version) {
 
 function getGlobalConfigFilePath() {
   return path.join(os.homedir(), '.forgerc.yml');
+}
+
+function getForgeSwapReleaseDirectory(version) {
+  return getReleaseDirectory('forge_swap', version);
 }
 
 function getOriginForgeReleaseFilePath(version) {
@@ -514,6 +522,7 @@ module.exports = {
   ensureChainDirectory,
   getAllAppDirectories,
   getAllChainNames,
+  getForgeSwapConfigFile,
   getChainNameFromForgeConfig,
   getConsensusEnginBinPath,
   getCurrentReleaseFilePath,
@@ -526,6 +535,7 @@ module.exports = {
   getForgeWebReleaseDirectory,
   getForgeWorkshopReleaseDirectory,
   getGlobalConfigFilePath,
+  getForgeSwapReleaseDirectory,
   getGlobalForgeVersion,
   getChainReleaseFilePath,
   getChainWorkshopDirectory,

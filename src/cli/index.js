@@ -7,6 +7,7 @@ exports.contract = require('./contract');
 exports.misc = require('./misc');
 exports.node = require('./node');
 exports.release = require('./release');
+exports.swap = require('./swap');
 exports.tools = require('./tools');
 exports.tx = require('./tx');
 exports.wallet = require('./wallet');

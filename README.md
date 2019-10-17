@@ -85,6 +85,7 @@ Commands:
   account:list [role]                    List all accounts stored in this node
   asset <address>                        Get asset info by address
   block [options] [height]               Get the block info from the running node
+  blocklet:init                          Init a blocklet project
   blocklet:use|project:create [options]  Download and install a blocklet
   chain:create|create-chain [chainName]  Create a new chain instance
   chain:ls|chains                        List all chains

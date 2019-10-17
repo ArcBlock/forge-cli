@@ -1,4 +1,3 @@
-const axios = require('axios');
 const chalk = require('chalk');
 const fs = require('fs');
 const fsExtra = require('fs-extra');
@@ -8,7 +7,6 @@ const path = require('path');
 const semver = require('semver');
 inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
 
-const { wrapSpinner } = require('core/ui');
 const {
   downloadPackageFromNPM,
   getPackageConfig,
@@ -18,19 +16,10 @@ const {
 } = require('core/util');
 const { isDirectory, isEmptyDirectory } = require('core/forge-fs');
 
-const { BLOCKLET_DIR, REMOTE_BLOCKLET_URL } = require('../../../constant');
+const { BLOCKLET_DIR } = require('../../../constant');
+const { getBlocklets } = require('../lib');
 
 const BLOCKLET_CONFIG_FILEPATH = 'blocklet.json';
-
-async function getBlocklets(url) {
-  try {
-    const { data } = await axios.get(url);
-    return data;
-  } catch (error) {
-    printError(error);
-    return [];
-  }
-}
 
 function getLocalBlocklet(starterName) {
   if (!starterName) {
@@ -211,11 +200,7 @@ function execute(data) {
 // Run the cli interactively
 async function run({ args: [blockletName = ''], opts: { localBlocklet, target } }) {
   try {
-    const blocklets = await wrapSpinner(
-      'Fetching blocklets information...',
-      getBlocklets,
-      REMOTE_BLOCKLET_URL
-    );
+    const blocklets = await getBlocklets();
 
     if (!Array.isArray(blocklets) || blocklets.length === 0) {
       throw new Error('load blocklets configs failed');

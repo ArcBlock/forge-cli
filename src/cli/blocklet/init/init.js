@@ -7,6 +7,7 @@ const pickBy = require('lodash/pickBy');
 
 const {
   logError,
+  strEqual,
   print,
   printError,
   printInfo,
@@ -15,6 +16,7 @@ const {
 } = require('core/util');
 
 const { BLOCKLET_GROUPS, BLOCKLET_COLORS } = require('../../../constant');
+const { getBlocklets } = require('../lib');
 
 const COMMON_KEYS = ['name', 'description', 'version', 'author', 'keywords', 'repository'];
 
@@ -23,17 +25,22 @@ inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'))
 const pickCommonFieldsInBlockletAndPackage = configs =>
   pickBy(configs, (value, key) => value !== undefined && COMMON_KEYS.includes(key));
 
-const getPromptQuestions = defaults => {
+const getPromptQuestions = (defaults, onlineBlocklets = []) => {
   const questions = [
     {
       type: 'text',
       name: 'name',
-      message: 'blocklet name:',
+      message: 'blocklet name, case INSENSITIVE:',
       default: defaults.name,
+      transformer: name => name.trim(),
       validate: input => {
         // prettier-ignore
         if (!input || input.trim().length < 4) {
           return 'Name length should be more than 4 characters';
+        }
+
+        if (onlineBlocklets.find(({ name }) => strEqual(input.trim(), name))) {
+          return 'The same name already exists, please choose another one';
         }
 
         return true;
@@ -197,7 +204,8 @@ async function run({ opts: { defaults, yes } }) {
   );
 
   let answers = {};
-  const questions = getPromptQuestions(mergedConfigs);
+  const onlineBlocklets = await getBlocklets();
+  const questions = getPromptQuestions(mergedConfigs, onlineBlocklets);
   if (defaults || yes) {
     answers = questions.reduce((acc, item) => {
       if (item.default) {

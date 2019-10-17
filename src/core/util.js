@@ -302,6 +302,31 @@ function getNPMConfig(key) {
   return get(conf, key);
 }
 
+const waitUntilTruthy = (handler = () => true, timeout = 30000) =>
+  // eslint-disable-next-line
+  new Promise(async (resolve, reject) => {
+    if (await handler()) {
+      return resolve();
+    }
+
+    let timeElapsed = 0;
+    const interval = 800;
+    // eslint-disable-next-line
+    const timer = setInterval(async () => {
+      if (await handler) {
+        clearInterval(timer);
+        return resolve();
+      }
+
+      if (timeElapsed > timeout) {
+        clearInterval(timer);
+        reject(new Error(`forge is not started within ${timeout / 1000} seconds`));
+      }
+
+      timeElapsed += interval;
+    }, interval);
+  });
+
 module.exports = {
   chainSortHandler,
   escapseHomeDir,
@@ -329,4 +354,5 @@ module.exports = {
   printWarning,
   strEqual,
   sleep,
+  waitUntilTruthy,
 };

@@ -293,7 +293,7 @@ async function inquire(originalConfig) {
     database: {
       type: answers.dbType,
       hostname: answers.dbHostName,
-      username: answers.dbUsername,
+      username: answers.dbUserName,
       password: answers.dbPassword,
       database: answers.dbName,
     },
@@ -316,7 +316,7 @@ async function inquire(originalConfig) {
 }
 
 // Run the cli interactively
-async function run() {
+async function configSwap() {
   print('Press ^C to quit.');
   let swapConfig = {};
   const swapConfigFile = getForgeSwapConfigFile();
@@ -333,4 +333,4 @@ async function run() {
   await inquire(swapConfig);
 }
 
-exports.run = run;
+module.exports = { configSwap };

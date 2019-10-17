@@ -1,10 +1,10 @@
 // eslint-disable-next-line import/no-unresolved
 const { cli, action } = require('core/cli');
-const { execute, run } = require('./config');
+const { execute, run } = require('./swap');
 
-cli('swap config', 'Config atomic swap service', input => action(execute, run, input), {
+cli('swap [action] [version]', 'Start forge swap service', input => action(execute, run, input), {
   requirements: {
-    forgeRelease: true,
+    forgeRelease: false,
     runningNode: false,
     rpcClient: false,
     wallet: false,

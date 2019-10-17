@@ -303,6 +303,10 @@ function getStorageEnginePath(version) {
   );
 }
 
+function getReleaseBinPath(releaseName, version) {
+  return path.join(getReleaseDirectory(releaseName), version, 'bin', releaseName);
+}
+
 function getForgeBinPath(version) {
   debug('getForgeBinPath, version:', version);
 
@@ -542,6 +546,7 @@ module.exports = {
   getLocalReleases,
   getReleaseDir,
   getReleaseAssets,
+  getReleaseBinPath,
   getRootConfigDirectory,
   readTendermintHomeDir,
   getLocalVersions,

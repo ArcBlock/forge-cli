@@ -1,3 +1,7 @@
+## 0.39.15 (October 18, 2019)
+
+- chore: bump forge sdk version
+
 ## 0.39.14 (October 15, 2019)
 
 - blocklet:init: add -d/-y args support

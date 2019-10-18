@@ -3,7 +3,6 @@ const get = require('lodash/get');
 const fs = require('fs');
 const semver = require('semver');
 const inquirer = require('inquirer');
-const TOML = require('@iarna/toml');
 const { Client } = require('pg');
 const findProcess = require('find-process');
 
@@ -13,7 +12,7 @@ const { getForgeSwapProcess } = require('core/forge-process');
 const { printError, printInfo, printSuccess, printWarning, waitUntilTruthy } = require('core/util');
 const { makeForgeSwapRunCommand, makeNativeCommandRunner } = require('core/libs/common');
 const { SEMVER_REGEX } = require('../../../constant');
-const { configSwap } = require('./config');
+const { configSwap, readForgeSwapConfig } = require('./config');
 
 inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
 
@@ -100,15 +99,7 @@ const startSwap = async version => {
     process.exit(1);
   }
 
-  let swapConfig = {};
-  try {
-    swapConfig = TOML.parse(fs.readFileSync(swapConfigPath));
-  } catch (error) {
-    printError(
-      'Read forge swap config failed, please check it if it is a valid toml file, config file:',
-      chalk.cyan(swapConfigPath)
-    );
-  }
+  const swapConfig = await readForgeSwapConfig(swapConfigPath);
 
   const swapWebAddress = `${swapConfig.service.schema}://${swapConfig.service.host}:${swapConfig.service.port}`;
   const { pid } = await getForgeSwapProcess();

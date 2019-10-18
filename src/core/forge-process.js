@@ -277,6 +277,21 @@ async function getRunningProcessesStats(chainName = process.env.FORGE_CURRENT_CH
   return processesStats;
 }
 
+async function getForgeSwapProcessStats() {
+  const { pid } = await getForgeSwapProcess();
+  if (pid === 0) {
+    return null;
+  }
+
+  const usage = await pidUsage(pid);
+  return {
+    pid,
+    uptime: prettyTime(usage.elapsed, { compact: true }),
+    memory: prettyBytes(usage.memory),
+    cpu: `${usage.cpu.toFixed(2)} %`,
+  };
+}
+
 async function getRunningProcessEndpoints(chainName) {
   const processes = await getRunningProcesses(chainName);
   const cfg = readChainConfig(chainName);
@@ -406,6 +421,7 @@ module.exports = {
   getForgeWebProcess,
   getForgeWorkshopProcess,
   getRunningProcessEndpoints,
+  getForgeSwapProcessStats,
   getProcessTag,
   getSimulatorProcess,
   getTopRunningChains,

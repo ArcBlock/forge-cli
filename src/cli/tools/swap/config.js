@@ -333,4 +333,18 @@ async function configSwap() {
   await inquire(swapConfig);
 }
 
-module.exports = { configSwap };
+const readForgeSwapConfig = async swapConfigPath => {
+  let swapConfig = {};
+  try {
+    swapConfig = TOML.parse(fs.readFileSync(swapConfigPath));
+  } catch (error) {
+    throw new Error(
+      'Read forge swap config failed, please check it if it is a valid toml file, config file:',
+      swapConfigPath
+    );
+  }
+
+  return swapConfig;
+};
+
+module.exports = { configSwap, readForgeSwapConfig };

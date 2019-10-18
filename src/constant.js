@@ -41,6 +41,7 @@ module.exports = {
     logs: path.join(CLI_BASE_DIRECTORY, 'logs'),
     release: path.join(CLI_BASE_DIRECTORY, 'release'),
   },
+  // semver regex from: https://github.com/semver/semver/issues/232#issue-48635632
   SEMVER_REGEX: /forge_swap\/((0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?)/, // eslint-disable-line
   RESERVED_CHAIN_NAMES: ['forge'],
   BLOCKLET_GROUPS: ['dApp', 'starter', 'contract'],

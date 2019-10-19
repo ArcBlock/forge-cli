@@ -1,3 +1,7 @@
+## 0.40.4 (November 06, 2019)
+
+- integrate atomic service
+
 ## 0.40.3 (November 04, 2019)
 
 - chore: check if forge process exists before start web when run `forge start`

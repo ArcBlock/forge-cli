@@ -52,6 +52,14 @@ function sleep(timeout = 1000) {
   return new Promise(resolve => setTimeout(resolve, timeout));
 }
 
+const trim = str => {
+  if (typeof str === 'string') {
+    return str.trim();
+  }
+
+  return str;
+};
+
 /**
  * Write log to file
  * @param {array} args
@@ -354,5 +362,6 @@ module.exports = {
   printWarning,
   strEqual,
   sleep,
+  trim,
   waitUntilTruthy,
 };

@@ -43,6 +43,7 @@ const printAllProcesses = async () => {
     if (matchResult) {
       version = matchResult[1]; // eslint-disable-line
     }
+
     const table = new Table({
       head: ['PID', 'Uptime', 'Memory', 'CPU', 'Endpoint'],
       style: { 'padding-left': 1, head: ['cyan', 'bold'] },

@@ -11,6 +11,8 @@ const { getReleaseBinPath, getForgeSwapConfigFile } = require('core/forge-fs');
 const { getForgeSwapProcess } = require('core/forge-process');
 const { printError, printInfo, printSuccess, printWarning, waitUntilTruthy } = require('core/util');
 const { makeForgeSwapRunCommand, makeNativeCommandRunner } = require('core/libs/common');
+const { getGlobalForgeVersion } = require('core/forge-fs');
+
 const { SEMVER_REGEX } = require('../../../constant');
 const { configSwap, readForgeSwapConfig } = require('./config');
 
@@ -69,8 +71,12 @@ const ensureRequirements = async swapConfig => {
   await ensureDatabaseRequirement(swapConfig.database);
 };
 
-const startSwap = async version => {
-  if (!semver.valid(version)) {
+const startSwap = async (version = '') => {
+  if (!version) {
+    version = getGlobalForgeVersion(); // eslint-disable-line
+  }
+
+  if (version && !semver.valid(version)) {
     printError('Invalid version:', version);
     process.exit(1);
   }
@@ -79,6 +85,8 @@ const startSwap = async version => {
     printError('Forge swap service only supported at version greater than', chalk.cyan('0.39.1'));
     process.exit(1);
   }
+
+  printInfo('Using version', chalk.cyan(version));
 
   const forgeSwapBinPath = getReleaseBinPath('forge_swap', version);
   if (!fs.existsSync(forgeSwapBinPath)) {

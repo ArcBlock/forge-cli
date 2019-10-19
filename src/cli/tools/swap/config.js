@@ -2,7 +2,7 @@ const fuzzy = require('fuzzy');
 const get = require('lodash/get');
 const internalIP = require('internal-ip');
 const inquirer = require('inquirer');
-const { print, printError, printSuccess } = require('core/util');
+const { print, printError, printSuccess, trim } = require('core/util');
 const fs = require('fs');
 const TOML = require('@iarna/toml');
 const { getForgeSwapConfigFile } = require('core/forge-fs');
@@ -143,7 +143,6 @@ async function inquire(originalConfig) {
 
         return true;
       },
-      transformer: v => v.trim(),
     },
     {
       type: 'text',
@@ -279,34 +278,34 @@ async function inquire(originalConfig) {
   const answers = await inquirer.prompt(questions);
   const configs = {
     application: {
-      name: answers.appName,
-      description: answers.appDesc,
-      did: answers.appDid,
-      sk: answers.appSK,
-      pk: answers.appPK,
+      name: trim(answers.appName),
+      description: trim(answers.appDesc),
+      did: trim(answers.appDid),
+      sk: trim(answers.appSK),
+      pk: trim(answers.appPK),
     },
     service: {
-      schema: answers.serviceSchema,
-      host: answers.serviceHost,
-      port: answers.servicePort,
+      schema: trim(answers.serviceSchema),
+      host: trim(answers.serviceHost),
+      port: trim(answers.servicePort),
     },
     database: {
-      type: answers.dbType,
-      hostname: answers.dbHostName,
-      username: answers.dbUserName,
-      password: answers.dbPassword,
-      database: answers.dbName,
+      type: trim(answers.dbType),
+      hostname: trim(answers.dbHostName),
+      username: trim(answers.dbUserName),
+      password: trim(answers.dbPassword),
+      database: trim(answers.dbName),
     },
     asset_owners: {
       default: {
-        address: answers.assetOwnerAddress,
-        pk: answers.assetOwnerPK,
-        sk: answers.assetOwnerSK,
+        address: trim(answers.assetOwnerAddress),
+        pk: trim(answers.assetOwnerPK),
+        sk: trim(answers.assetOwnerSK),
       },
     },
     chains: {
-      asset: { host: answers.assetChainHost, port: answers.assetChainPort },
-      application: { host: answers.applicationChainHost, port: answers.appChainPort },
+      asset: { host: trim(answers.assetChainHost), port: trim(answers.assetChainPort) },
+      application: { host: trim(answers.applicationChainHost), port: trim(answers.appChainPort) },
     },
   };
 

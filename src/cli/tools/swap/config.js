@@ -248,6 +248,45 @@ async function inquire(originalConfig) {
       },
     },
     {
+      type: 'number',
+      name: 'assetBlockGap',
+      message: 'Please input asset block gap:',
+      default: get(originalConfig, 'chains.asset.block_gap', 3),
+      validate: input => {
+        if (!input) {
+          return 'Asset block gap should not be empty';
+        }
+
+        return true;
+      },
+    },
+    {
+      type: 'number',
+      name: 'assetOfferLocktime',
+      message: 'Please input asset offer locktime:',
+      default: get(originalConfig, 'chains.asset.offer_locktime', 28800),
+      validate: input => {
+        if (!input) {
+          return 'Asset offer locktime should not be empty';
+        }
+
+        return true;
+      },
+    },
+    {
+      type: 'number',
+      name: 'assetDemandLocktime',
+      message: 'Please input asset demand locktime:',
+      default: get(originalConfig, 'chains.asset.demand_locktime', 57600),
+      validate: input => {
+        if (!input) {
+          return 'Asset demand locktime should not be empty';
+        }
+
+        return true;
+      },
+    },
+    {
       type: 'text',
       name: 'applicationChainHost',
       message: 'Please input application chain host:',
@@ -268,6 +307,32 @@ async function inquire(originalConfig) {
       validate: input => {
         if (!input) {
           return 'Application chain port should not be empty';
+        }
+
+        return true;
+      },
+    },
+    {
+      type: 'number',
+      name: 'appOfferLocktime',
+      message: 'Please input application offer locktime:',
+      default: get(originalConfig, 'chains.application.offer_locktime', 28800),
+      validate: input => {
+        if (!input) {
+          return 'Application offer locktime should not be empty';
+        }
+
+        return true;
+      },
+    },
+    {
+      type: 'number',
+      name: 'appDemandLocktime',
+      message: 'Please input application demand locktime:',
+      default: get(originalConfig, 'chains.application.demand_locktime', 57600),
+      validate: input => {
+        if (!input) {
+          return 'Application demand locktime should not be empty';
         }
 
         return true;
@@ -304,8 +369,19 @@ async function inquire(originalConfig) {
       },
     },
     chains: {
-      asset: { host: trim(answers.assetChainHost), port: trim(answers.assetChainPort) },
-      application: { host: trim(answers.applicationChainHost), port: trim(answers.appChainPort) },
+      asset: {
+        host: trim(answers.assetChainHost),
+        port: trim(answers.assetChainPort),
+        block_gap: Number(answers.assetBlockGap),
+        offer_locktime: Number(answers.assetOfferLocktime),
+        demand_locktime: Number(answers.assetDemandLocktime),
+      },
+      application: {
+        host: trim(answers.applicationChainHost),
+        port: trim(answers.appChainPort),
+        offer_locktime: Number(answers.appOfferLocktime),
+        demand_locktime: Number(answers.appDemandLocktime),
+      },
     },
   };
 

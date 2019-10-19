@@ -9,9 +9,17 @@ const findProcess = require('find-process');
 const debug = require('core/debug')('swap');
 const { getReleaseBinPath, getForgeSwapConfigFile } = require('core/forge-fs');
 const { getForgeSwapProcess } = require('core/forge-process');
-const { printError, printInfo, printSuccess, printWarning, waitUntilTruthy } = require('core/util');
+const {
+  printError,
+  printInfo,
+  printSuccess,
+  printWarning,
+  sleep,
+  waitUntilTruthy,
+} = require('core/util');
 const { makeForgeSwapRunCommand, makeNativeCommandRunner } = require('core/libs/common');
 const { getGlobalForgeVersion } = require('core/forge-fs');
+const { getSpinner } = require('core/ui');
 
 const { SEMVER_REGEX } = require('../../../constant');
 const { configSwap, readForgeSwapConfig } = require('./config');
@@ -125,11 +133,17 @@ const startSwap = async (version = '') => {
     })
   )();
 
-  await waitUntilTruthy(async () => {
-    const processInfo = await getForgeSwapProcess();
-    return processInfo.pid > 0;
-  }, 10 * 1000);
-  printSuccess(`Forge swap web started at ${swapWebAddress}`);
+  const spinner = getSpinner('Waiting forge swap start....');
+
+  spinner.start();
+  await sleep(18 * 1000);
+  const swapProcess = await getForgeSwapProcess();
+  if (swapProcess.pid <= 0) {
+    spinner.fail('Forge swap start failed.');
+    process.exit(1);
+  }
+
+  spinner.succeed(`Forge swap web started at ${swapWebAddress}`);
 };
 
 const stopSwap = async () => {

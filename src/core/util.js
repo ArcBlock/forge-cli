@@ -110,8 +110,9 @@ function printError(...args) {
  * @param {*} port
  */
 async function checkPort(port) {
-  const tmp = await getPort({ host: '127.0.0.1', port });
-  if (+tmp === +port) {
+  const p = +port;
+  const tmp = await getPort({ host: '127.0.0.1', port: p });
+  if (+tmp === p) {
     return port;
   }
 
@@ -313,17 +314,18 @@ function getNPMConfig(key) {
 const waitUntilTruthy = (handler = () => true, timeout = 30000) =>
   // eslint-disable-next-line
   new Promise(async (resolve, reject) => {
+    console.log(handler);
     if (await handler()) {
-      return resolve();
+      return resolve(true);
     }
 
     let timeElapsed = 0;
     const interval = 800;
     // eslint-disable-next-line
     const timer = setInterval(async () => {
-      if (await handler) {
+      if (await handler()) {
         clearInterval(timer);
-        return resolve();
+        return resolve(true);
       }
 
       if (timeElapsed > timeout) {
@@ -337,6 +339,7 @@ const waitUntilTruthy = (handler = () => true, timeout = 30000) =>
 
 module.exports = {
   chainSortHandler,
+  checkPort,
   escapseHomeDir,
   downloadPackageFromNPM,
   fetchAsset,

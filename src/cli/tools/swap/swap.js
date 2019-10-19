@@ -1,5 +1,6 @@
 const chalk = require('chalk');
 const get = require('lodash/get');
+const isEmpty = require('lodash/isEmpty');
 const fs = require('fs');
 const semver = require('semver');
 const inquirer = require('inquirer');
@@ -10,6 +11,7 @@ const debug = require('core/debug')('swap');
 const { getReleaseBinPath, getForgeSwapConfigFile } = require('core/forge-fs');
 const { getForgeSwapProcess } = require('core/forge-process');
 const {
+  checkPort,
   printError,
   printInfo,
   printSuccess,
@@ -47,6 +49,25 @@ const ensurePostgres = async dbConfig => {
   }
 };
 
+const ensureChains = async (chainsConfig = []) => {
+  const chains = [
+    { name: 'asset', config: chainsConfig.asset },
+    { name: 'application', config: chainsConfig.application },
+  ];
+
+  chains.forEach(async ({ name, config }) => {
+    if (isEmpty(config)) {
+      throw new Error(`Chain ${chalk.cyan(name)} config is empty`);
+    }
+
+    const { host, port } = config;
+    const p = await checkPort({ host, port });
+    if (p !== port) {
+      throw new Error(`Can not connect chain host: ${host}`);
+    }
+  });
+};
+
 const DB_HANDLER = {
   postgres: ensurePostgres,
 };
@@ -76,6 +97,7 @@ const migrateDatabase = ({ version, swapConfigPath }) => {
 };
 
 const ensureRequirements = async swapConfig => {
+  await ensureChains(swapConfig.chains);
   await ensureDatabaseRequirement(swapConfig.database);
 };
 
@@ -94,7 +116,7 @@ const startSwap = async (version = '') => {
     process.exit(1);
   }
 
-  printInfo('Using version', chalk.cyan(version));
+  printInfo('Using forge swap version', chalk.cyan(version));
 
   const forgeSwapBinPath = getReleaseBinPath('forge_swap', version);
   if (!fs.existsSync(forgeSwapBinPath)) {

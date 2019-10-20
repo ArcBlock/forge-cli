@@ -1,3 +1,8 @@
+## 0.39.22 (October 25, 2019)
+
+- fix: moderator is required by forge #291
+- refact: move default icon to constant
+
 ## 0.39.21 (October 24, 2019)
 
 - improvement: chain name is no longer required by forge version #290
@@ -18,7 +23,7 @@
 ## 0.39.17 (October 22, 2019)
 
 - add `cwd` param when reading ~/.forgerc.yml, to ensure read from current user's space #293;
-- remove releases, rpc and chainName requiremnts from `forge ps` command.
+- remove releases, rpc and chainName requirements from `forge ps` command.
 
 ## 0.39.16 (October 22, 2019)
 

@@ -6,19 +6,24 @@ const TOML = require('@iarna/toml');
 const { fromSecretKey } = require('@arcblock/forge-wallet');
 const { bytesToHex, hexToBytes, isHexStrict } = require('@arcblock/forge-util');
 
-const { print, printError, printInfo, printSuccess } = require('core/util');
+const { print, printError, printInfo, printSuccess, printWarning } = require('core/util');
 const debug = require('core/debug')('moderator');
 
 const { getGlobalConfig } = require('./libs/global-config');
 
-function getModeratorSecretKey() {
-  const { moderatorSecretKey } = getGlobalConfig();
-  const sk = process.env.FORGE_MODERATOR_SK || moderatorSecretKey;
+function formatWallet(wallet) {
+  const pk = base64.escape(base64.encode(hexToBytes(wallet.publicKey)));
+  return {
+    address: wallet.toAddress(),
+    pk,
+    publicKey: pk,
+  };
+}
 
+function formatSecretKey(sk) {
   if (!sk) {
     return undefined;
   }
-
   if (isHexStrict(sk)) {
     return sk;
   }
@@ -26,20 +31,22 @@ function getModeratorSecretKey() {
   return bytesToHex(Buffer.from(base64.unescape(sk), 'base64'));
 }
 
+function getModeratorSecretKey() {
+  const { moderatorSecretKey } = getGlobalConfig();
+  const sk = process.env.FORGE_MODERATOR_SK || moderatorSecretKey;
+
+  return formatSecretKey(sk);
+}
+
 function getModerator() {
   const sk = getModeratorSecretKey();
   if (!sk) {
-    printInfo('moderator sk was not set');
+    printWarning('Moderator sk was not set in local environment.');
     return undefined;
   }
 
   const wallet = fromSecretKey(sk);
-  const pk = base64.escape(base64.encode(hexToBytes(wallet.publicKey)));
-  return {
-    address: wallet.toAddress(),
-    pk,
-    publicKey: pk, // TODO: removed?
-  };
+  return formatWallet(wallet);
 }
 
 const getModeratorFromChain = async (client, currentVersion) => {
@@ -99,5 +106,7 @@ const ensureModerator = async (client, { currentVersion }) => {
 
 module.exports = {
   ensureModerator,
+  formatWallet,
+  formatSecretKey,
   getModerator,
 };

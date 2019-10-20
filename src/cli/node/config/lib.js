@@ -13,9 +13,11 @@ const kebabCase = require('lodash/kebabCase');
 const semver = require('semver');
 
 const { isValid, isFromPublicKey } = require('@arcblock/did');
+const { fromRandom, fromSecretKey } = require('@arcblock/forge-wallet');
+const { hexToBytes } = require('@arcblock/forge-util');
 
 const { ensureConfigComment } = require('core/env');
-const { getModerator } = require('core/moderator');
+const { formatWallet, formatSecretKey, getModerator } = require('core/moderator');
 const { hr, pretty } = require('core/ui');
 const { print, printInfo, printError, printSuccess } = require('core/util');
 const debug = require('core/debug')('config:lib');
@@ -154,7 +156,7 @@ async function readUserConfigs(
   base64Img.imgSync(tokenDefaults.icon, REQUIRED_DIRS.tmp, 'token');
 
   // moderator
-  const moderator = getModerator();
+  let moderator = getModerator();
   debug('moderator', moderator);
 
   const questions = [];
@@ -357,11 +359,25 @@ async function readUserConfigs(
         transformer: v => numeral(v).format('0,0'),
       },
       {
-        type: 'confirm',
-        name: 'includeModerator',
-        message: 'Do you want to include moderator config in the config?',
-        when: () => moderator,
-        default: true,
+        type: 'list',
+        name: 'moderatorInputType',
+        message: 'Input moderator SK, or generate if do not have one?',
+        choices: ['Generate', 'Input'],
+        when: () => !moderator,
+        default: 'Generate',
+      },
+      {
+        type: 'text',
+        name: 'userModeratorSK',
+        message: 'Input moderator SK:',
+        when: d => d.moderatorInputType === 'Input',
+        validate: v => {
+          if (!v.trim()) {
+            return 'Moderator SK should not be empty';
+          }
+
+          return true;
+        },
       },
       {
         type: 'confirm',
@@ -377,14 +393,13 @@ async function readUserConfigs(
           const symbol = d.customizeToken ? d.tokenSymbol : tokenDefaults.symbol;
           return `Set moderator as token owner of (${total - poked} ${symbol}) on chain start?`;
         },
-        when: () => moderator,
         default: true,
       },
       {
         type: 'list',
         name: 'accountSourceType',
         message: 'Input token holder address, or generate if do not have one?',
-        when: d => d.moderatorAsTokenHolder === false || !moderator,
+        when: d => d.moderatorAsTokenHolder === false,
         choices: ['Generate', 'Input'],
         default: 'Generate',
       },
@@ -455,16 +470,30 @@ async function readUserConfigs(
     tokenTotalSupply,
     tokenInitialSupply,
     tokenDecimal,
-    includeModerator,
     enablePoke,
     customizePoke,
     pokeBalance,
     pokeDailyLimit,
     pokeAmount,
+    moderatorInputType,
+    userModeratorSK,
     moderatorAsTokenHolder,
     tokenHolderAddress,
     tokenHolderPk,
   } = answers;
+
+  let generatedModeratorSK = null;
+  if (!moderator) {
+    if (moderatorInputType === 'Generate') {
+      const generatedModerator = fromRandom();
+      moderator = formatWallet(generatedModerator);
+      generatedModeratorSK = base64.escape(base64.encode(hexToBytes(generatedModerator.secretKey)));
+    } else {
+      moderator = formatWallet(fromSecretKey(formatSecretKey(userModeratorSK)));
+    }
+
+    moderator.balance = 0;
+  }
 
   defaults.tendermint.moniker = name;
   defaults.app.name = name;
@@ -505,12 +534,10 @@ async function readUserConfigs(
   }
 
   // moderator config
-  if (includeModerator) {
-    defaults.forge.prime.moderator = defaults.forge.prime.moderator || {};
+  defaults.forge.prime.moderator = moderator || {};
 
-    defaults.forge.prime.moderator.address = moderator.address;
-    defaults.forge.prime.moderator.pk = moderator.publicKey;
-  }
+  defaults.forge.prime.moderator.address = moderator.address;
+  defaults.forge.prime.moderator.pk = moderator.publicKey;
 
   // accounts config
   const total = customizeToken ? tokenInitialSupply : tokenDefaults.initial_supply;
@@ -541,6 +568,12 @@ async function readUserConfigs(
   print(hr);
   print(pretty(result));
   print(hr);
+
+  if (generatedModeratorSK) {
+    print('\n======================================================');
+    printInfo(chalk.yellow('Using generated moderator, please your moderator SK well:'));
+    print(generatedModeratorSK);
+  }
 
   if (!moderatorAsTokenHolder && answers.accountSourceType === 'Generate') {
     print('\n======================================================');

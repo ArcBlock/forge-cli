@@ -1,3 +1,7 @@
+## 0.39.16 (October 22, 2019)
+
+- fix: start workshop failed with latest version #296
+
 ## 0.39.15 (October 18, 2019)
 
 - chore: bump forge sdk version

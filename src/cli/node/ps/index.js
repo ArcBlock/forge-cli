@@ -1,15 +1,14 @@
 const { cli, action } = require('core/cli');
-const { getDefaultChainNameHandlerByChains } = require('core/libs/common');
 
 const { execute, run } = require('./ps');
 
 cli('ps', 'List running forge component processes', input => action(execute, run, input), {
   requirements: {
-    forgeRelease: true,
+    forgeRelease: false,
     runningNode: false,
-    rpcClient: true,
+    rpcClient: false,
     wallet: false,
-    chainName: getDefaultChainNameHandlerByChains,
+    chainName: false,
   },
   options: [],
 });

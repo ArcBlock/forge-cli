@@ -15,6 +15,7 @@ cli(
       runningNode: false,
       rpcClient: false,
       chainName: getTopRunningChains,
+      currentChainRunning: true,
     },
     parseArgs: chainName => ({ chainName }),
     options: [

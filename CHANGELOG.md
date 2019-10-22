@@ -1,3 +1,8 @@
+## 0.39.17 (October 22, 2019)
+
+- add `cwd` param when reading ~/.forgerc.yml, to ensure read from current user's space #293;
+- remove releases, rpc and chainName requiremnts from `forge ps` command.
+
 ## 0.39.16 (October 22, 2019)
 
 - fix: start workshop failed with latest version #296

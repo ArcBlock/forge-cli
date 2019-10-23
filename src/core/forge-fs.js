@@ -136,13 +136,49 @@ async function getLocalVersions() {
   return [...new Set(versions)];
 }
 
+function backupIncompleteChains(chainFolderNames = []) {
+  if (chainFolderNames.length > 0) {
+    const rootConfigDirectory = getRootConfigDirectory();
+    try {
+      chainFolderNames.forEach(folderName => {
+        const newFolderName = path.join(rootConfigDirectory, `unknown-${folderName}-${Date.now()}`);
+        fs.renameSync(path.join(rootConfigDirectory, folderName), newFolderName);
+      });
+
+      printWarning(
+        chalk.yellow(`There are unused chain config folders in ${rootConfigDirectory}:`)
+      );
+      const unknownFolders = fs
+        .readdirSync(rootConfigDirectory)
+        .filter(dir => dir.startsWith('unknown-forge'));
+      print();
+      print(unknownFolders.join(os.EOL));
+      print();
+    } catch (error) {
+      printError('Backup unused chain configs failed:');
+      printError(error);
+    }
+  }
+}
+
 function getAllAppDirectories() {
   const rootConfigDirectory = getRootConfigDirectory();
 
-  return fs
-    .readdirSync(rootConfigDirectory)
-    .filter(tmp => tmp.startsWith('forge'))
-    .filter(tmp => isDirectory(path.join(rootConfigDirectory, tmp)));
+  const allChainDirs = fs.readdirSync(rootConfigDirectory).filter(dir => dir.startsWith('forge'));
+
+  const completeChains = allChainDirs.filter(fileName => {
+    const chainFolderName = path.join(rootConfigDirectory, fileName);
+    return (
+      isDirectory(chainFolderName) &&
+      fs.existsSync(path.join(chainFolderName, 'forge_release.toml')) &&
+      fs.existsSync(path.join(chainFolderName, 'config.yml'))
+    );
+  });
+
+  const incompleteChians = allChainDirs.filter(fileName => !completeChains.includes(fileName));
+  backupIncompleteChains(incompleteChians);
+
+  return completeChains;
 }
 
 function getAllChainNames() {

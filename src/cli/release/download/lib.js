@@ -12,17 +12,17 @@ const tar = require('tar');
 const URL = require('url');
 const { symbols, getSpinner, getProgress } = require('core/ui');
 const {
+  fetchAsset,
   print,
   printError,
   printInfo,
   printSuccess,
   printWarning,
-  fetchAssetsByVersion,
 } = require('core/util');
 const debug = require('core/debug')('install');
 const { getReleaseAssets, getReleaseDirectory, isReleaseBinExists } = require('core/forge-fs');
 
-const { REQUIRED_DIRS } = require('../../../constant');
+const { ASSETS_PATH, REQUIRED_DIRS } = require('../../../constant');
 
 function fetchReleaseVersion({ mirror, releaseDir }) {
   if (releaseDir && fs.existsSync(releaseDir)) {
@@ -64,6 +64,26 @@ function fetchReleaseVersion({ mirror, releaseDir }) {
     throw err;
   }
 }
+
+const fetchAssetsByVersion = async (version, platform) => {
+  const versionsInfo = await fetchAsset(ASSETS_PATH.VERSIONS);
+  const release = versionsInfo.find(x => semver.eq(version, x.version));
+  if (release) {
+    return release.assets.filter(x => x.name.indexOf(`_${platform}_`) > 0).map(x => x.name);
+  }
+
+  return [];
+};
+
+const getLocalAssetsByVersion = (version, platform, releaseDir) => {
+  const assetsFolder = path.join(releaseDir, version);
+  if (!fs.existsSync(assetsFolder)) {
+    throw new Error(`v${version} assets not found in local release directory`);
+  }
+
+  const allAssets = fs.readdirSync(assetsFolder);
+  return allAssets.filter(fileName => fileName.indexOf(`_${platform}_`) > 0);
+};
 
 function clearLocalAssets(assets = [], version) {
   if (assets.length > 0) {
@@ -238,7 +258,13 @@ async function download({
   force,
   isLatest,
 }) {
-  const versionAssets = await fetchAssetsByVersion(version, platform);
+  let versionAssets = [];
+  if (releaseDir) {
+    versionAssets = getLocalAssetsByVersion(version, platform, releaseDir);
+  } else {
+    versionAssets = await fetchAssetsByVersion(version, platform);
+  }
+
   if (versionAssets.length === 0) {
     printError(
       `Version ${version} is not found, please run ${chalk.cyan(

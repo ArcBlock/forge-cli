@@ -9,7 +9,6 @@ const shell = require('shelljs');
 const chalk = require('chalk');
 const url = require('url');
 const getos = require('getos');
-const semver = require('semver');
 const tar = require('tar');
 const getPort = require('get-port');
 const prettyMilliseconds = require('pretty-ms');
@@ -219,16 +218,6 @@ const fetchReleaseAssetsInfo = async platform => {
   return result;
 };
 
-const fetchAssetsByVersion = async (version, platform) => {
-  const versionsInfo = await fetchAsset(ASSETS_PATH.VERSIONS);
-  const release = versionsInfo.find(x => semver.eq(version, x.version));
-  if (release) {
-    return release.assets.filter(x => x.name.indexOf(`_${platform}_`) > 0).map(x => x.name);
-  }
-
-  return [];
-};
-
 function getPackageConfig(filePath) {
   const packageJSONPath = path.join(filePath, 'package.json');
   if (!fs.existsSync(packageJSONPath)) {
@@ -318,7 +307,6 @@ module.exports = {
   escapseHomeDir,
   downloadPackageFromNPM,
   fetchAsset,
-  fetchAssetsByVersion,
   fetchReleaseAssetsInfo,
   getNPMConfig,
   getPlatform,

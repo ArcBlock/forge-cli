@@ -1,6 +1,7 @@
 ## 0.39.19 (October 23, 2019)
 
 - fix: CLI still fetch remote assets while `releaseDir` was set #302
+- fix: `host` is require by latest workshop config #304
 
 ## 0.39.18 (October 23, 2019)
 

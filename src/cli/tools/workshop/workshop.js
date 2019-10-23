@@ -1,11 +1,12 @@
 /* eslint no-case-declarations:"off" */
+const chalk = require('chalk');
 const semver = require('semver');
 const shell = require('shelljs');
 const { print, printError, printInfo, printSuccess, printWarning, sleep } = require('core/util');
 const { config, makeNativeCommandRunner } = require('core/env');
 const { getChainReleaseFilePath } = require('core/forge-fs');
 const { getForgeWorkshopProcess } = require('core/forge-process');
-const { symbols } = require('core/ui');
+const { pretty } = require('core/ui');
 const { DEFAULT_WORKSHOP_PORT } = require('../../../constant');
 
 const MULTI_WORKSHOP_VERSION = '0.36.4';
@@ -15,7 +16,7 @@ function processOutput(output, action) {
     if (/:already_started/.test(output)) {
       printWarning('forge workshop already started');
     } else {
-      printError(`${symbols.error} forge workshop ${action} failed: ${output.trim()}`);
+      printError(`forge workshop ${action} failed: ${output.trim()}`);
     }
   } else {
     printSuccess(`forge workshop ${action} success!`);
@@ -44,11 +45,12 @@ async function main({ args: [action = 'none'] }) {
   })('daemon', { silent: true });
 
   let port = config.get('workshop.port') || DEFAULT_WORKSHOP_PORT;
+  const host = config.get('workshop.host') || '127.0.0.1';
   const res = checkForgeVersion(config.get('cli.currentVersion'));
   if (!res) {
     port = '8807';
   }
-  const workshopUrl = `http://127.0.0.1:${port}`;
+  const workshopUrl = `http://${host}:${port}`;
 
   /* eslint-disable indent */
   switch (action) {
@@ -62,6 +64,12 @@ async function main({ args: [action = 'none'] }) {
         return;
       }
 
+      print('Workshop will run with configs:');
+      print(pretty(config.get('workshop')));
+      print('If you want to customize them, just edit the [workshop] group in config file:');
+      print(chalk.cyan(configPath));
+      print('Then restart workshop.');
+      print();
       const { stdout, stderr } = startWorkshop();
       processOutput(stdout || stderr, action);
       printInfo(`forge workshop running at: ${workshopUrl}`);

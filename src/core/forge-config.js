@@ -4,6 +4,7 @@ const semver = require('semver');
 const path = require('path');
 const { get, set } = require('lodash');
 const TOML = require('@iarna/toml');
+const internalIp = require('internal-ip');
 
 const { getModerator } = require('core/moderator');
 
@@ -139,7 +140,7 @@ async function getAvailablePort() {
   return res;
 }
 
-function setConfig(
+async function setConfig(
   configs,
   chainName,
   {
@@ -154,12 +155,14 @@ function setConfig(
 ) {
   const moderator = getModerator();
   let content = JSON.parse(JSON.stringify(configs));
+  const internalIpV4 = (await internalIp.v4()) || '127.0.0.1';
 
   set(content, 'forge.web.port', forgeWebPort);
   set(content, 'forge.sock_grpc', `tcp://127.0.0.1:${forgeGrpcPort}`);
   set(content, 'tendermint.sock_rpc', `tcp://127.0.0.1:${tendermintRpcPort}`);
   set(content, 'tendermint.sock_grpc', `tcp://127.0.0.1:${tendermintGrpcPort}`);
   set(content, 'tendermint.sock_p2p', `tcp://0.0.0.0:${tendermintP2pPort}`);
+  set(content, 'workshop.host', internalIpV4);
   set(content, 'workshop.schema', 'http');
   set(content, 'workshop.port', workshopPort);
   set(content, 'workshop.local_forge', `tcp://127.0.0.1:${forgeGrpcPort}`);
@@ -208,7 +211,7 @@ async function setConfigToChain(configs, chainName, currentVersion) {
     workshopPort,
   } = await getAvailablePort();
 
-  return setConfig(configs, chainName, {
+  const tmpConfigs = await setConfig(configs, chainName, {
     forgeWebPort,
     forgeGrpcPort,
     tendermintRpcPort,
@@ -217,6 +220,8 @@ async function setConfigToChain(configs, chainName, currentVersion) {
     workshopPort,
     currentVersion,
   });
+
+  return tmpConfigs;
 }
 
 /**
@@ -245,7 +250,7 @@ async function getDefaultChainConfigs(configs, currentVersion) {
   const tendermintGrpcPort = await getPort({ port: getPort.makeRange(26001, 27000) });
   const tendermintP2pPort = await getPort({ port: getPort.makeRange(27001, 28000) });
 
-  return setConfig(configs, DEFAULT_CHAIN_NAME, {
+  const tmpConfigs = await setConfig(configs, DEFAULT_CHAIN_NAME, {
     forgeWebPort,
     forgeGrpcPort,
     tendermintRpcPort,
@@ -254,6 +259,8 @@ async function getDefaultChainConfigs(configs, currentVersion) {
     workshopPort,
     currentVersion,
   });
+
+  return tmpConfigs;
 }
 
 async function copyReleaseConfig(currentVersion, overwrite = true) {

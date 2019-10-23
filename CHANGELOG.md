@@ -1,3 +1,7 @@
+## 0.39.18 (October 23, 2019)
+
+- validate if the chain config folder is complete #282
+
 ## 0.39.17 (October 22, 2019)
 
 - add `cwd` param when reading ~/.forgerc.yml, to ensure read from current user's space #293;

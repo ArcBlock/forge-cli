@@ -5,6 +5,7 @@ const inquirer = require('inquirer');
 const shell = require('shelljs');
 const fsExtra = require('fs-extra');
 const isIP = require('is-ip');
+const internalIP = require('internal-ip');
 const toml = require('@iarna/toml');
 const uniqBy = require('lodash/uniqBy');
 const { getSpinner } = require('core/ui');
@@ -63,6 +64,8 @@ async function main({ opts: { mode = 'init', writeConfig = false } }) {
       return;
     }
 
+    const internalIpV4 = (await internalIP.v4()) || '';
+
     const nodeID = result.stdout.trim();
     const nodePort = chainConfig.tendermint.sock_p2p.split(':').pop();
     const { nodeIP } = await inquirer.prompt([
@@ -70,6 +73,7 @@ async function main({ opts: { mode = 'init', writeConfig = false } }) {
         type: 'text',
         name: 'nodeIP',
         message: `Please input ${chalk.cyan('IPv4')} address for this node:`,
+        default: internalIpV4,
         validate: input => {
           if (!input) {
             return 'IP should not be empty';

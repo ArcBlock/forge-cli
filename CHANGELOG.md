@@ -1,3 +1,7 @@
+## 0.39.21 (October 24, 2019)
+
+- improvement: chain name is no longer required #290
+
 ## 0.39.20 (October 24, 2019)
 
 - fix: fetch public IPv4 failed during forge prepare #305

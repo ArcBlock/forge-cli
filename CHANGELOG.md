@@ -1,3 +1,7 @@
+## 0.39.20 (October 24, 2019)
+
+- fix: fetch public IPv4 failed during forge prepare #305
+
 ## 0.39.19 (October 23, 2019)
 
 - fix: CLI still fetch remote assets while `releaseDir` was set #302

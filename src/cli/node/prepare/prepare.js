@@ -1,10 +1,11 @@
+const chalk = require('chalk');
 const fs = require('fs');
 const path = require('path');
 const inquirer = require('inquirer');
 const shell = require('shelljs');
-const publicIp = require('public-ip');
-const privateIp = require('internal-ip');
 const fsExtra = require('fs-extra');
+const isIP = require('is-ip');
+const internalIP = require('internal-ip');
 const toml = require('@iarna/toml');
 const uniqBy = require('lodash/uniqBy');
 const { getSpinner } = require('core/ui');
@@ -63,16 +64,27 @@ async function main({ opts: { mode = 'init', writeConfig = false } }) {
       return;
     }
 
-    const [ipPublic, ipPrivate] = await Promise.all([publicIp.v4(), privateIp.v4()]);
+    const internalIpV4 = (await internalIP.v4()) || '';
+
     const nodeID = result.stdout.trim();
     const nodePort = chainConfig.tendermint.sock_p2p.split(':').pop();
     const { nodeIP } = await inquirer.prompt([
       {
-        type: 'list',
+        type: 'text',
         name: 'nodeIP',
-        message: 'Please select IP for this node',
-        choices: [ipPublic, ipPrivate],
-        default: ipPublic,
+        message: `Please input ${chalk.cyan('IPv4')} address for this node:`,
+        default: internalIpV4,
+        validate: input => {
+          if (!input) {
+            return 'IP should not be empty';
+          }
+
+          if (!isIP.v4(input)) {
+            return 'Please input a valid IPv4 address';
+          }
+
+          return true;
+        },
       },
     ]);
     const peerStr = `${nodeID}@${nodeIP}:${nodePort}`;

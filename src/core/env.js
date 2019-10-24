@@ -23,14 +23,9 @@ const { ensureForgeRelease } = require('core/forge-config');
 const { isForgeStarted, getProcessTag, getAllProcesses } = require('./forge-process');
 const { inquire } = require('./libs/interaction');
 const { printError, print, printInfo, printLogo, printSuccess, printWarning } = require('./util');
-const {
-  hasChains,
-  getOSUserInfo,
-  getTopChainName,
-  DEFAULT_CHAIN_NAME_RETURN,
-} = require('./libs/common');
+const { hasChains, getOSUserInfo, getTopChainName } = require('./libs/common');
 
-const { REQUIRED_DIRS } = require('../constant');
+const { DEFAULT_CHAIN_NAME_RETURN, REQUIRED_DIRS } = require('../constant');
 const { version } = require('../../package.json');
 const { symbols, hr, pretty, wrapSpinner } = require('./ui');
 const debug = require('./debug')('env');
@@ -153,6 +148,9 @@ async function ensureChainName(requirement = true, chainExistsRequirement, args)
         printWarning(
           `There are no chains, please create it by run ${chalk.cyan('forge chain:create')}`
         );
+        process.exit(0);
+      } else if (chainName === DEFAULT_CHAIN_NAME_RETURN.NO_RUNNING_CHAINS) {
+        printWarning('There are no running chains');
         process.exit(0);
       }
 

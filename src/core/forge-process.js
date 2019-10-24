@@ -9,6 +9,7 @@ const path = require('path');
 
 const debug = require('./debug')('forge-process');
 const { readTendermintHomeDir, getAllChainNames, readChainConfig } = require('./forge-fs');
+const { DEFAULT_CHAIN_NAME_RETURN } = require('../constant');
 const {
   escapseHomeDir,
   printError,
@@ -17,7 +18,6 @@ const {
   strEqual,
   sleep,
   chainSortHandler,
-  printWarning,
 } = require('./util');
 const { symbols } = require('./ui');
 
@@ -344,7 +344,7 @@ async function stopForgeProcesses(chainName) {
   return stopProcesses(processes);
 }
 
-async function getTopRunningChains({ chainName }) {
+async function getTopRunningChains({ chainName } = {}) {
   if (chainName) {
     return chainName;
   }
@@ -352,8 +352,7 @@ async function getTopRunningChains({ chainName }) {
   const allProcesses = await getAllProcesses();
 
   if (allProcesses.length === 0) {
-    printWarning('No running processes');
-    process.exit(0);
+    return DEFAULT_CHAIN_NAME_RETURN.NO_RUNNING_CHAINS;
   }
 
   return allProcesses[0].name;

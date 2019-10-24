@@ -6,11 +6,10 @@ const os = require('os');
 const semver = require('semver');
 
 const { getAllChainNames, getLocalReleases, updateReleaseYaml } = require('../forge-fs');
+const { DEFAULT_CHAIN_NAME_RETURN } = require('../../constant');
 const { engines } = require('../../../package');
 
-const DEFAULT_CHAIN_NAME_RETURN = { NO_CHAINS: 1 };
-
-async function getDefaultChainNameHandlerByChains({ chainName }) {
+async function getDefaultChainNameHandlerByChains({ chainName } = {}) {
   if (chainName) {
     return chainName;
   }

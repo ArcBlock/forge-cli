@@ -1,6 +1,6 @@
 ## 0.39.21 (October 24, 2019)
 
-- improvement: chain name is no longer required #290
+- improvement: chain name is no longer required by forge version #290
 
 ## 0.39.20 (October 24, 2019)
 

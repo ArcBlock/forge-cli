@@ -1,3 +1,8 @@
+## 0.39.24 (October 28, 2019)
+
+- refactor: rename config to chain:config
+- feature: add forge config command #213
+
 ## 0.39.23 (October 25, 2019)
 
 - fix: bug with multi user at same host #284

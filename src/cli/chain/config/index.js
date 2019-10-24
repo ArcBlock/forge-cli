@@ -3,7 +3,7 @@ const chalk = require('chalk');
 const { cli, action } = require('core/cli');
 const { execute, run } = require('./config');
 
-cli('config [action]', 'Read/write chain/node config', input => action(execute, run, input), {
+cli('chain:config [action]', 'Read/write chain/node config', input => action(execute, run, input), {
   requirements: {
     forgeRelease: true,
     rpcClient: true,

@@ -1,4 +1,3 @@
-exports.config = require('./config');
 exports.declare = require('./declare');
 exports.install = require('./install');
 exports.join = require('./join');

@@ -53,7 +53,7 @@
 
 ## 0.39.12 (October 12, 2019)
 
-- fix: add SHELL and HOME variable when start forge*_release #280
+- fix: add SHELL and HOME variable when start forge\*\_release #280
 
 ## 0.39.11 (October 11, 2019)
 
@@ -244,7 +244,7 @@
 
 ## 0.38.1 (August 28, 2019)
 
-- feature: optimize way to judge forge-* downloaded #185
+- feature: optimize way to judge forge-\* downloaded #185
 - refactor: replace curl with axios when download assets
 
 ## 0.38.0 (August 27, 2019)

@@ -26,6 +26,7 @@ async function main({ opts: { chainName } }) {
   const consensusEnginePath = getConsensusEnginBinPath(currentVersion);
 
   // core
+  print('============================================================');
   print(`Versions of ${chalk.cyan(chainName)} chain:`);
   print();
   print(`forge-core version ${currentVersion} on ${await getPlatform()}`);
@@ -62,6 +63,11 @@ async function main({ opts: { chainName } }) {
   if (app && app.name && app.version) {
     printSuccess(`app: ${app.name} version ${app.version}`);
   }
+
+  print();
+  print('============================================================');
+  print('If you want to check other chain\'s version info, please run:'); // prettier-ignore
+  print(chalk.cyan('forge version [chainName]'));
 }
 
 exports.run = main;

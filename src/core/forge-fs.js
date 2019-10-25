@@ -232,6 +232,10 @@ function getForgeSimulatorReleaseDirectory(version) {
   return getReleaseDirectory('simulator', version);
 }
 
+function getGlobalConfigFilePath() {
+  return path.join(os.homedir(), '.forgerc.yml');
+}
+
 function getOriginForgeReleaseFilePath(version) {
   debug('getOriginForgeReleaseFilePath');
 
@@ -497,6 +501,7 @@ module.exports = {
   getForgeSimulatorReleaseDirectory,
   getForgeWebReleaseDirectory,
   getForgeWorkshopReleaseDirectory,
+  getGlobalConfigFilePath,
   getGlobalForgeVersion,
   getChainReleaseFilePath,
   getChainWorkshopDirectory,

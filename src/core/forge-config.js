@@ -19,8 +19,6 @@ const {
   getAllAppDirectories,
   getDataDirectory,
   getRootConfigDirectory,
-  getCurrentReleaseFilePath,
-  getOriginForgeReleaseFilePath,
   getForgeVersionFromYaml,
   getChainConfigPath,
   getChainWorkshopDirectory,
@@ -28,15 +26,7 @@ const {
   getChainReleaseFilePath,
   getLocalVersions,
 } = require('./forge-fs');
-const {
-  makeRange,
-  getPort,
-  getFreePort,
-  print,
-  printError,
-  printInfo,
-  printSuccess,
-} = require('./util');
+const { makeRange, getPort, getFreePort, print, printError, printInfo } = require('./util');
 const { hr, symbols } = require('./ui');
 const { applyForgeVersion, hasReleases } = require('./libs/common');
 const debug = require('./debug')('forge-config');
@@ -263,27 +253,6 @@ async function getDefaultChainConfigs(configs, currentVersion) {
   return tmpConfigs;
 }
 
-async function copyReleaseConfig(currentVersion, overwrite = true) {
-  const targetPath = getCurrentReleaseFilePath();
-  if (fs.existsSync(targetPath) && !overwrite) {
-    return;
-  }
-
-  const sourcePath = getOriginForgeReleaseFilePath(currentVersion);
-
-  if (!sourcePath) {
-    printError('Forge config not found under release folder');
-    process.exit(1);
-  }
-
-  printSuccess(`Extract forge config from ${sourcePath}`);
-  let content = fs.readFileSync(sourcePath);
-  content = await getDefaultChainConfigs(TOML.parse(content.toString()), currentVersion);
-  fs.writeFileSync(targetPath, TOML.stringify(content));
-
-  printSuccess(`Forge config written to ${targetPath}`);
-}
-
 /**
  * Ensure we have a forge release to work with, in which we find forge bin
  *
@@ -441,7 +410,6 @@ async function ensureForgeRelease({
 }
 
 module.exports = {
-  copyReleaseConfig,
   ensureForgeRelease,
   getDefaultChainConfigs,
   setConfigToChain,

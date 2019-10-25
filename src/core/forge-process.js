@@ -23,7 +23,13 @@ const { symbols } = require('./ui');
 
 const sortHandler = (x, y) => chainSortHandler(x.name, y.name);
 
-const getProcessTag = (
+/**
+ * @deprecated use getProcessTag
+ * @param {*} name
+ * @param {*} chainName
+ * @param {*} allowMultiChain
+ */
+const oldGetProcessTag = (
   name,
   chainName = process.env.FORGE_CURRENT_CHAIN,
   allowMultiChain = true
@@ -37,6 +43,22 @@ const getProcessTag = (
   }
 
   return `forge-${name}-${md5(chainName)}`;
+};
+
+const getProcessTag = (
+  name,
+  chainName = process.env.FORGE_CURRENT_CHAIN,
+  allowMultiChain = true
+) => {
+  if (!allowMultiChain && (strEqual(name, 'forge') || !name)) {
+    return 'forge';
+  }
+
+  if (!name) {
+    return `forge-${md5(`${process.getuid()}.${chainName}`)}`;
+  }
+
+  return `forge-${name}-${md5(`${process.getuid()}.${chainName}`)}`;
 };
 
 async function findServicePid(n) {
@@ -84,7 +106,9 @@ async function getForgeProcessByTag(processName, chainName = process.env.FORGE_C
 
   const forgeProcess = forgeProcesses.find(
     ({ cmd }) =>
-      cmd.includes('/bin/beam.smp') && cmd.includes(getProcessTag(processName, chainName))
+      cmd.includes('/bin/beam.smp') &&
+      (cmd.includes(getProcessTag(processName, chainName)) ||
+        cmd.includes(oldGetProcessTag(processName, chainName))) // for compatibility
   );
 
   return { name: processName, pid: forgeProcess ? forgeProcess.pid : 0 };
@@ -94,7 +118,10 @@ async function getForgeProcess(chainName = process.env.FORGE_CURRENT_CHAIN) {
   const forgeProcesses = await findProcess('name', 'forge');
 
   const forgeProcess = forgeProcesses.find(
-    ({ cmd }) => cmd.includes('/bin/beam.smp') && cmd.includes(getProcessTag('forge', chainName))
+    ({ cmd }) =>
+      cmd.includes('/bin/beam.smp') &&
+      (cmd.includes(getProcessTag('forge', chainName)) ||
+        cmd.includes(oldGetProcessTag('forge', chainName))) // for compatibility
   );
 
   return { name: 'forge', pid: forgeProcess ? forgeProcess.pid : 0 };

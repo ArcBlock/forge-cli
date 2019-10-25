@@ -19,10 +19,11 @@ const { hexToBytes } = require('@arcblock/forge-util');
 const { ensureConfigComment } = require('core/env');
 const { formatWallet, formatSecretKey, getModerator } = require('core/moderator');
 const { hr, pretty } = require('core/ui');
-const { print, printInfo, printError, printSuccess } = require('core/util');
+const { logError, print, printInfo, printError, printSuccess, printWarning } = require('core/util');
 const debug = require('core/debug')('config:lib');
 const { getChainDirectory } = require('core/forge-fs');
 const { setFilePathOfConfig } = require('core/forge-config');
+const globalConfig = require('core/libs/global-config');
 
 const { DEFAULT_ICON_BASE64, REQUIRED_DIRS, RESERVED_CHAIN_NAMES } = require('../../../constant');
 const { generateDefaultAccount } = require('../../account/lib/index');
@@ -484,6 +485,7 @@ async function readUserConfigs(
 
   let generatedModeratorSK = null;
   if (!moderator) {
+    printWarning('Moderator sk was not set in local environment.');
     if (moderatorInputType === 'Generate') {
       const generatedModerator = fromRandom();
       moderator = formatWallet(generatedModerator);
@@ -571,8 +573,17 @@ async function readUserConfigs(
 
   if (generatedModeratorSK) {
     print('\n======================================================');
-    printInfo(chalk.yellow('Using generated moderator, please your moderator SK well:'));
-    print(generatedModeratorSK);
+    try {
+      globalConfig.setConfig('moderatorSecretKey', generatedModeratorSK);
+      print(chalk.yellow('Your moderator SK has been preserved in ~/.forgerc.yml'));
+    } catch (error) {
+      printError(
+        chalk.red('Save moderator SK to ~/.forgerc.yml failed, please preserve it properly.')
+      );
+      logError(error);
+    } finally {
+      print(); // just for newline
+    }
   }
 
   if (!moderatorAsTokenHolder && answers.accountSourceType === 'Generate') {

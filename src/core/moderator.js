@@ -6,9 +6,9 @@ const TOML = require('@iarna/toml');
 const { fromSecretKey } = require('@arcblock/forge-wallet');
 const { bytesToHex, hexToBytes, isHexStrict } = require('@arcblock/forge-util');
 
-const { print, printError, printInfo, printSuccess, printWarning } = require('core/util');
 const debug = require('core/debug')('moderator');
 
+const { print, printError, printInfo, printSuccess } = require('./util');
 const { getGlobalConfig } = require('./libs/global-config');
 
 function formatWallet(wallet) {
@@ -41,7 +41,7 @@ function getModeratorSecretKey() {
 function getModerator() {
   const sk = getModeratorSecretKey();
   if (!sk) {
-    printWarning('Moderator sk was not set in local environment.');
+    debug('moderator sk was not set in local environment.');
     return undefined;
   }
 

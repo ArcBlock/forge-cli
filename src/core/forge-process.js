@@ -23,6 +23,12 @@ const { symbols } = require('./ui');
 
 const sortHandler = (x, y) => chainSortHandler(x.name, y.name);
 
+/**
+ * @deprecated use getProcessTag
+ * @param {*} name
+ * @param {*} chainName
+ * @param {*} allowMultiChain
+ */
 const oldGetProcessTag = (
   name,
   chainName = process.env.FORGE_CURRENT_CHAIN,
@@ -102,7 +108,7 @@ async function getForgeProcessByTag(processName, chainName = process.env.FORGE_C
     ({ cmd }) =>
       cmd.includes('/bin/beam.smp') &&
       (cmd.includes(getProcessTag(processName, chainName)) ||
-        cmd.includes(oldGetProcessTag(processName, chainName)))
+        cmd.includes(oldGetProcessTag(processName, chainName))) // for compatibility
   );
 
   return { name: processName, pid: forgeProcess ? forgeProcess.pid : 0 };
@@ -115,7 +121,7 @@ async function getForgeProcess(chainName = process.env.FORGE_CURRENT_CHAIN) {
     ({ cmd }) =>
       cmd.includes('/bin/beam.smp') &&
       (cmd.includes(getProcessTag('forge', chainName)) ||
-        cmd.includes(oldGetProcessTag('forge', chainName)))
+        cmd.includes(oldGetProcessTag('forge', chainName))) // for compatibility
   );
 
   return { name: 'forge', pid: forgeProcess ? forgeProcess.pid : 0 };

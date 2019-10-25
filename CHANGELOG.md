@@ -1,3 +1,7 @@
+## 0.39.23 (October 25, 2019)
+
+- fix: bug with multi user at same host #284
+
 ## 0.39.22 (October 25, 2019)
 
 - fix: moderator is required by forge #291

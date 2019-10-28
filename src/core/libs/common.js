@@ -2,7 +2,6 @@
  * Common functions, different from `core/util`, this module is at higher level than `core/util`
  */
 
-const chalk = require('chalk');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -11,7 +10,7 @@ const url = require('url');
 
 const api = require('../api');
 const debug = require('../debug')('common');
-const { print, logError } = require('../util');
+const { logError } = require('../util');
 const { symbols } = require('../ui');
 const { DEFAULT_CHAIN_NAME_RETURN, REQUIRED_DIRS } = require('../../constant');
 const { name: packageName, version: localVersion } = require('../../../package.json');
@@ -96,35 +95,38 @@ async function fetchLatestCLIVersion(registry, name, options) {
   return packageJSON['dist-tags'].latest;
 }
 
-async function checkUpdate({ npmRegistry: registry }) {
-  const lastCheck = readCache('check-update');
-  const now = Math.floor(Date.now() / 1000);
-  const secondsOfDay = 24 * 60 * 60;
-  debug('check forge latest:', { lastCheck, now });
-  if (lastCheck && lastCheck + secondsOfDay > now) {
-    return;
-  }
-
-  logError('checking for latest forge cli.');
-
-  writeCache('check-update', now);
-
+function checkUpdate({ npmRegistry: registry }) {
   try {
-    const latestVersion = await fetchLatestCLIVersion(registry, packageName, { timeout: 5 * 1000 });
-    debug('check forge latest:', { latestVersion, localVersion });
-
-    if (semver.gt(latestVersion.trim(), localVersion)) {
-      print(
-        chalk.yellow(
-          `${os.EOL}You are using Forge-CLI version ${localVersion}, however version ${latestVersion} is available.` // eslint-disable-line
-        )
-      );
-      print(chalk.yellow('You can upgrade Forge CLI via, npm or yarn:'));
-      print(chalk.yellow(`npm: npm install -g ${packageName}`));
-      print(chalk.yellow(`yarn: yarn global add ${packageName}`));
+    const lastCheck = readCache('check-update');
+    const now = Math.floor(Date.now() / 1000);
+    const secondsOfDay = 24 * 60 * 60;
+    debug('check forge latest:', { lastCheck, now });
+    if (lastCheck && lastCheck + secondsOfDay > now) {
+      return;
     }
+
+    logError('checking for latest forge cli.');
+
+    writeCache('check-update', now);
+
+    fetchLatestCLIVersion(registry, packageName, { timeout: 5 * 1000 })
+      .then(latestVersion => {
+        debug('check forge latest:', { latestVersion, localVersion });
+
+        if (semver.gt(latestVersion.trim(), localVersion)) {
+          global.newVersionInfo = {
+            latestVersion,
+            localVersion,
+            packageName,
+          };
+        }
+      })
+      .catch(error => {
+        logError('get latest version failed.');
+        logError(error);
+      });
   } catch (error) {
-    logError('get latest version failed.');
+    logError('checking latest forge cli failed.');
     logError(error);
   }
 }

@@ -13,10 +13,6 @@ const DEFAULT_CONFIGS = {
     type: Boolean,
     defaultValue: true,
   },
-  autoUpgrade: {
-    type: Boolean,
-    defaultValue: true,
-  },
   configPath: { type: String, defaultValue: undefined },
   defaults: { type: Boolean, defaultValue: false },
   mirror: { type: String, defaultValue: undefined },

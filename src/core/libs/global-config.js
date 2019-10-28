@@ -52,7 +52,7 @@ function getConfig(item) {
 
 function setConfig(item, value) {
   if (!CONFIG_ITEMS.includes(item)) {
-    throw new Error('invalid config item');
+    throw new Error(`invalid config item: ${item}`);
   }
 
   if (typeof value === 'undefined') {

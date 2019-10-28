@@ -101,7 +101,6 @@ async function isForgeStopped(chainName = process.env.FORGE_CURRENT_CHAIN) {
 }
 
 async function getForgeProcessByTag(processName, chainName = process.env.FORGE_CURRENT_CHAIN) {
-  debug('getForgeProcessByTag, chain name:', chainName);
   const forgeProcesses = await findProcess('name', processName);
 
   const forgeProcess = forgeProcesses.find(

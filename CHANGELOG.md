@@ -2,6 +2,7 @@
 
 - refactor: rename config to chain:config
 - feature: add forge config command #213
+- chore: modify mechanism of check for latest
 
 ## 0.39.23 (October 25, 2019)
 

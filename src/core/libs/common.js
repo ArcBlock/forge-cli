@@ -75,13 +75,16 @@ function getOSUserInfo() {
 }
 
 /**
- *
+ * fetch package json information from registry
  * @param {*} registry
  * @param {*} name package name
  */
 async function fetchPackageJSON(registry = 'https://registry.npmjs.org/', name, options) {
-  const packageUrl = url.resolve(registry, encodeURIComponent(name));
-  const resp = await api.create(options).get(packageUrl, {
+  const registryUrl = url.resolve(registry, encodeURIComponent(name));
+  logError(`fetch package json, registryUrl: ${registryUrl}`);
+
+  // details: https://github.com/npm/registry/blob/master/docs/responses/package-metadata.md
+  const resp = await api.create(options).get(registryUrl, {
     headers: { Accept: 'application/vnd.npm.install-v1+json; q=1.0, application/json; q=0.8, */*' },
   });
 
@@ -101,6 +104,8 @@ async function checkUpdate({ npmRegistry: registry }) {
   if (lastCheck && lastCheck + secondsOfDay > now) {
     return;
   }
+
+  logError('checking for latest forge cli.');
 
   writeCache('check-update', now);
 

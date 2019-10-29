@@ -38,17 +38,17 @@ async function main({
     const isStarted = await isForgeStarted(chainName);
     if (isStarted) {
       printWarning(
+        `${chalk.yellow('You are trying to modify the configuration of a running chain node.')}`
+      );
+      printWarning(
         `${chalk.yellow(
-          'You are trying to modify the configuration of a running forge chain/node.'
+          'Token and chainId configuration cannot be changed once the chain has started.'
         )}`
       );
       printWarning(
         `${chalk.yellow(
-          'Token and chainId configuration cannot be changed once the chain is started.'
+          'If you really need to do this, you\'d better start a new chain or stop and reset existing chain.' // prettier-ignore
         )}`
-      );
-      printWarning(
-        `${chalk.yellow('If you really need to do so, please stop and reset the chain first.')}`
       );
 
       process.exit(1);

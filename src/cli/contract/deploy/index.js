@@ -4,8 +4,8 @@ const { getTopRunningChains } = require('core/forge-process');
 const { execute, run } = require('./deploy');
 
 cli(
-  'protocol:deploy [itxPath]',
-  'Deploy a compiled transaction protocol to ABT Node',
+  'contract:deploy [itxPath]',
+  'Deploy a compiled transaction contract to ABT Node',
   input => action(execute, run, input),
   {
     requirements: {

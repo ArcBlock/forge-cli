@@ -3,8 +3,8 @@ const { cli, action } = require('core/cli');
 const { execute, run } = require('./compile');
 
 cli(
-  'protocol:compile [sourceDir]',
-  'Compile a forge transaction protocol',
+  'contract:compile [sourceDir]',
+  'Compile a forge contract',
   input => action(execute, run, input),
   {
     requirements: {

@@ -12,7 +12,7 @@ const { ensureModerator } = require('core/moderator');
 const { pretty } = require('core/ui');
 const debug = require('core/debug')('deploy');
 
-const { fetchProtocols } = require('../list/list');
+const { fetchContracts } = require('../list/list');
 
 async function main({ args: [itxPath], opts: { chainName } }) {
   try {
@@ -30,7 +30,7 @@ async function main({ args: [itxPath], opts: { chainName } }) {
     }
 
     // eslint-disable-next-line no-underscore-dangle
-    printInfo(`deploy protocol to ${client._endpoint}`);
+    printInfo(`Deploy contract to ${client._endpoint}`);
 
     // eslint-disable-next-line
     const json = require(itxFile);
@@ -48,20 +48,21 @@ async function main({ args: [itxPath], opts: { chainName } }) {
     const itxObj = DeployProtocolTx.deserializeBinary(itxBuffer).toObject();
     itxObj.address = toItxAddress(itxObj, 'DeployProtocolTx');
 
-    const protocols = await fetchProtocols(client);
-    const protocolOnChain = protocols.find(
+    const contracts = await fetchContracts(client);
+    const contractOnChain = contracts.find(
       ({ name, version }) => itxObj.name === name && itxObj.version === version
     );
 
-    if (protocolOnChain) {
-      protocolOnChain.status = messages.ProtocolStatus[protocolOnChain.status].toLowerCase();
-      printError('Deploy failed: the protocol has been deployed.');
-      printInfo('Protocol info:');
-      print(pretty(protocolOnChain));
+    if (contractOnChain) {
+      contractOnChain.status = messages.ProtocolStatus[contractOnChain.status].toLowerCase();
+      printError('Deploy failed: the contract has been deployed.');
+      printInfo('Contract info:');
+      print(pretty(contractOnChain));
       process.exit(1);
     }
 
-    print('transaction protocol detail', itxObj);
+    print('Contract detail:');
+    print(itxObj);
 
     const hash = await client.sendDeployProtocolTx({
       tx: {
@@ -70,12 +71,12 @@ async function main({ args: [itxPath], opts: { chainName } }) {
       },
       wallet: moderator,
     });
-    printSuccess('transaction protocol deploy success');
+    printSuccess('Contract deploy success');
     await sleep(5000);
-    printInfo(`inspect tx with ${chalk.cyan(`forge tx ${hash}`)}`);
+    printInfo(`Inspect tx with ${chalk.cyan(`forge tx ${hash}`)}`);
   } catch (err) {
     debug.error(err);
-    printError(`transaction protocol deploy failed: ${err.message}`);
+    printError(`Contract deploy failed: ${err.message}`);
   }
 }
 

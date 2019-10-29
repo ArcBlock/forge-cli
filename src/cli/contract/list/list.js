@@ -3,10 +3,10 @@ const { messages } = require('@arcblock/forge-proto');
 const { createRpcClient } = require('core/env');
 const { print, printError, printWarning } = require('core/util');
 
-const fetchProtocols = async client => {
+const fetchContracts = async client => {
   try {
     const { state } = await client.getForgeState();
-    const protocolsRaw = await Promise.all(
+    const contractsRaw = await Promise.all(
       state.protocolsList.map(
         ({ address }) =>
           new Promise((resolve, reject) => {
@@ -17,7 +17,7 @@ const fetchProtocols = async client => {
       )
     );
 
-    const protocols = protocolsRaw
+    const contracts = contractsRaw
       .map(x => ({
         name: x.itx.name,
         address: x.itx.address,
@@ -35,28 +35,28 @@ const fetchProtocols = async client => {
         return 0;
       });
 
-    return protocols;
+    return contracts;
   } catch (err) {
-    printError('Failed to fetch protocol list', err);
+    printError('Failed to fetch contract list', err);
     return [];
   }
 };
 
 const ensureProtocols = async (client, op) => {
-  const protocols = await fetchProtocols(client);
-  // Get protocols that are disabled
-  const choices = protocols.filter(x => (op === 'activate_protocol' ? x.status : x.status === 0));
+  const contracts = await fetchContracts(client);
+  // Get contracts that are disabled
+  const choices = contracts.filter(x => (op === 'activate_protocol' ? x.status : x.status === 0));
 
   return choices;
 };
 
 async function main() {
   const client = createRpcClient();
-  const protocols = await fetchProtocols(client);
+  const contracts = await fetchContracts(client);
 
-  // Fast return if all protocols are running
-  if (!protocols.length) {
-    printWarning('No transaction protocols installed');
+  // Fast return if all contracts are running
+  if (!contracts.length) {
+    printWarning('No contracts installed');
     process.exit(0);
     return;
   }
@@ -67,7 +67,7 @@ async function main() {
     colWidths: [25, 40, 15, 10],
   });
 
-  protocols.forEach(x => {
+  contracts.forEach(x => {
     table.push([
       x.name,
       x.address,
@@ -82,4 +82,4 @@ async function main() {
 exports.run = main;
 exports.execute = main;
 exports.ensureProtocols = ensureProtocols;
-exports.fetchProtocols = fetchProtocols;
+exports.fetchContracts = fetchContracts;

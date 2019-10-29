@@ -1,3 +1,12 @@
+## 0.39.25 (October 29, 2019)
+
+- feat: add contract:create command #164
+- refact: rename protocol:ls to contract:ls
+- refact: rename protocol:deploy to contract:deploy
+- refact: rename protocol:deactivate to contract:deactivate
+- refact: rename protocol:compile to contract:compile
+- refact: rename protocol:activate to contract:activate
+
 ## 0.39.24 (October 28, 2019)
 
 - refactor: rename config to chain:config

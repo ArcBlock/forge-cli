@@ -3,10 +3,10 @@ const path = require('path');
 const shell = require('shelljs');
 const chalk = require('chalk');
 const yaml = require('yaml');
-const { symbols, getSpinner } = require('core/ui');
+const { getSpinner } = require('core/ui');
 const debug = require('core/debug')('compile');
 const { isFile, isDirectory } = require('core/forge-fs');
-const { printError } = require('core/util');
+const { logError, print, printInfo, printError, printSuccess } = require('core/util');
 const { downloadAsset } = require('../../release/download/lib');
 
 const { DEFAULT_MIRROR, REQUIRED_DIRS } = require('../../../constant');
@@ -98,24 +98,20 @@ async function ensureJavascriptCompiler() {
       return true;
     }
 
-    shell.echo(
-      `${symbols.error} protobufjs not installed, please install with ${chalk.cyan(
-        'npm install -g protobufjs'
-      )}`
+    printError(
+      `protobufjs not installed, please install with ${chalk.cyan('npm install -g protobufjs')}`
     );
     process.exit(1);
   }
 
-  shell.echo(
-    `${symbols.error} grpc-tools not installed, please install with ${chalk.cyan(
-      'npm install -g grpc-tools'
-    )}`
+  printError(
+    `grpc-tools not installed, please install with ${chalk.cyan('npm install -g grpc-tools')}`
   );
   process.exit(1);
 }
 
 async function compileElixir({ targetDir, config, configFile, outputPrefix }) {
-  shell.echo(`${symbols.info} generating elixir language support:`);
+  printInfo('Generating elixir language support:');
 
   const compiler = await ensureForgeCompiler();
   const { name } = config;
@@ -128,21 +124,18 @@ async function compileElixir({ targetDir, config, configFile, outputPrefix }) {
     silent: true,
   });
   if (Number(code) === 0) {
-    shell.echo(
-      `${symbols.success} elixir itx generated: ${targetExDir.replace(
-        outputPrefix,
-        ''
-      )}/${name}/${name}.itx.json`
+    printSuccess(
+      `Elixir itx generated: ${targetExDir.replace(outputPrefix, '')}/${name}/${name}.itx.json`
     );
   } else {
-    shell.echo(`${symbols.error} elixir generate failed: ${stderr || stdout}`);
+    printError(`Elixir generate failed: ${stderr || stdout}`);
   }
-  shell.echo('');
+  print();
 }
 
 async function compileJavascript({ sourceDir, targetDir, config, protoFile, outputPrefix }) {
   await ensureJavascriptCompiler();
-  shell.echo(`${symbols.info} generating javascript language support:`);
+  printInfo('Generating JavaScript language support:');
 
   const { name, type_urls: typeUrls } = config;
   const targetJsDir = path.join(targetDir, name, 'javascript');
@@ -152,21 +145,11 @@ async function compileJavascript({ sourceDir, targetDir, config, protoFile, outp
     // eslint-disable-next-line max-len
     `grpc_tools_node_protoc --proto_path=/tmp/forge_compiler_vendors --proto_path=${sourceDir} --js_out=import_style=commonjs,binary:${targetJsDir} --plugin=protoc-gen-grpc=\`which grpc_tools_node_protoc_plugin\` ${protoFile}`
   );
-  shell.echo(
-    `${symbols.success} protobuf js generated: ${targetJsDir.replace(
-      outputPrefix,
-      ''
-    )}/protocol_pb.js`
-  );
+  printSuccess(`Protobuf js generated: ${targetJsDir.replace(outputPrefix, '')}/protocol_pb.js`);
   shell.exec(
     `pbjs -p /tmp/forge_compiler_vendors -p ${sourceDir} -t json -o ${targetJsDir}/protocol_spec.json ${protoFile}`
   );
-  shell.echo(
-    `${symbols.success} json spec generated: ${targetJsDir.replace(
-      outputPrefix,
-      ''
-    )}/protocol_spec.json`
-  );
+  printSuccess(`JSON spec generated: ${targetJsDir.replace(outputPrefix, '')}/protocol_spec.json`);
 
   // 3. generate type urls for javascript
   const results = Object.keys(typeUrls || {}).reduce((obj, url) => {
@@ -175,11 +158,8 @@ async function compileJavascript({ sourceDir, targetDir, config, protoFile, outp
     return obj;
   }, {});
   fs.writeFileSync(`${targetJsDir}/protocol_url.json`, JSON.stringify(results));
-  shell.echo(
-    `${symbols.success} type urls json generated: ${targetJsDir.replace(
-      outputPrefix,
-      ''
-    )}/protocol_url.json`
+  printSuccess(
+    `type_urls json generated: ${targetJsDir.replace(outputPrefix, '')}/protocol_url.json`
   );
 
   // 4. generate javascript entry file
@@ -198,13 +178,9 @@ addProvider(provider({ types }, specs, urls));
 module.exports = { types, specs, urls };
 `
   );
-  shell.echo(
-    `${symbols.success} javascript entry file generated: ${targetJsDir.replace(
-      outputPrefix,
-      ''
-    )}/index.js`
+  printSuccess(
+    `JavaScript entry file generated: ${targetJsDir.replace(outputPrefix, '')}/index.js`
   );
-  shell.echo('');
 }
 
 async function main({ args: [dir], opts: { targets = 'elixir,javascript' } }) {
@@ -213,21 +189,21 @@ async function main({ args: [dir], opts: { targets = 'elixir,javascript' } }) {
     const outputDir = process.cwd();
     const outputPrefix = `${outputDir}/`;
     if (!isDirectory(sourceDir)) {
-      shell.echo(`${symbols.error} tx protocol source folder ${sourceDir} not exists`);
+      printError(`TX contract source folder ${sourceDir} not exists`);
       process.exit(1);
     }
 
     const configFile = path.join(sourceDir, 'config.yml');
     if (!isFile(configFile)) {
-      shell.echo(`${symbols.error} tx protocol config file ${configFile} not exists`);
+      printError(`TX contract config file ${configFile} not exists`);
       process.exit(1);
     }
 
     const config = yaml.parse(fs.readFileSync(configFile).toString());
     const { name, version, proto } = config;
     const protoFile = path.join(sourceDir, proto);
-    shell.echo(`${symbols.info} protocol meta: ${JSON.stringify({ name, version })}`);
-    shell.echo('');
+    printInfo(`Contract meta: ${JSON.stringify({ name, version })}`);
+    print();
 
     // 0. prepare compile dir
     const targetDir = path.join(outputDir, '.compiled');
@@ -253,8 +229,8 @@ async function main({ args: [dir], opts: { targets = 'elixir,javascript' } }) {
       await compileJavascript(params);
     }
   } catch (err) {
-    debug.error(err);
-    printError('transaction protocol compile failed');
+    logError(err);
+    printError(`Contract compile failed: ${err.message}`);
   }
 }
 

@@ -2,11 +2,11 @@ const shell = require('shelljs');
 const chalk = require('chalk');
 const { cli, action } = require('core/cli');
 const { getTopRunningChains } = require('core/forge-process');
-const { execute, run } = require('./activate');
+const { execute, run } = require('./deactivate');
 
 cli(
-  'protocol:activate [name|address]',
-  'Activate a transaction protocol by name or address',
+  'contract:deactivate [name|address]',
+  'Deactivate a contract',
   input => action(execute, run, input),
   {
     requirements: {
@@ -22,10 +22,10 @@ cli(
       '--help': () => {
         shell.echo(`
 Examples:
-  - ${chalk.cyan('forge activate transfer')}         Activate protocol by name
+  - ${chalk.cyan('forge deactivate transfer')}         deactivate contract by name
   - ${chalk.cyan(
-    'forge activate z2E3vuTEWpE7PhmVP61eZWJXutgxMHeimwqtv'
-  )}   Activate protocol by address
+    'forge deactivate z2E3vuTEWpE7PhmVP61eZWJXutgxMHeimwqtv'
+  )}   deactivate contract by address
         `);
       },
     },

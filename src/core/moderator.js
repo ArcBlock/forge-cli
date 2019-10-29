@@ -100,7 +100,7 @@ const ensureModerator = async (client, { currentVersion }) => {
     process.exit(1);
   }
 
-  printSuccess('moderator checked success');
+  printSuccess('Moderator checked success');
   return localModerator;
 };
 

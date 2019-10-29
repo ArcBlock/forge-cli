@@ -3,7 +3,7 @@ const path = require('path');
 const { print, printError, printSuccess } = require('core/util');
 const { inquire } = require('core/libs/interaction');
 
-const WILL_BE_CREATED_FILES = ['config.yml', 'protocol.proto', 'protocol.yml'];
+const WILL_BE_CREATED_FILES = ['config.yml', 'contract.proto', 'contract.yml'];
 const generateConfigViaTemplate = ({ name = '', description = '' }) => `---
 name: ${name}
 version: 1
@@ -12,19 +12,19 @@ namespace: CoreTx
 description: ${description}
 type_urls:
   fg:t:create_demo: ForgeAbi.CreateDemoTx
-proto: protocol.proto
-pipeline: protocol.yml
+proto: contract.proto
+pipeline: contract.yml
 sources: []
 `;
 
-const generateProtocolViaTemplate = (name = '') => `---
+const generateContractViaTemplate = (name = '') => `---
 name: ${name}
 check: []
 verify: []
 update: []
 `;
 
-const generateProtocolProtoViaTemplate = () => `syntax = "proto3";
+const generateProtoViaTemplate = () => `syntax = "proto3";
 package forge_abi;
 
 message CreateDemoTx {
@@ -84,10 +84,10 @@ async function execute({ destDir = process.cwd(), name = '', description = '' })
     throw new Error(descValidateRes);
   }
 
-  fs.writeFileSync(path.join(destDir, 'protocol.proto'), generateProtocolProtoViaTemplate());
-  printSuccess('File protocol.proto created...');
-  fs.writeFileSync(path.join(destDir, 'protocol.yml'), generateProtocolViaTemplate(name));
-  printSuccess('File protocol.yml created...');
+  fs.writeFileSync(path.join(destDir, 'contract.proto'), generateProtoViaTemplate());
+  printSuccess('File contract.proto created...');
+  fs.writeFileSync(path.join(destDir, 'contract.yml'), generateContractViaTemplate(name));
+  printSuccess('File contract.yml created...');
   fs.writeFileSync(
     path.join(destDir, 'config.yml'),
     generateConfigViaTemplate({ name, description })

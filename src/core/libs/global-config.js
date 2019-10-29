@@ -48,11 +48,11 @@ function getConfig(item) {
 
 function setConfig(item, value) {
   if (!CONFIG_ITEMS.includes(item)) {
-    throw new Error(`invalid config item: ${item}`);
+    throw new Error(`Invalid config item: ${item}`);
   }
 
   if (typeof value === 'undefined') {
-    throw new Error('value should not be empty');
+    throw new Error('Value should not be empty');
   }
 
   if (DEFAULT_CONFIGS[item].type.name === 'Boolean') {

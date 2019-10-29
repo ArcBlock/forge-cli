@@ -18,7 +18,7 @@ async function main({ opts: { chainName } }) {
   const currentVersion = getChainVersion(chainName);
 
   if (!currentVersion) {
-    throw new Error(`invalid chain version, chain: ${chainName}`);
+    throw new Error(`Invalid chain version, chain: ${chainName}`);
   }
 
   const { storageEngine = 'ipfs', consensusEngine = 'tendermint' } = config.get('forge');

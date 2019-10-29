@@ -94,6 +94,12 @@ Commands:
   chain:reset <chainName>                Reset chain state, but keeps the config
   checkin                                Send a poke tx to the network to get tokens for test
   config [options] [key] [value]         Config forge cli configs
+  contract:activate [name|address]       Activate a contract by name or address
+  contract:compile [sourceDir]           Compile a forge contract
+  contract:create [options]              Create contract files
+  contract:deactivate [name|address]     Deactivate a contract
+  contract:deploy [itxPath]              Deploy a compiled contract to ABT Node
+  contract:ls                            List contracts
   declare:node                           Declare the current node to be a validator candidate
   download [options] [version]           Download a forge release without activate it
   help [subcommand]                      Show help of a sub command
@@ -103,17 +109,12 @@ Commands:
   ls                                     List forge releases installed locally
   ls:remote                              List remote forge releases available for install
   prepare [options]                      Prepare node for deploying a multi-node chain
-  protocol:activate [name|address]       Activate a transaction protocol by name or address
-  protocol:compile [sourceDir]           Compile a forge transaction protocol
-  protocol:deactivate [name|adderss]     Deactivate a transaction protocol
-  protocol:deploy [itxPath]              Deploy a compiled transaction protocol to ABT Node
-  protocol:ls                            List transaction protocols
   ps                                     List running forge component processes
   remote [shellName]                     Connects to the running system via a remote shell
   simulator [action]                     Start/stop simulator and generate random traffic
-  start [options] [<chainName>]          Start a chain daemon, if does not specify a chain name, it will start a default chain
+  start [options] [<chainName>]          Start the forge and forge web deamon
   status [type]                          List info of the running chain/node
-  stop [options] [<chainName>]           Stop the forge daemon and all forge components, if does not specify a chain name, it will start a default chain
+  stop [options] [<chainName>]           Stop the forge daemon and all related services
   tx [hash]                              Get a tx detail and display
   tx:list                                List latest transactions
   upgrade [<chainName>]                  Upgrade chain node to new version without reset

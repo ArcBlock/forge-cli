@@ -56,7 +56,7 @@ async function main() {
 
   // Fast return if all contracts are running
   if (!contracts.length) {
-    printWarning('No transaction contracts installed');
+    printWarning('No contracts installed');
     process.exit(0);
     return;
   }

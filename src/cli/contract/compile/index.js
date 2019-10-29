@@ -4,7 +4,7 @@ const { execute, run } = require('./compile');
 
 cli(
   'contract:compile [sourceDir]',
-  'Compile a forge transaction contract',
+  'Compile a forge contract',
   input => action(execute, run, input),
   {
     requirements: {

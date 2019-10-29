@@ -6,7 +6,7 @@ const { execute, run } = require('./deactivate');
 
 cli(
   'contract:deactivate [name|address]',
-  'Deactivate a transaction contract',
+  'Deactivate a contract',
   input => action(execute, run, input),
   {
     requirements: {

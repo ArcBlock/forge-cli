@@ -2,7 +2,7 @@
 const { cli, action } = require('core/cli');
 const { execute, run } = require('./create');
 
-cli('contract:create', 'Create transaction contract files', input => action(execute, run, input), {
+cli('contract:create', 'Create contract files', input => action(execute, run, input), {
   requirements: {
     forgeRelease: false,
     runningNode: false,
@@ -13,7 +13,7 @@ cli('contract:create', 'Create transaction contract files', input => action(exec
     currentChainRunning: false,
   },
   options: [
-    ['-n, --contract-name <contractName>', 'transaction contract name'],
-    ['-s, --contract-desc <contractDesc>', 'transaction contract description'],
+    ['-n, --contract-name <contractName>', 'contract name'],
+    ['-s, --contract-desc <contractDesc>', 'contract description'],
   ],
 });

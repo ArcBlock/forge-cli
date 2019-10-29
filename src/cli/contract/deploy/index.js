@@ -5,7 +5,7 @@ const { execute, run } = require('./deploy');
 
 cli(
   'contract:deploy [itxPath]',
-  'Deploy a compiled transaction contract to ABT Node',
+  'Deploy a compiled contract to ABT Node',
   input => action(execute, run, input),
   {
     requirements: {

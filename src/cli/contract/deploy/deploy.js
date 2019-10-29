@@ -61,7 +61,7 @@ async function main({ args: [itxPath], opts: { chainName } }) {
       process.exit(1);
     }
 
-    print('Transaction contract detail:');
+    print('Contract detail:');
     print(itxObj);
 
     const hash = await client.sendDeployProtocolTx({
@@ -71,12 +71,12 @@ async function main({ args: [itxPath], opts: { chainName } }) {
       },
       wallet: moderator,
     });
-    printSuccess('Transaction contract deploy success');
+    printSuccess('Contract deploy success');
     await sleep(5000);
     printInfo(`Inspect tx with ${chalk.cyan(`forge tx ${hash}`)}`);
   } catch (err) {
     debug.error(err);
-    printError(`Transaction contract deploy failed: ${err.message}`);
+    printError(`Contract deploy failed: ${err.message}`);
   }
 }
 

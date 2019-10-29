@@ -230,7 +230,7 @@ async function main({ args: [dir], opts: { targets = 'elixir,javascript' } }) {
     }
   } catch (err) {
     logError(err);
-    printError(`Transaction contract compile failed: ${err.message}`);
+    printError(`Contract compile failed: ${err.message}`);
   }
 }
 

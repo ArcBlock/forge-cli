@@ -24,8 +24,7 @@ verify: []
 update: []
 `;
 
-const generateProtocolProtoViaTemplate = () => `
-syntax = "proto3";
+const generateProtocolProtoViaTemplate = () => `syntax = "proto3";
 package forge_abi;
 
 message CreateDemoTx {
@@ -39,19 +38,19 @@ message Demo {
 
 const validateContractName = (name = '') => {
   if (!/^[a-zA-Z][a-zA-Z0-9_]{2,23}$/.test(name)) {
-    return 'Transaction contract name should start with a letter, only contain 0-9,a-z,A-Z, and length between 3~24';
+    return 'Contract name should start with a letter, only contain 0-9,a-z,A-Z, and length between 3~24';
   }
 
   return true;
 };
 
 const validateContractDescription = (description = '') => {
-  if (!description || !description.trim) {
-    return 'Transaction contract description shall a string';
+  if (typeof description !== 'string') {
+    return 'Contract description should be a string';
   }
 
   if (description.trim().length < 10) {
-    return 'Transaction contract description shall be at least 10 characters';
+    return 'Contract description should be at least 10 characters';
   }
 
   return true;
@@ -109,7 +108,7 @@ async function run({
     const { confirm } = await inquire(
       [
         {
-          type: 'boolean',
+          type: 'confirm',
           name: 'confirm',
           default: true,
           message: 'Current direcotry is not empty, continue?',
@@ -129,7 +128,7 @@ async function run({
     questions.push({
       type: 'text',
       name: 'name',
-      message: 'Please input transaction contract name:',
+      message: 'Please input contract name:',
       validate: validateContractName,
     });
   }
@@ -137,7 +136,7 @@ async function run({
     questions.push({
       type: 'text',
       name: 'description',
-      message: 'Please input transaction contract description:',
+      message: 'Please input contract description:',
       validate: validateContractDescription,
     });
   }

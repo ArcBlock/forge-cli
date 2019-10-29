@@ -6,7 +6,7 @@ const { execute, run } = require('./activate');
 
 cli(
   'contract:activate [name|address]',
-  'Activate a transaction contract by name or address',
+  'Activate a contract by name or address',
   input => action(execute, run, input),
   {
     requirements: {

@@ -16,10 +16,10 @@ const doDeactivate = async (client, address, moderator) => {
       },
       wallet: moderator,
     });
-    printSuccess(`Protocol ${address} successfully deactivated`);
+    printSuccess(`Contract ${address} successfully deactivated`);
     printInfo(`Run ${chalk.cyan(`forge tx ${hash} -c ${chainName}`)} to inspect the transaction`);
   } catch (err) {
-    printError(`Protocol ${address} deactivate failed`, err);
+    printError(`Contract ${address} deactivate failed`, err);
   }
 };
 
@@ -29,20 +29,20 @@ async function main({ args: [id = ''], opts: { chainName } }) {
   const moderator = await ensureModerator(client, { currentVersion });
   const choices = await ensureProtocols(client, 'deactivate_protocol');
 
-  // Fast return if all protocols are running
+  // Fast return if all contracts are running
   if (!choices.length) {
-    printWarning('All installed protocols are disabled, nothing to deactivate');
+    printWarning('All installed contracts are disabled, nothing to deactivate');
     process.exit(0);
     return;
   }
 
   // Disable by id
   if (id) {
-    const protocol = choices.find(x => x.name === id || x.address === id);
-    if (protocol) {
-      await doDeactivate(client, protocol.address, moderator);
+    const contract = choices.find(x => x.name === id || x.address === id);
+    if (contract) {
+      await doDeactivate(client, contract.address, moderator);
     } else {
-      printError(`Protocol ${id} not found`);
+      printError(`Contract ${id} not found`);
       process.exit(1);
     }
 
@@ -53,7 +53,7 @@ async function main({ args: [id = ''], opts: { chainName } }) {
     {
       type: 'list',
       name: 'address',
-      message: 'Please select protocol to deactivate:',
+      message: 'Please select contract to deactivate:',
       choices: choices.map(({ name, address }) => ({
         name: `${address} - ${name}`,
         value: address,

@@ -5,8 +5,8 @@ const { getTopRunningChains } = require('core/forge-process');
 const { execute, run } = require('./deactivate');
 
 cli(
-  'protocol:deactivate [name|adderss]',
-  'Deactivate a transaction protocol',
+  'contract:deactivate [name|address]',
+  'Deactivate a transaction contract',
   input => action(execute, run, input),
   {
     requirements: {
@@ -22,10 +22,10 @@ cli(
       '--help': () => {
         shell.echo(`
 Examples:
-  - ${chalk.cyan('forge deactivate transfer')}         deactivate protocol by name
+  - ${chalk.cyan('forge deactivate transfer')}         deactivate contract by name
   - ${chalk.cyan(
     'forge deactivate z2E3vuTEWpE7PhmVP61eZWJXutgxMHeimwqtv'
-  )}   deactivate protocol by address
+  )}   deactivate contract by address
         `);
       },
     },

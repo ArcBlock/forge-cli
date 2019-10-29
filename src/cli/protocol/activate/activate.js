@@ -16,10 +16,10 @@ const doActivate = async (client, address, moderator) => {
       },
       wallet: moderator,
     });
-    printSuccess(`Protocol ${address} successfully activated`);
+    printSuccess(`Contract ${address} successfully activated`);
     printInfo(`Run ${chalk.cyan(`forge tx ${hash} -c ${chainName}`)} to inspect the transaction`);
   } catch (err) {
-    printError(`Protocol ${address} activate failed`, err);
+    printError(`Contract ${address} activate failed`, err);
   }
 };
 
@@ -31,18 +31,18 @@ async function main({ args: [id = ''], opts: { chainName } }) {
 
   // Fast return if all protocols are running
   if (!choices.length) {
-    printWarning('All installed protocols are running, no need to activate');
+    printWarning('All installed contracts are running, no need to activate');
     process.exit(0);
     return;
   }
 
   // Disable by id
   if (id) {
-    const protocol = choices.find(x => x.name === id || x.address === id);
-    if (protocol) {
-      await doActivate(client, protocol.address, moderator);
+    const contract = choices.find(x => x.name === id || x.address === id);
+    if (contract) {
+      await doActivate(client, contract.address, moderator);
     } else {
-      printError(`Protocol ${id} not found`);
+      printError(`Contract ${id} not found`);
       process.exit(1);
     }
 
@@ -53,7 +53,7 @@ async function main({ args: [id = ''], opts: { chainName } }) {
     {
       type: 'list',
       name: 'address',
-      message: 'Please select protocol to activate:',
+      message: 'Please select a contract to activate:',
       choices: choices.map(({ name, address }) => ({
         name: `${address} - ${name}`,
         value: address,

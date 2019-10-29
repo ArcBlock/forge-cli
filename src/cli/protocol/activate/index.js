@@ -5,8 +5,8 @@ const { getTopRunningChains } = require('core/forge-process');
 const { execute, run } = require('./activate');
 
 cli(
-  'protocol:activate [name|address]',
-  'Activate a transaction protocol by name or address',
+  'contract:activate [name|address]',
+  'Activate a transaction contract by name or address',
   input => action(execute, run, input),
   {
     requirements: {
@@ -22,10 +22,10 @@ cli(
       '--help': () => {
         shell.echo(`
 Examples:
-  - ${chalk.cyan('forge activate transfer')}         Activate protocol by name
+  - ${chalk.cyan('forge activate transfer')}         Activate contract by name
   - ${chalk.cyan(
     'forge activate z2E3vuTEWpE7PhmVP61eZWJXutgxMHeimwqtv'
-  )}   Activate protocol by address
+  )}   Activate contract by address
         `);
       },
     },

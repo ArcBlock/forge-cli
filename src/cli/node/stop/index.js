@@ -1,13 +1,13 @@
-const shell = require('shelljs');
 const chalk = require('chalk');
 const { cli, action } = require('core/cli');
+const { print } = require('core/util');
 const { getTopRunningChains } = require('core/forge-process');
 
 const { execute, run } = require('./stop');
 
 cli(
   'stop [<chainName>]',
-  'Stop the forge daemon and all forge components, if does not specify a chain name, it will start a default chain',
+  'Stop the forge daemon and all related services',
   input => action(execute, run, input),
   {
     requirements: {
@@ -23,7 +23,7 @@ cli(
     ],
     handlers: {
       '--help': () => {
-        shell.echo(`
+        print(`
 Examples:
   - ${chalk.cyan('forge stop')}             stop default chain in graceful manner
   - ${chalk.cyan('forge stop test')}             stop test chain in graceful manner

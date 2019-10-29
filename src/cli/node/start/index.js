@@ -8,7 +8,7 @@ const { execute, run } = require('./start');
 
 cli(
   'start [<chainName>]',
-  'Start a chain daemon, if does not specify a chain name, it will start a default chain',
+  'Start the forge and forge web deamon',
   input => action(execute, run, input),
   {
     requirements: {

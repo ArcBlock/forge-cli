@@ -10,7 +10,7 @@ const {
   getChainReleaseFilePath,
 } = require('core/forge-fs');
 const { hasChains } = require('core/libs/common');
-const { getCustomConfigs, writeConfigs } = require('../../node/config/lib');
+const { getCustomConfigs, writeConfigs } = require('../config/lib');
 
 async function main({ args: [chainName = ''], opts: { defaults, allowMultiChain = false } }) {
   if ((await hasChains()) && allowMultiChain === false) {

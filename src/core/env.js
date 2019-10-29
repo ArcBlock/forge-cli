@@ -4,7 +4,6 @@ const fs = require('fs');
 const path = require('path');
 const chalk = require('chalk');
 const shell = require('shelljs');
-const execa = require('execa');
 const semver = require('semver');
 const inquirer = require('inquirer');
 const isElevated = require('is-elevated');
@@ -21,13 +20,17 @@ const {
 } = require('core/forge-fs');
 const { ensureForgeRelease } = require('core/forge-config');
 const { isForgeStarted, getProcessTag, getAllProcesses } = require('./forge-process');
-const { inquire } = require('./libs/interaction');
-const { printError, print, printInfo, printLogo, printSuccess, printWarning } = require('./util');
-const { hasChains, getOSUserInfo, getTopChainName } = require('./libs/common');
+const { printError, printInfo, printLogo, printWarning } = require('./util');
+const {
+  hasChains,
+  getOSUserInfo,
+  getTopChainName,
+  readCache,
+  writeCache,
+} = require('./libs/common');
 
 const { DEFAULT_CHAIN_NAME_RETURN, REQUIRED_DIRS } = require('../constant');
-const { version } = require('../../package.json');
-const { symbols, hr, pretty, wrapSpinner } = require('./ui');
+const { symbols, hr, pretty } = require('./ui');
 const debug = require('./debug')('env');
 
 const CURRENT_WORKING_CHAIN = getChainDirectory(process.env.FORGE_CURRENT_CHAIN);
@@ -53,12 +56,6 @@ async function setupEnv(requirements, args = {}) {
   ensureEnv(args);
   await ensureNonRoot();
   ensureRequiredDirs();
-
-  try {
-    await checkUpdate(args);
-  } catch (error) {
-    debug(error);
-  }
 
   await ensureChainName(requirements.chainName, requirements.chainExists, args);
   if (process.env.FORGE_CURRENT_CHAIN) {
@@ -475,81 +472,6 @@ function makeNativeCommandRunner(executable, name, { env } = {}) {
       return shell.exec(command, options);
     };
   };
-}
-
-function writeCache(key, data) {
-  try {
-    fs.writeFileSync(path.join(REQUIRED_DIRS.cache, `${key}.json`), JSON.stringify(data));
-    debug(`${symbols.success} cache ${key} write success!`);
-    return true;
-  } catch (err) {
-    debug.error(`${symbols.error} cache ${key} write failed!`, err);
-    return false;
-  }
-}
-
-function readCache(key) {
-  try {
-    const filePath = path.join(REQUIRED_DIRS.cache, `${key}.json`);
-    return JSON.parse(fs.readFileSync(filePath));
-  } catch (err) {
-    debug.error(`${symbols.error} cache ${key} read failed!`);
-    return null;
-  }
-}
-
-async function checkUpdate({ silent, defaults, yes, npmRegistry: registry, autoUpgrade }) {
-  if (autoUpgrade === false) {
-    return;
-  }
-
-  const lastCheck = readCache('check-update');
-  const now = Math.floor(Date.now() / 1000);
-  const secondsOfDay = 24 * 60 * 60;
-  debug('check update', { lastCheck, now });
-  if (lastCheck && lastCheck + secondsOfDay > now) {
-    return;
-  }
-
-  writeCache('check-update', now);
-
-  const { stdout: latest } = await wrapSpinner('Checking new version...', () => {
-    let cmd = 'npm view @arcblock/forge-cli version';
-    if (registry) {
-      cmd = `${cmd} --registry=${registry}`;
-    }
-    debug('check update command', cmd);
-    return execa.command(cmd, { silent: true });
-  });
-  const installed = version;
-  debug('check update', { latest, installed });
-
-  if (semver.gt(latest.trim(), installed.trim())) {
-    print(
-      chalk.red(
-        `${
-          symbols.info
-        } Latest forge-cli version is v${latest.trim()}, your local version v${installed.trim()}`
-      )
-    );
-
-    const { confirm } = await inquire(
-      [
-        {
-          name: 'confirm',
-          type: 'confirm',
-          message: 'Upgrade?',
-          default: false,
-        },
-      ],
-      { defaults, silent, yes }
-    );
-
-    if (confirm) {
-      printSuccess(`Updating to ${latest.trim()}...`);
-      execa.commandSync('npm install -g @arcblock/forge-cli', { stdio: [0, 1, 2] });
-    }
-  }
 }
 
 // Because some comments have special usage, we need to add it back

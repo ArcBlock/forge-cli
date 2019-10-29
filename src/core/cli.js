@@ -5,6 +5,7 @@ const pickBy = require('lodash/pickBy');
 
 const { getGlobalConfig } = require('core/libs/global-config');
 const { setupEnv } = require('./env');
+const { checkUpdate } = require('./libs/common');
 
 const allCommands = [];
 
@@ -103,6 +104,7 @@ function initCli(program) {
           Object.assign(opts, configs);
         }
 
+        checkUpdate(opts);
         await x.handler({
           args: params.filter(p => typeof p === 'string'),
           opts,

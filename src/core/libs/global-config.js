@@ -13,10 +13,6 @@ const DEFAULT_CONFIGS = {
     type: Boolean,
     defaultValue: true,
   },
-  autoUpgrade: {
-    type: Boolean,
-    defaultValue: true,
-  },
   configPath: { type: String, defaultValue: undefined },
   defaults: { type: Boolean, defaultValue: false },
   mirror: { type: String, defaultValue: undefined },
@@ -52,11 +48,11 @@ function getConfig(item) {
 
 function setConfig(item, value) {
   if (!CONFIG_ITEMS.includes(item)) {
-    throw new Error('invalid config item');
+    throw new Error(`Invalid config item: ${item}`);
   }
 
   if (typeof value === 'undefined') {
-    throw new Error('value should not be empty');
+    throw new Error('Value should not be empty');
   }
 
   if (DEFAULT_CONFIGS[item].type.name === 'Boolean') {

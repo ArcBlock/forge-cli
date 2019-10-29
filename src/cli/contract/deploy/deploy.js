@@ -12,7 +12,7 @@ const { ensureModerator } = require('core/moderator');
 const { pretty } = require('core/ui');
 const debug = require('core/debug')('deploy');
 
-const { fetchProtocols } = require('../list/list');
+const { fetchContracts } = require('../list/list');
 
 async function main({ args: [itxPath], opts: { chainName } }) {
   try {
@@ -48,7 +48,7 @@ async function main({ args: [itxPath], opts: { chainName } }) {
     const itxObj = DeployProtocolTx.deserializeBinary(itxBuffer).toObject();
     itxObj.address = toItxAddress(itxObj, 'DeployProtocolTx');
 
-    const contracts = await fetchProtocols(client);
+    const contracts = await fetchContracts(client);
     const contractOnChain = contracts.find(
       ({ name, version }) => itxObj.name === name && itxObj.version === version
     );

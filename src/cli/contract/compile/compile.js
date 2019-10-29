@@ -181,7 +181,6 @@ module.exports = { types, specs, urls };
   printSuccess(
     `JavaScript entry file generated: ${targetJsDir.replace(outputPrefix, '')}/index.js`
   );
-  print();
 }
 
 async function main({ args: [dir], opts: { targets = 'elixir,javascript' } }) {

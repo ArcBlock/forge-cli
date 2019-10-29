@@ -29,7 +29,7 @@ async function main({ args: [id = ''], opts: { chainName } }) {
   const moderator = await ensureModerator(client, { currentVersion });
   const choices = await ensureProtocols(client, 'activate_protocol');
 
-  // Fast return if all protocols are running
+  // Fast return if all contracts are running
   if (!choices.length) {
     printWarning('All installed contracts are running, no need to activate');
     process.exit(0);

@@ -54,8 +54,8 @@ process.on('exit', () => {
       )
     );
     print(chalk.yellow('You can upgrade Forge CLI via, npm or yarn:'));
-    print(chalk.yellow(`npm: npm install -g ${packageName}`));
-    print(chalk.yellow(`yarn: yarn global add ${packageName}`));
+    print(chalk.yellow(`- npm:  ${chalk.cyan(`npm install -g ${packageName}`)}`));
+    print(chalk.yellow(`- yarn: ${chalk.cyan(`yarn global add ${packageName}`)}`));
   }
 });
 

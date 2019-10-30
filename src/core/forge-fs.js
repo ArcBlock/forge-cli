@@ -118,17 +118,32 @@ async function getLocalReleases() {
 
 async function listReleases() {
   const platform = await getPlatform();
-  const remoteReleasesInfo = (await fetchReleaseAssetsInfo(platform)) || [];
+  let remoteReleasesInfo = [];
+  try {
+    remoteReleasesInfo = await fetchReleaseAssetsInfo(platform);
+  } catch (error) {
+    debug('fetch remote releases information failed:', error.message);
+    logError(error);
+  }
+
   const versionAssetsMap = await getLocalReleases();
 
-  const result = [];
+  let result = Object.keys(versionAssetsMap)
+    .map(version => {
+      if (versionAssetsMap[version]) {
+        return { version, assets: versionAssetsMap[version] };
+      }
 
-  Object.keys(versionAssetsMap).forEach(version => {
-    const tmp = remoteReleasesInfo.find(x => semver.eq(x.version, version));
-    if (versionAssetsMap[version] && isEqual(versionAssetsMap[version], tmp.assets)) {
-      result.push({ version, assets: versionAssetsMap[version] });
-    }
-  });
+      return null;
+    })
+    .filter(Boolean);
+
+  if (remoteReleasesInfo.length > 0) {
+    result = result.filter(({ version, assets }) => {
+      const tmp = remoteReleasesInfo.find(x => semver.eq(x.version, version));
+      return isEqual(assets, tmp.assets);
+    });
+  }
 
   return result;
 }

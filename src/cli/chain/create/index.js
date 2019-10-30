@@ -8,7 +8,6 @@ cli(
   'Create a new chain instance',
   input => action(execute, run, input),
   {
-    alias: 'create-chain',
     parseArgs: chainName => ({
       chainName,
     }),

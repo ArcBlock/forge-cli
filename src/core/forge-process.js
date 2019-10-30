@@ -150,7 +150,7 @@ async function getStarterProcess(chainName) {
 async function getChildProcessesOfStarter(chainName) {
   const starterProcess = await getStarterProcess(chainName);
   if (starterProcess.pid === 0) {
-    return { name: '', pid: 0 };
+    return [{ name: '', pid: 0 }];
   }
 
   const starterChildProcesses = await pidTree(starterProcess.pid, { root: false });

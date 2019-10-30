@@ -14,6 +14,7 @@ const {
   chainSortHandler,
   fetchReleaseAssetsInfo,
   getPlatform,
+  logError,
   print,
   printWarning,
   printInfo,
@@ -43,14 +44,21 @@ const readChainConfigFromEnv = () => {
 };
 
 const readChainConfig = (chainName, key, defaultValue = '') => {
-  const configPath = getChainReleaseFilePath(chainName);
-  const config = TOML.parse(fs.readFileSync(configPath).toString());
+  let configPath = '';
 
-  if (!key) {
-    return config;
+  try {
+    configPath = getChainReleaseFilePath(chainName);
+    const config = TOML.parse(fs.readFileSync(configPath).toString());
+
+    if (!key) {
+      return config;
+    }
+
+    return get(config, key, defaultValue);
+  } catch (error) {
+    logError(error);
+    throw new Error(`read ${chainName} config ${configPath} failed: ${error.message}`);
   }
-
-  return get(config, key, defaultValue);
 };
 
 function clearDataDirectories(chainName = process.env.FORGE_CURRENT_CHAIN, keepConfig = false) {

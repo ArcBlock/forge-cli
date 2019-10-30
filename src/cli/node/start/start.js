@@ -32,18 +32,18 @@ async function main({
 }
 
 async function start(chainName, dryRun = false, allowMultiChain) {
-  if (allowMultiChain === false) {
-    const runningChains = await getAllRunningProcesses();
-    if (runningChains.length > 0) {
-      printInfo(`Chain ${chalk.cyan(chalk.cyan(chainName))} is already started!`);
-      await printAllProcesses();
-      return true;
-    }
-  }
-
   if (await isForgeStarted(chainName)) {
     printInfo(`Chain ${chalk.cyan(chalk.cyan(chainName))} is already started!`);
     return true;
+  }
+
+  if (allowMultiChain === false) {
+    const runningChains = await getAllRunningProcesses();
+    if (runningChains.length > 0) {
+      printError('Forge CLI is configured to work with single chain only, abort!');
+      await printAllProcesses();
+      return false;
+    }
   }
 
   const { starterBinPath, forgeBinPath, forgeConfigPath } = config.get('cli');

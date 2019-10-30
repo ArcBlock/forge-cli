@@ -163,6 +163,10 @@ module.exports = {
   getMinSupportForgeVersion,
   getOSUserInfo,
   getTopChainName,
+  cache: {
+    write: writeCache,
+    read: readCache,
+  },
   hasChains,
   hasReleases,
 };

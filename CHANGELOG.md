@@ -1,3 +1,7 @@
+## 0.39.26 (October 30, 2019)
+
+- fix: cache failed
+
 ## 0.39.25 (October 29, 2019)
 
 - feat: add contract:create command #164

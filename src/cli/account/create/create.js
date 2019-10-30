@@ -1,7 +1,8 @@
 const chalk = require('chalk');
 const shell = require('shelljs');
 const inquirer = require('inquirer');
-const { config, createRpcClient, cache } = require('core/env');
+const { config, createRpcClient } = require('core/env');
+const { cache } = require('core/libs/common');
 const { symbols, hr, pretty } = require('core/ui');
 const { types } = require('@arcblock/mcrypto');
 

@@ -21,13 +21,7 @@ const {
 const { ensureForgeRelease } = require('core/forge-config');
 const { isForgeStarted, getProcessTag, getAllProcesses } = require('./forge-process');
 const { printError, printInfo, printLogo, printWarning } = require('./util');
-const {
-  hasChains,
-  getOSUserInfo,
-  getTopChainName,
-  readCache,
-  writeCache,
-} = require('./libs/common');
+const { hasChains, getOSUserInfo, getTopChainName, cache } = require('./libs/common');
 
 const { DEFAULT_CHAIN_NAME_RETURN, REQUIRED_DIRS } = require('../constant');
 const { symbols, hr, pretty } = require('./ui');
@@ -267,7 +261,7 @@ function ensureRpcClient(args, chainName) {
  * Ensure we have an unlocked wallet before run actual command { address, token }
  */
 async function ensureWallet() {
-  const wallet = readCache('wallet');
+  const wallet = cache.read('wallet');
   if (wallet && wallet.expireAt && wallet.expireAt > Date.now()) {
     debug(`${symbols.success} Use cached wallet ${wallet.address}`);
     config.cli.wallet = wallet;
@@ -312,7 +306,7 @@ async function ensureWallet() {
   const address = useCachedAddress ? cachedAddress : userAddress;
   try {
     const { token } = await client.loadWallet({ address, passphrase });
-    writeCache('wallet', {
+    cache.write('wallet', {
       address,
       token,
       expireAt: Date.now() + (config.forge.unlockTtl || 300) * 1e3,
@@ -492,10 +486,6 @@ module.exports = {
   config: {
     get: (key, defaultValue) => get(config, key, defaultValue),
     set: (key, value) => set(config, key, value),
-  },
-  cache: {
-    write: writeCache,
-    read: readCache,
   },
 
   webUrl() {

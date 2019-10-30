@@ -1,6 +1,7 @@
 const shell = require('shelljs');
 const inquirer = require('inquirer');
-const { createRpcClient, cache } = require('core/env');
+const { createRpcClient } = require('core/env');
+const { cache } = require('core/libs/common');
 const { symbols, hr } = require('core/ui');
 
 inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));

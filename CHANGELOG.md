@@ -1,3 +1,11 @@
+## 0.39.27 (October 30, 2019)
+
+- breaking change: change account/blocklet/chain/contract/install/tx subcommands #300
+- chore: remove non-root doc if run with root user #279
+- feat: ignore fetch remote releases error when list local releases #299
+- chore: bunch of updates
+- refact: remove useless deps
+
 ## 0.39.26 (October 30, 2019)
 
 - fix: cache failed

@@ -208,7 +208,7 @@ async function readUserConfigs(
         type: 'number',
         name: 'blockTime',
         message: 'Please input block time (in seconds):',
-        default: parseInt(defaults.tendermint.timeout_commit, 10),
+        default: 1,
         validate: getNumberValidator('block time'),
       },
       {

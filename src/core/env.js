@@ -358,18 +358,12 @@ function findReleaseVersion(releaseDir) {
 async function ensureNonRoot() {
   try {
     if (await isElevated()) {
-      shell.echo(
-        `${symbols.error} ${chalk.red('Error: forge cannot be started with root permission')}`
-      );
-      shell.echo(
-        `${symbols.info} Checkout the following guide on how to run forge as non-root user`
-      );
-      shell.echo('https://github.com/sindresorhus/guides/blob/master/npm-global-without-sudo.md');
+      printError(`${chalk.red('Error: forge cannot be started with root permission')}`);
       process.exit(77);
     }
   } catch (err) {
     debug.error(err);
-    shell.echo(`${symbols.error} cannot get current username`);
+    printError('Cannot get current username');
   }
 }
 

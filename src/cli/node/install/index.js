@@ -11,7 +11,6 @@ cli(
   'Download and setup forge release on this machine',
   input => action(execute, run, input),
   {
-    alias: 'init',
     requirements: {
       forgeRelease: false,
       rpcClient: false,

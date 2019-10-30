@@ -14,6 +14,7 @@ const {
   chainSortHandler,
   fetchReleaseAssetsInfo,
   getPlatform,
+  logError,
   print,
   printWarning,
   printInfo,
@@ -43,14 +44,21 @@ const readChainConfigFromEnv = () => {
 };
 
 const readChainConfig = (chainName, key, defaultValue = '') => {
-  const configPath = getChainReleaseFilePath(chainName);
-  const config = TOML.parse(fs.readFileSync(configPath).toString());
+  let configPath = '';
 
-  if (!key) {
-    return config;
+  try {
+    configPath = getChainReleaseFilePath(chainName);
+    const config = TOML.parse(fs.readFileSync(configPath).toString());
+
+    if (!key) {
+      return config;
+    }
+
+    return get(config, key, defaultValue);
+  } catch (error) {
+    logError(error);
+    throw new Error(`read ${chainName} config ${configPath} failed: ${error.message}`);
   }
-
-  return get(config, key, defaultValue);
 };
 
 function clearDataDirectories(chainName = process.env.FORGE_CURRENT_CHAIN, keepConfig = false) {
@@ -110,17 +118,32 @@ async function getLocalReleases() {
 
 async function listReleases() {
   const platform = await getPlatform();
-  const remoteReleasesInfo = (await fetchReleaseAssetsInfo(platform)) || [];
+  let remoteReleasesInfo = [];
+  try {
+    remoteReleasesInfo = await fetchReleaseAssetsInfo(platform);
+  } catch (error) {
+    debug('fetch remote releases information failed:', error.message);
+    logError(error);
+  }
+
   const versionAssetsMap = await getLocalReleases();
 
-  const result = [];
+  let result = Object.keys(versionAssetsMap)
+    .map(version => {
+      if (versionAssetsMap[version]) {
+        return { version, assets: versionAssetsMap[version] };
+      }
 
-  Object.keys(versionAssetsMap).forEach(version => {
-    const tmp = remoteReleasesInfo.find(x => semver.eq(x.version, version));
-    if (versionAssetsMap[version] && isEqual(versionAssetsMap[version], tmp.assets)) {
-      result.push({ version, assets: versionAssetsMap[version] });
-    }
-  });
+      return null;
+    })
+    .filter(Boolean);
+
+  if (remoteReleasesInfo.length > 0) {
+    result = result.filter(({ version, assets }) => {
+      const tmp = remoteReleasesInfo.find(x => semver.eq(x.version, version));
+      return isEqual(assets, tmp.assets);
+    });
+  }
 
   return result;
 }

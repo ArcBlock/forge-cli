@@ -4,7 +4,7 @@ const { getTopRunningChains } = require('core/forge-process');
 const { execute, run } = require('./list');
 
 cli(
-  'account:list [role]',
+  'account:ls [role]',
   'List all accounts stored in this node',
   input => action(execute, run, input),
   {
@@ -15,8 +15,5 @@ cli(
       currentChainRunning: true,
       chainName: getTopRunningChains,
     },
-    options: [
-      // ['--some-option [value]', 'some test option'],
-    ],
   }
 );

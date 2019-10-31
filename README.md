@@ -80,9 +80,6 @@ Options:
 
 Commands:
   account <address>                   Get an account info by address
-  account:create                      Interactively create an account, guarded by a passphrase
-  account:delete <address>            Delete an account by address
-  account:ls [role]                   List all accounts stored in this node
   asset <address>                     Get asset info by address
   block [options] [height]            Get the block info from the running node
   blocklet:init                       Init a blocklet project
@@ -92,7 +89,6 @@ Commands:
   chain:ls                            List all chains
   chain:remove <chainName>            Remove chain state and config
   chain:reset <chainName>             Reset chain state, but keeps the config
-  checkin                             Send a poke tx to the network to get tokens for test
   config [options] [key] [value]      Config forge cli configs
   contract:activate [name|address]    Activate a contract by name or address
   contract:compile [sourceDir]        Compile a forge contract

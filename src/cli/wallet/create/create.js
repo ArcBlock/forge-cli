@@ -6,16 +6,36 @@ const { fromRandom, WalletType } = require('@arcblock/forge-wallet');
 const { toBase58, hexToBytes } = require('@arcblock/forge-util');
 const { pretty } = require('core/ui');
 
-const { questions } = require('../../account/create/create');
+const questions = [
+  {
+    type: 'list',
+    name: 'role',
+    default: types.RoleType.ROLE_ACCOUNT,
+    message: 'Please select a role type:',
+    choices: Object.keys(types.RoleType),
+  },
+  {
+    type: 'list',
+    name: 'pk',
+    default: types.KeyType.ED25519,
+    message: 'Please select a key pair algorithm:',
+    choices: Object.keys(types.KeyType),
+  },
+  {
+    type: 'list',
+    name: 'hash',
+    default: types.HashType.SHA3,
+    message: 'Please select a hash algorithm:',
+    choices: Object.keys(types.HashType),
+  },
+];
 
 async function main({ opts: { defaults } }) {
   let wallet = fromRandom();
   let encoding = ['BASE16', 'BASE58', 'BASE64', 'BASE64_URL'];
 
   if (!defaults) {
-    const { pk, hash, role } = await inquirer.prompt(
-      questions.filter(x => ['role', 'pk', 'hash'].includes(x.name))
-    );
+    const { pk, hash, role } = await inquirer.prompt(questions);
 
     const type = WalletType({
       pk: types.KeyType[pk],

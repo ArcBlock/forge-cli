@@ -9,7 +9,7 @@ const toml = require('@iarna/toml');
 const { getChainReleaseFilePath, getChainConfig } = require('core/forge-fs');
 const { print, printInfo, printSuccess, printWarning } = require('core/util');
 
-const { getCustomConfigs, writeConfigs } = require('./lib');
+const { getCustomConfigs, previewConfigs, writeConfigs } = require('./lib');
 
 async function main({
   args: [action = 'get'],
@@ -57,13 +57,14 @@ async function main({
     const originConfigFilePath = getChainReleaseFilePath(chainName);
     const defaultConfig = toml.parse(fs.readFileSync(originConfigFilePath).toString());
     const { version: forgeCoreVersion } = getChainConfig(chainName);
-    const configs = await getCustomConfigs(defaultConfig, forgeCoreVersion, {
+    const customResults = await getCustomConfigs(defaultConfig, forgeCoreVersion, {
       chainName,
       isCreate: false,
       interactive: !defaults,
     });
+    previewConfigs(customResults);
 
-    await writeConfigs(getChainReleaseFilePath(chainName), configs, true);
+    await writeConfigs(getChainReleaseFilePath(chainName), customResults.configs, true);
     printInfo('you need to restart the chain to load the new config!');
   }
 }

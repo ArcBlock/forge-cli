@@ -1,3 +1,7 @@
+## 0.39.28 (October 31, 2019)
+
+- fix: remove `app` from forge config
+
 ## 0.39.27 (October 30, 2019)
 
 - breaking change: change account/blocklet/chain/contract/install/tx subcommands #300

@@ -56,7 +56,7 @@ async function main({
 
     debug(`'${chainName}' chain version updated:`, version);
 
-    printSuccess(`forge v${version} activated successfully!`);
+    printSuccess(`Forge v${version} activated successfully!`);
     if (chainName) {
       print();
       print(`Now you can start forge with ${chalk.cyan(`forge start ${chainName}`)}`);

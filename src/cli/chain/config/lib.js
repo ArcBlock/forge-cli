@@ -362,7 +362,7 @@ async function readUserConfigs(
       {
         type: 'list',
         name: 'moderatorInputType',
-        message: 'Input moderator SK, or generate if do not have one?',
+        message: 'Input moderator secret key, or generate if do not have one?',
         choices: ['Generate', 'Input'],
         when: () => !moderator,
         default: 'Generate',
@@ -370,11 +370,11 @@ async function readUserConfigs(
       {
         type: 'text',
         name: 'userModeratorSK',
-        message: 'Input moderator SK:',
+        message: 'Input moderator secret key:',
         when: d => d.moderatorInputType === 'Input',
         validate: v => {
           if (!v.trim()) {
-            return 'Moderator SK should not be empty';
+            return 'Moderator secret key should not be empty';
           }
 
           return true;
@@ -483,7 +483,7 @@ async function readUserConfigs(
     tokenHolderPk,
   } = answers;
 
-  let generatedModeratorSK = null;
+  let generatedModeratorSK;
   if (!moderator) {
     printWarning('Moderator sk was not set in local environment.');
     if (moderatorInputType === 'Generate') {
@@ -498,7 +498,6 @@ async function readUserConfigs(
   }
 
   defaults.tendermint.moniker = name;
-  defaults.app.name = name;
   defaults.tendermint.timeout_commit = `${blockTime}s`;
   defaults.tendermint.genesis.chain_id = kebabCase(name);
 
@@ -564,40 +563,16 @@ async function readUserConfigs(
   }
 
   const result = setFilePathOfConfig(defaults, name);
-
-  print(hr);
-  print('Config Preview');
-  print(hr);
-  print(pretty(result));
-  print(hr);
-
-  if (generatedModeratorSK) {
-    print('\n======================================================');
-    try {
-      globalConfig.setConfig('moderatorSecretKey', generatedModeratorSK);
-      print(chalk.yellow('Your moderator SK has been preserved in ~/.forgerc.yml'));
-    } catch (error) {
-      printError(
-        chalk.red('Save moderator SK to ~/.forgerc.yml failed, please preserve it properly.')
-      );
-      logError(error);
-    } finally {
-      print(); // just for newline
-    }
-  }
-
+  let generatedTokenHolder;
   if (!moderatorAsTokenHolder && answers.accountSourceType === 'Generate') {
-    print('\n======================================================');
-    printInfo(chalk.yellow('Generated Token Holder Account (Please Keep the SecretKey safe):'));
-    print('======================================================');
-    print('Address:', chalk.cyan(tokenHolderAddress));
-    print('PublicKey:', chalk.cyan(tokenHolderPk));
-    print('SecretKey:', chalk.cyan(answers.tokenHolderSk));
-    print(hr);
-    print('\n');
+    generatedTokenHolder = {
+      address: tokenHolderAddress,
+      pk: tokenHolderPk,
+      sk: answers.tokenHolderSk,
+    };
   }
 
-  return result;
+  return { configs: result, generatedModeratorSK, generatedTokenHolder };
 }
 
 const mapToStandard = configs => {
@@ -686,4 +661,37 @@ async function writeConfigs(targetPath, configs, overwrite = true) {
   print(hr);
 }
 
-module.exports = { getCustomConfigs, writeConfigs };
+const previewConfigs = ({ configs, generatedModeratorSK, generatedTokenHolder }) => {
+  print('Config Preview:');
+  print(pretty(configs));
+  print(hr);
+
+  if (generatedModeratorSK) {
+    print('\n======================================================');
+    try {
+      globalConfig.setConfig('moderatorSecretKey', generatedModeratorSK);
+      print(chalk.yellow('Your moderator secret key has been preserved in ~/.forgerc.yml'));
+    } catch (error) {
+      printError(
+        chalk.red(
+          'Save moderator secret key to ~/.forgerc.yml failed, please preserve it properly.'
+        )
+      );
+      logError(error);
+    } finally {
+      print(); // just for newline
+    }
+  }
+
+  if (generatedTokenHolder) {
+    print('\n======================================================');
+    printInfo(chalk.yellow('Generated Token Holder Account (Please Keep the secret key safe):'));
+    print('======================================================');
+    print('Address:', chalk.cyan(generatedTokenHolder.address));
+    print('PublicKey:', chalk.cyan(generatedTokenHolder.pk));
+    print('SecretKey:', chalk.cyan(generatedTokenHolder.sk));
+    print(hr);
+  }
+};
+
+module.exports = { getCustomConfigs, previewConfigs, writeConfigs };

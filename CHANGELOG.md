@@ -1,3 +1,8 @@
+## 0.40.0 (October 31, 2019)
+
+- chore: remove create:cli code
+- feat: upgrade js-sdk and deprecate commands
+
 ## 0.39.28 (October 31, 2019)
 
 - fix: remove `app` from forge config

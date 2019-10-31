@@ -13,7 +13,8 @@ const kebabCase = require('lodash/kebabCase');
 const semver = require('semver');
 
 const { isValid, isFromPublicKey } = require('@arcblock/did');
-const { fromRandom, fromSecretKey } = require('@arcblock/forge-wallet');
+const { types } = require('@arcblock/mcrypto');
+const { fromRandom, fromSecretKey, WalletType } = require('@arcblock/forge-wallet');
 const { hexToBytes } = require('@arcblock/forge-util');
 
 const { ensureConfigComment } = require('core/env');
@@ -26,9 +27,25 @@ const { setFilePathOfConfig } = require('core/forge-config');
 const globalConfig = require('core/libs/global-config');
 
 const { DEFAULT_ICON_BASE64, REQUIRED_DIRS, RESERVED_CHAIN_NAMES } = require('../../../constant');
-const { generateDefaultAccount } = require('../../account/lib/index');
 
 const DAYS_OF_YEAR = 365;
+
+const generateWallet = () => {
+  const wallet = fromRandom(
+    WalletType({
+      pk: types.KeyType.ED25519,
+      hash: types.HashType.SHA3,
+      role: types.RoleType.ROLE_ACCOUNT,
+      address: types.EncodingType.BASE58,
+    })
+  );
+
+  const json = wallet.toJSON();
+  json.pk_base64_url = base64.encode(hexToBytes(json.pk));
+  json.sk_base64_url = base64.encode(hexToBytes(json.sk));
+
+  return json;
+};
 
 function getNumberValidator(label, integer = true) {
   return v => {
@@ -453,7 +470,7 @@ async function readUserConfigs(
   }
 
   if (answers.accountSourceType === 'Generate') {
-    const wallet = generateDefaultAccount();
+    const wallet = generateWallet();
     debug('random token holder', wallet);
     answers.tokenHolderAddress = wallet.address;
     answers.tokenHolderPk = wallet.pk_base64_url;

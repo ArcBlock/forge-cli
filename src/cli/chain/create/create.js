@@ -10,7 +10,7 @@ const {
   getChainReleaseFilePath,
 } = require('core/forge-fs');
 const { hasChains } = require('core/libs/common');
-const { getCustomConfigs, writeConfigs } = require('../config/lib');
+const { getCustomConfigs, previewConfigs, writeConfigs } = require('../config/lib');
 
 async function main({ args: [chainName = ''], opts: { defaults, allowMultiChain = false } }) {
   if ((await hasChains()) && allowMultiChain === false) {
@@ -20,20 +20,25 @@ async function main({ args: [chainName = ''], opts: { defaults, allowMultiChain 
 
   try {
     const forgeCoreVersion = config.get('cli').globalVersion;
-    let configs = toml.parse(
+    const defaultConfigs = toml.parse(
       fs.readFileSync(getOriginForgeReleaseFilePath(forgeCoreVersion)).toString()
     );
 
-    configs = await getCustomConfigs(configs, forgeCoreVersion, {
+    const {
+      configs: customConfigs,
+      generatedModeratorSK,
+      generatedTokenHolder,
+    } = await getCustomConfigs(defaultConfigs, forgeCoreVersion, {
       chainName,
       interactive: !defaults,
       isCreate: true,
     });
 
     const {
-      app: { name },
-    } = configs;
-    configs = await setConfigToChain(configs, name, forgeCoreVersion);
+      tendermint: { moniker: name },
+    } = customConfigs;
+    const configs = await setConfigToChain(customConfigs, name, forgeCoreVersion);
+    previewConfigs({ configs, generatedModeratorSK, generatedTokenHolder });
     createNewChain(name);
     await writeConfigs(getChainReleaseFilePath(name), configs);
     printInfo(`Run ${chalk.cyan(`forge start ${name}`)} to start the chain`);

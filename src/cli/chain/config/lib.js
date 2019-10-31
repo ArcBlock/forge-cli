@@ -362,7 +362,7 @@ async function readUserConfigs(
       {
         type: 'list',
         name: 'moderatorInputType',
-        message: 'Input moderator SK, or generate if do not have one?',
+        message: 'Input moderator secret key, or generate if do not have one?',
         choices: ['Generate', 'Input'],
         when: () => !moderator,
         default: 'Generate',
@@ -370,11 +370,11 @@ async function readUserConfigs(
       {
         type: 'text',
         name: 'userModeratorSK',
-        message: 'Input moderator SK:',
+        message: 'Input moderator secret key:',
         when: d => d.moderatorInputType === 'Input',
         validate: v => {
           if (!v.trim()) {
-            return 'Moderator SK should not be empty';
+            return 'Moderator secret key should not be empty';
           }
 
           return true;
@@ -670,10 +670,12 @@ const previewConfigs = ({ configs, generatedModeratorSK, generatedTokenHolder })
     print('\n======================================================');
     try {
       globalConfig.setConfig('moderatorSecretKey', generatedModeratorSK);
-      print(chalk.yellow('Your moderator SK has been preserved in ~/.forgerc.yml'));
+      print(chalk.yellow('Your moderator secret key has been preserved in ~/.forgerc.yml'));
     } catch (error) {
       printError(
-        chalk.red('Save moderator SK to ~/.forgerc.yml failed, please preserve it properly.')
+        chalk.red(
+          'Save moderator secret key to ~/.forgerc.yml failed, please preserve it properly.'
+        )
       );
       logError(error);
     } finally {
@@ -683,7 +685,7 @@ const previewConfigs = ({ configs, generatedModeratorSK, generatedTokenHolder })
 
   if (generatedTokenHolder) {
     print('\n======================================================');
-    printInfo(chalk.yellow('Generated Token Holder Account (Please Keep the SecretKey safe):'));
+    printInfo(chalk.yellow('Generated Token Holder Account (Please Keep the secret key safe):'));
     print('======================================================');
     print('Address:', chalk.cyan(generatedTokenHolder.address));
     print('PublicKey:', chalk.cyan(generatedTokenHolder.pk));

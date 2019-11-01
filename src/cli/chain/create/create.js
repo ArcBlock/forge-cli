@@ -34,14 +34,12 @@ async function main({ args: [chainName = ''], opts: { defaults, allowMultiChain 
       isCreate: true,
     });
 
-    const {
-      tendermint: { moniker: name },
-    } = customConfigs;
-    const configs = await setConfigToChain(customConfigs, name, forgeCoreVersion);
+    const { chainId } = customConfigs;
+    const configs = await setConfigToChain(customConfigs, chainId, forgeCoreVersion);
     previewConfigs({ configs, generatedModeratorSK, generatedTokenHolder });
-    createNewChain(name);
-    await writeConfigs(getChainReleaseFilePath(name), configs);
-    printInfo(`Run ${chalk.cyan(`forge start ${name}`)} to start the chain`);
+    createNewChain(chainId);
+    await writeConfigs(getChainReleaseFilePath(chainId), configs);
+    printInfo(`Run ${chalk.cyan(`forge start ${chainId}`)} to start the chain`);
   } catch (error) {
     printError('Create new chain failed:');
     printError(error);

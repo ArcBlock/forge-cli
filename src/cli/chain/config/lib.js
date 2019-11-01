@@ -514,7 +514,7 @@ async function readUserConfigs(
     moderator.balance = 0;
   }
 
-  defaults.tendermint.moniker = name;
+  defaults.tendermint.moniker = `${name}-01`;
   defaults.tendermint.timeout_commit = `${blockTime}s`;
   defaults.tendermint.genesis.chain_id = kebabCase(name);
 
@@ -589,7 +589,7 @@ async function readUserConfigs(
     };
   }
 
-  return { configs: result, generatedModeratorSK, generatedTokenHolder };
+  return { configs: result, generatedModeratorSK, generatedTokenHolder, chainId: name };
 }
 
 const mapToStandard = configs => {

@@ -1,6 +1,7 @@
 const chalk = require('chalk');
 const os = require('os');
 const shell = require('shelljs');
+
 const {
   config,
   runNativeWebCommand,
@@ -8,10 +9,10 @@ const {
   runNativeWorkshopCommand,
 } = require('core/env');
 const debug = require('core/debug')('version');
-
 const { print } = require('core/util');
 const { getConsensusEnginBinPath } = require('core/forge-fs');
 const { getChainVersion, makeNativeCommand } = require('core/libs/common');
+
 const { SHIFT_WIDTH } = require('../../../constant');
 const { version: forgeCliVersion } = require('../../../../package.json');
 
@@ -63,15 +64,16 @@ const printVersion = async chainName => {
   const versions = [
     `forge_core ${currentVersion}`,
     consensusVersion,
-    `forge-cli ${forgeCliVersion}`,
+    `forge_cli ${forgeCliVersion}`,
     forgeWebVersion,
     simulatorVersion,
     workshopVersion,
   ].filter(Boolean);
 
   print();
-  print('Forge applications version:');
-  versions.forEach(item => print(`${SHIFT_WIDTH}${item}`));
+  print('Forge components:');
+  versions.forEach(item => print(`${SHIFT_WIDTH}- ${item}`));
+
   print();
 };
 

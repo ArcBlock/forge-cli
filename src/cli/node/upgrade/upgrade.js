@@ -27,6 +27,7 @@ const debug = require('core/debug')('upgrade');
 const { ensureModerator } = require('core/moderator');
 
 const { stop, waitUntilStopped } = require('../stop/stop');
+const { printVersion } = require('../../misc/version/version.js');
 
 function isStoppedToUpgrade(chainName) {
   return new Promise(resolve => {
@@ -148,15 +149,27 @@ async function main({ args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
     }
 
     const { info } = await client.getChainInfo();
-    const configs = await getConfigs({ info, currentVersion: current, releases });
-    if (!configs.confirm) {
+    const { version, height, confirm } = await getConfigs({
+      info,
+      currentVersion: current,
+      releases,
+    });
+    if (!confirm) {
       printError('Abort because user cancellation!');
       process.exit(0);
     }
 
+    const { info: currentChainInfo } = await client.getChainInfo();
+    if (height <= currentChainInfo.blockHeight) {
+      printError(
+        `Block height must be greater than current height(${currentChainInfo.blockHeight})`
+      );
+      process.exit(1);
+    }
+
     const hash = await client.sendUpgradeNodeTx({
       tx: {
-        itx: configs,
+        itx: { version, height },
       },
       wallet: moderator,
     });
@@ -195,11 +208,9 @@ async function main({ args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
       spinner.succeed('Forge stopped');
     }
 
-    useNewVersion(chainName, configs.version);
+    useNewVersion(chainName, version);
 
-    printInfo('Version:');
-    execExceptionOnError()(`forge version -c ${chainName} --color always`);
-    print();
+    await printVersion(chainName);
     printSuccess('Upgrade success!');
 
     process.exit(0);

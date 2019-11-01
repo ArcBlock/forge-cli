@@ -1,6 +1,7 @@
 const chalk = require('chalk');
-const fs = require('fs');
+const os = require('os');
 const shell = require('shelljs');
+
 const {
   config,
   runNativeWebCommand,
@@ -8,67 +9,88 @@ const {
   runNativeWorkshopCommand,
 } = require('core/env');
 const debug = require('core/debug')('version');
+const { print } = require('core/util');
+const { getConsensusEnginBinPath } = require('core/forge-fs');
+const { getChainVersion, makeNativeCommand } = require('core/libs/common');
 
-const { print, printSuccess, getPlatform } = require('core/util');
-const { getConsensusEnginBinPath, getStorageEnginePath } = require('core/forge-fs');
-const { getChainVersion } = require('core/libs/common');
+const { SHIFT_WIDTH } = require('../../../constant');
 const { version: forgeCliVersion } = require('../../../../package.json');
 
-async function main({ opts: { chainName } }) {
+const getVersion = handler => {
+  const { code, stdout, stderr } = handler('version', { silent: true })();
+  if (code !== 0) {
+    debug(`${handler} version error: ${stderr.trim()}`);
+    return '';
+  }
+
+  return stdout.trim();
+};
+
+const getConsenseVersion = currentVersion => {
+  const consensusEnginePath = getConsensusEnginBinPath(currentVersion);
+  if (consensusEnginePath) {
+    const command = makeNativeCommand({
+      binPath: consensusEnginePath,
+      subcommand: 'version',
+    });
+
+    const { code, stdout, stderr } = shell.exec(command, { silent: true });
+    if (code === 0) {
+      const consensusVersion = stdout.trim();
+      const { consensusEngine = 'tendermint' } = config.get('forge');
+      return `${consensusEngine} ${consensusVersion}`;
+    }
+
+    debug('consensus version error:', stderr);
+    return '';
+  }
+
+  return '';
+};
+
+const printVersion = async chainName => {
   const currentVersion = getChainVersion(chainName);
 
   if (!currentVersion) {
     throw new Error(`Invalid chain version, chain: ${chainName}`);
   }
 
-  const { storageEngine = 'ipfs', consensusEngine = 'tendermint' } = config.get('forge');
-  const storageEnginePath = getStorageEnginePath(currentVersion);
-  const consensusEnginePath = getConsensusEnginBinPath(currentVersion);
-
-  // core
-  print('============================================================');
-  print(`Versions of ${chalk.cyan(chainName)} chain:`);
-  print();
-  print(`forge-core version ${currentVersion} on ${await getPlatform()}`);
-  print(`forge-cli version ${forgeCliVersion}`);
-
   // components
-  runNativeWebCommand('version')();
-  runNativeSimulatorCommand('version')();
-  runNativeWorkshopCommand('version')();
+  const forgeWebVersion = getVersion(runNativeWebCommand);
+  const simulatorVersion = getVersion(runNativeSimulatorCommand);
+  const workshopVersion = getVersion(runNativeWorkshopCommand);
+  const consensusVersion = getConsenseVersion(currentVersion);
 
-  // ipfs
-  if (fs.e) {
-    debug(`storage engine path: ${storageEnginePath}`);
-    const { code, stdout, stderr } = shell.exec(`${storageEnginePath} version`, { silent: true });
-    if (code === 0) {
-      print(`storage engine: ${stdout.trim()}`);
-    } else {
-      debug(`${storageEngine} version error: ${stderr.trim()}`);
-    }
-  }
-
-  // tendermint
-  if (consensusEnginePath) {
-    debug(`storage engine path: ${consensusEnginePath}`);
-    const { code, stdout, stderr } = shell.exec(`${consensusEnginePath} version`, { silent: true });
-    if (code === 0) {
-      print(`consensus engine: ${consensusEngine} version ${stdout.trim()}`);
-    } else {
-      debug(`${consensusEngine} version error: ${stderr.trim()}`);
-    }
-  }
-
-  const app = config.get('app');
-  if (app && app.name && app.version) {
-    printSuccess(`app: ${app.name} version ${app.version}`);
-  }
+  const versions = [
+    `forge_core ${currentVersion}`,
+    consensusVersion,
+    `forge_cli ${forgeCliVersion}`,
+    forgeWebVersion,
+    simulatorVersion,
+    workshopVersion,
+  ].filter(Boolean);
 
   print();
-  print('============================================================');
+  print('Forge components:');
+  versions.forEach(item => print(`${SHIFT_WIDTH}- ${item}`));
+
+  print();
+};
+
+const printOSInformation = () => {
+  print('OS:');
+  print(`${SHIFT_WIDTH}${os.type()} kernel ${os.release()}; ${os.arch()}`);
+  print();
+};
+
+async function main({ opts: { chainName } }) {
+  await printVersion(chainName);
+  await printOSInformation();
+
   print('If you want to check other chain\'s version info, please run:'); // prettier-ignore
   print(chalk.cyan('forge version [chainName]'));
 }
 
 exports.run = main;
 exports.execute = main;
+exports.printVersion = printVersion;

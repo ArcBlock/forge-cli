@@ -152,10 +152,32 @@ function writeCache(key, data) {
   }
 }
 
+const makeNativeCommand = ({ binPath, subcommand = 'daemon', env = '' }) => {
+  if (!fs.existsSync(binPath)) {
+    throw new Error(`Bin path ${binPath} does not exist`);
+  }
+
+  let command = binPath;
+  if (env) {
+    debug('env:', env);
+    command = `${env} ${command}`;
+  }
+
+  const { shell: envShell, homedir } = getOSUserInfo();
+  command = `SHELL=${envShell} HOME=${homedir} ${command} ${subcommand}`;
+
+  debug('command:', command);
+  return command;
+};
+
 module.exports = {
   DEFAULT_CHAIN_NAME_RETURN,
   applyForgeVersion,
   checkUpdate,
+  cache: {
+    write: writeCache,
+    read: readCache,
+  },
   fetchPackageJSON,
   fetchLatestCLIVersion,
   getChainVersion,
@@ -163,10 +185,7 @@ module.exports = {
   getMinSupportForgeVersion,
   getOSUserInfo,
   getTopChainName,
-  cache: {
-    write: writeCache,
-    read: readCache,
-  },
   hasChains,
   hasReleases,
+  makeNativeCommand,
 };

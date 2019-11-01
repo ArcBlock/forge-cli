@@ -279,6 +279,7 @@ function getConsensusEnginBinPath(version) {
     'lib',
     `consensus-${version}`,
     'priv',
+    'tendermint',
     'tendermint'
   );
 }

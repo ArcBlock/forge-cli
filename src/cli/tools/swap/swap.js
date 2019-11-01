@@ -35,6 +35,7 @@ const ensurePostgres = async dbConfig => {
     database: dbConfig.database,
     password: dbConfig.password,
   });
+
   try {
     client.connect();
     await client.query(
@@ -202,7 +203,7 @@ async function run({ args: [action = 'config', version] }) {
       await startSwap(version);
       break;
     case 'stop':
-      await stopSwap();
+      await stopSwap(version);
       break;
     default:
       printError(

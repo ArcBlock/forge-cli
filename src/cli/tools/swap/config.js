@@ -1,10 +1,15 @@
+const chalk = require('chalk');
 const fuzzy = require('fuzzy');
 const get = require('lodash/get');
 const internalIP = require('internal-ip');
+const isIP = require('is-ip');
 const inquirer = require('inquirer');
-const { print, printError, printSuccess, trim } = require('core/util');
+const { print, printError, printInfo, printSuccess, trim } = require('core/util');
 const fs = require('fs');
 const TOML = require('@iarna/toml');
+
+const { fromSecretKey, WalletType } = require('@arcblock/forge-wallet');
+
 const { getForgeSwapConfigFile } = require('core/forge-fs');
 const debug = require('core/debug')('swap:config');
 
@@ -42,19 +47,6 @@ async function inquire(originalConfig) {
     },
     {
       type: 'text',
-      name: 'appDid',
-      default: get(originalConfig, 'application.did', ''),
-      message: 'Please input app DID:',
-      validate: input => {
-        if (!input || input.length !== 35) {
-          return 'DID size must be 35 length';
-        }
-
-        return true;
-      },
-    },
-    {
-      type: 'text',
       name: 'appSK',
       default: get(originalConfig, 'application.sk', ''),
       message: 'Please input app secret key:',
@@ -67,13 +59,79 @@ async function inquire(originalConfig) {
       },
     },
     {
+      type: 'confirm',
+      name: 'appSkAsAssetOwnerSK',
+      default: true,
+      message: 'Use app secret key as asset owner secret key?',
+    },
+    {
       type: 'text',
-      name: 'appPK',
-      default: get(originalConfig, 'application.pk', ''),
-      message: 'Please input app public key:',
+      name: 'assetOwnerSK',
+      default: get(originalConfig, 'asset_owners.default.sk', ''),
+      message: 'Please input asset owner SK:',
+      when: d => !d.appSkAsAssetOwnerSK,
       validate: input => {
         if (!input) {
-          return 'Public key should not be empty';
+          return 'Asset owner SK should not be empty';
+        }
+
+        return true;
+      },
+    },
+    {
+      type: 'text',
+      name: 'applicationChainHost',
+      message: 'Please input application chain host:',
+      default: get(originalConfig, 'chains.application.host', internalIPV4),
+      validate: input => {
+        if (!input) {
+          return 'Application chain host should not be empty';
+        }
+
+        if (!isIP.v4(input)) {
+          return 'Please input a valid IPv4 address';
+        }
+
+        return true;
+      },
+    },
+    {
+      type: 'text',
+      name: 'appChainPort',
+      default: get(originalConfig, 'chains.application.port', ''),
+      message: 'Please input application chain port:',
+      validate: input => {
+        if (!input) {
+          return 'Application chain port should not be empty';
+        }
+
+        return true;
+      },
+    },
+    {
+      type: 'text',
+      name: 'assetChainHost',
+      message: 'Please input asset chain host:',
+      default: get(originalConfig, 'chains.asset.host', internalIPV4),
+      validate: input => {
+        if (!input) {
+          return 'Asset chain host should not be empty';
+        }
+        if (!isIP.v4(input)) {
+          return 'Please input a valid IPv4 address';
+        }
+
+        return true;
+      },
+    },
+    {
+      type: 'text',
+      name: 'assetChainPort',
+      message: 'Please input asset chain port:',
+      default: get(originalConfig, 'chains.asset.port', ''),
+      validate: input => {
+        if (!input) {
+          return 'Asset chain port should not be empty';
         }
 
         return true;
@@ -182,172 +240,30 @@ async function inquire(originalConfig) {
         return true;
       },
     },
-    {
-      type: 'text',
-      name: 'assetOwnerAddress',
-      default: get(originalConfig, 'asset_owners.default.address', ''),
-      message: 'Please input asset owner address:',
-      validate: input => {
-        if (!input) {
-          return 'Owner address should not be empty';
-        }
-
-        return true;
-      },
-    },
-    {
-      type: 'text',
-      name: 'assetOwnerPK',
-      default: get(originalConfig, 'asset_owners.default.pk', ''),
-      message: 'Please input asset owner PK:',
-      validate: input => {
-        if (!input) {
-          return 'Asset owner PK should not be empty';
-        }
-
-        return true;
-      },
-    },
-    {
-      type: 'text',
-      name: 'assetOwnerSK',
-      default: get(originalConfig, 'asset_owners.default.sk', ''),
-      message: 'Please input asset owner SK:',
-      validate: input => {
-        if (!input) {
-          return 'Asset owner SK should not be empty';
-        }
-
-        return true;
-      },
-    },
-    {
-      type: 'text',
-      name: 'assetChainHost',
-      message: 'Please input asset chain host:',
-      default: get(originalConfig, 'chains.asset.host', internalIPV4),
-      validate: input => {
-        if (!input) {
-          return 'Asset chain host should not be empty';
-        }
-
-        return true;
-      },
-    },
-    {
-      type: 'text',
-      name: 'assetChainPort',
-      message: 'Please input asset chain port:',
-      default: get(originalConfig, 'chains.asset.port', ''),
-      validate: input => {
-        if (!input) {
-          return 'Asset chain port should not be empty';
-        }
-
-        return true;
-      },
-    },
-    {
-      type: 'number',
-      name: 'assetBlockGap',
-      message: 'Please input asset block gap:',
-      default: get(originalConfig, 'chains.asset.block_gap', 3),
-      validate: input => {
-        if (!input) {
-          return 'Asset block gap should not be empty';
-        }
-
-        return true;
-      },
-    },
-    {
-      type: 'number',
-      name: 'assetOfferLocktime',
-      message: 'Please input asset offer locktime:',
-      default: get(originalConfig, 'chains.asset.offer_locktime', 28800),
-      validate: input => {
-        if (!input) {
-          return 'Asset offer locktime should not be empty';
-        }
-
-        return true;
-      },
-    },
-    {
-      type: 'number',
-      name: 'assetDemandLocktime',
-      message: 'Please input asset demand locktime:',
-      default: get(originalConfig, 'chains.asset.demand_locktime', 57600),
-      validate: input => {
-        if (!input) {
-          return 'Asset demand locktime should not be empty';
-        }
-
-        return true;
-      },
-    },
-    {
-      type: 'text',
-      name: 'applicationChainHost',
-      message: 'Please input application chain host:',
-      default: get(originalConfig, 'chains.application.host', internalIPV4),
-      validate: input => {
-        if (!input) {
-          return 'Application chain host should not be empty';
-        }
-
-        return true;
-      },
-    },
-    {
-      type: 'text',
-      name: 'appChainPort',
-      default: get(originalConfig, 'chains.application.port', ''),
-      message: 'Please input application chain port:',
-      validate: input => {
-        if (!input) {
-          return 'Application chain port should not be empty';
-        }
-
-        return true;
-      },
-    },
-    {
-      type: 'number',
-      name: 'appOfferLocktime',
-      message: 'Please input application offer locktime:',
-      default: get(originalConfig, 'chains.application.offer_locktime', 28800),
-      validate: input => {
-        if (!input) {
-          return 'Application offer locktime should not be empty';
-        }
-
-        return true;
-      },
-    },
-    {
-      type: 'number',
-      name: 'appDemandLocktime',
-      message: 'Please input application demand locktime:',
-      default: get(originalConfig, 'chains.application.demand_locktime', 57600),
-      validate: input => {
-        if (!input) {
-          return 'Application demand locktime should not be empty';
-        }
-
-        return true;
-      },
-    },
   ];
 
   const answers = await inquirer.prompt(questions);
+
+  const appSK = trim(answers.appSK);
+  const { pk: appPK, address: appAddress } = fromSecretKey(appSK, WalletType()).toJSON();
+
+  let assetOwnerSK = trim(answers.assetOwnerSK);
+  if (answers.appSkAsAssetOwnerSK) {
+    assetOwnerSK = appSK;
+  }
+
+  const { pk: assetOwnerPK, address: assetOwnerAddress } = fromSecretKey(
+    assetOwnerSK,
+    WalletType()
+  ).toJSON();
+
   const configs = {
     application: {
       name: trim(answers.appName),
       description: trim(answers.appDesc),
-      did: trim(answers.appDid),
-      sk: trim(answers.appSK),
-      pk: trim(answers.appPK),
+      did: appAddress,
+      sk: appSK,
+      pk: appPK,
     },
     service: {
       schema: trim(answers.serviceSchema),
@@ -363,49 +279,46 @@ async function inquire(originalConfig) {
     },
     asset_owners: {
       default: {
-        address: trim(answers.assetOwnerAddress),
-        pk: trim(answers.assetOwnerPK),
-        sk: trim(answers.assetOwnerSK),
+        address: assetOwnerAddress,
+        pk: assetOwnerPK,
+        sk: assetOwnerSK,
       },
     },
     chains: {
       asset: {
         host: trim(answers.assetChainHost),
         port: trim(answers.assetChainPort),
-        block_gap: Number(answers.assetBlockGap),
-        offer_locktime: Number(answers.assetOfferLocktime),
-        demand_locktime: Number(answers.assetDemandLocktime),
       },
       application: {
         host: trim(answers.applicationChainHost),
         port: trim(answers.appChainPort),
-        offer_locktime: Number(answers.appOfferLocktime),
-        demand_locktime: Number(answers.appDemandLocktime),
       },
     },
   };
 
   const swapConfigFile = getForgeSwapConfigFile();
   fs.writeFileSync(swapConfigFile, TOML.stringify(Object.assign({}, originalConfig, configs)));
-  printSuccess('forge swap config updated!');
 }
 
 // Run the cli interactively
 async function configSwap() {
-  print('Press ^C to quit.');
   let swapConfig = {};
   const swapConfigFile = getForgeSwapConfigFile();
+  print('Press ^C to quit.');
   if (fs.existsSync(swapConfigFile)) {
     try {
       swapConfig = TOML.parse(fs.readFileSync(swapConfigFile));
+      await inquire(swapConfig);
+      print();
+      printSuccess(`Configs has been wrote in: ${chalk.cyan(swapConfigFile)}`);
+      printSuccess('Forge swap config updated!');
+      printInfo('You need to restart forge swap to make the configs take effect.');
     } catch (error) {
       debug(error);
       printError(new Error(`parse forge swap config failed, forge swap file: ${swapConfigFile}`));
       process.exit(1);
     }
   }
-
-  await inquire(swapConfig);
 }
 
 const readForgeSwapConfig = async swapConfigPath => {

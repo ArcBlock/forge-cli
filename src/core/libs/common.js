@@ -1,8 +1,6 @@
 /**
  * Common functions, different from `core/util`, this module is at higher level than `core/util`
  */
-
-const chalk = require('chalk');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -11,10 +9,11 @@ const shell = require('shelljs');
 const url = require('url');
 
 const api = require('../api');
+const debug = require('../debug')('core:libs:common');
 const { logError } = require('../util');
 const { symbols } = require('../ui');
 const { DEFAULT_CHAIN_NAME_RETURN, REQUIRED_DIRS } = require('../../constant');
-const { name: packageName, version: localVersion } = require('../../../package.json');
+const { name: packageName, version: localVersion, engines } = require('../../../package.json');
 const {
   getAllChainNames,
   getLocalReleases,
@@ -22,9 +21,6 @@ const {
   updateReleaseYaml,
 } = require('../forge-fs');
 
-const debug = require('core/debug')('core:libs:common');
-
-const { engines } = require('../../../package');
 
 async function getDefaultChainNameHandlerByChains({ chainName } = {}) {
   if (chainName) {

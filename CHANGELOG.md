@@ -1,3 +1,8 @@
+## 0.40.1 (November 01, 2019)
+
+- feat: modify the method of naming moniker
+- improvement: forge version ui and upgrade limitation
+
 ## 0.40.0 (October 31, 2019)
 
 - chore: remove create:cli code

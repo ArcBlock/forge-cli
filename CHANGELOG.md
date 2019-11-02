@@ -1,3 +1,7 @@
+## 0.40.2 (November 02, 2019)
+
+- fix: create chain failed
+
 ## 0.40.1 (November 01, 2019)
 
 - feat: modify the method of naming moniker

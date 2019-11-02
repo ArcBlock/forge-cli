@@ -28,13 +28,13 @@ async function main({ args: [chainName = ''], opts: { defaults, allowMultiChain 
       configs: customConfigs,
       generatedModeratorSK,
       generatedTokenHolder,
+      chainId,
     } = await getCustomConfigs(defaultConfigs, forgeCoreVersion, {
       chainName,
       interactive: !defaults,
       isCreate: true,
     });
 
-    const { chainId } = customConfigs;
     const configs = await setConfigToChain(customConfigs, chainId, forgeCoreVersion);
     previewConfigs({ configs, generatedModeratorSK, generatedTokenHolder });
     createNewChain(chainId);

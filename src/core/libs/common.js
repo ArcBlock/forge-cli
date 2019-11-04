@@ -171,7 +171,7 @@ const makeNativeCommand = ({ binPath, subcommand = 'daemon', env = '' }) => {
 };
 
 const getChainGraphQLHost = config =>
-  process.env.FORGE_SOCK_GRAPHQL || `http://127.0.0.1:${config.get('forge.web.port', 8210)}/api`;
+  process.env.FORGE_GQL_ENDPOINT || `http://127.0.0.1:${config.get('forge.web.port', 8210)}/api`;
 
 module.exports = {
   DEFAULT_CHAIN_NAME_RETURN,

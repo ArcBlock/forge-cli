@@ -4,16 +4,9 @@ const shell = require('shelljs');
 const chalk = require('chalk');
 
 const { config, createRpcClient } = require('core/env');
-const { hr, getSpinner } = require('core/ui');
-const {
-  sleep,
-  parseTimeStrToMS,
-  print,
-  printError,
-  printInfo,
-  printSuccess,
-  strEqual,
-} = require('core/util');
+const { hr, getSpinner, pretty } = require('core/ui');
+const { print, printError, printInfo, printSuccess, strEqual } = require('core/util');
+const { validateTxPromise } = require('core/tx');
 const {
   checkStartError,
   listReleases,
@@ -21,7 +14,7 @@ const {
   updateChainConfig,
   updateReleaseYaml,
 } = require('core/forge-fs');
-const { getChainVersion } = require('core/libs/common');
+const { getChainVersion, getChainGraphQLHost } = require('core/libs/common');
 const { isForgeStartedByStarter } = require('core/forge-process');
 const debug = require('core/debug')('upgrade');
 const { ensureModerator } = require('core/moderator');
@@ -178,12 +171,23 @@ async function main({ args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
     print(hr);
 
     const txSpinner = getSpinner('Waiting for transaction commit...');
-    txSpinner.start();
-    const waitMS = 1000 + parseTimeStrToMS(config.get('tendermint.timeoutCommit', '5s'));
-    await sleep(waitMS);
-    txSpinner.stop();
-
-    execExceptionOnError(`send tx ${hash} failed`)(`forge tx ${hash} -c ${chainName}`);
+    try {
+      txSpinner.start();
+      const validateResult = await validateTxPromise({
+        chainHost: getChainGraphQLHost(config),
+        hash,
+        chainId: config.get('tendermint.genesis.chain_id'),
+      });
+      txSpinner.succeed(`Transaction ${hash} committed successfully:`);
+      print(pretty(validateResult));
+    } catch (error) {
+      if (strEqual(error.type, 'exception')) {
+        txSpinner.warn(`Query transaction ${hash} failed:`);
+        print(pretty(error, { stringColor: 'yellow', keysColor: 'yellow', dashColor: 'yellow' }));
+      } else {
+        throw error;
+      }
+    }
 
     const spinner = getSpinner('Stopping forge...');
     spinner.start();

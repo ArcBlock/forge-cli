@@ -98,7 +98,7 @@ async function start(chainName, dryRun = false, allowMultiChain) {
     // check forge process again
     const tmpResult = await isForgeStarted(chainName);
     if (!tmpResult) {
-      throw new Error('Start forge failed.');
+      throw new Error('Start forge failed');
     }
 
     spinner.succeed(`Chain ${chalk.yellow(chainName)} successfully started`);

@@ -141,8 +141,7 @@ async function main({ args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
       return;
     }
 
-    const t = await client.getChainInfo();
-    const { info } = t;
+    const { info } = await client.getChainInfo();
     const { version, height, confirm } = await getConfigs({
       info,
       currentVersion: current,

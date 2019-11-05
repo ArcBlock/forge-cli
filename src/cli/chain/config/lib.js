@@ -201,7 +201,7 @@ async function readUserConfigs(
   if (isCreate) {
     const chainNameValidateResult = chainNameValidateFunc(chainName);
     if (chainNameValidateResult === true) {
-      printSuccess(`chain name: ${chainName}`);
+      printSuccess(`Chain name: ${chainName}`);
     } else {
       if (interactive === false) {
         throw new Error(chainNameValidateResult);
@@ -216,7 +216,7 @@ async function readUserConfigs(
       });
     }
   } else {
-    printSuccess(`chain name: ${chainName}`);
+    printSuccess(`Chain name: ${chainName}`);
   }
 
   questions.push(

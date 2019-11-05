@@ -65,7 +65,7 @@ async function main({
     previewConfigs(customResults);
 
     await writeConfigs(getChainReleaseFilePath(chainName), customResults.configs, true);
-    printInfo('you need to restart the chain to load the new config!');
+    printInfo('You need to restart the chain to load the new config!');
   }
 }
 

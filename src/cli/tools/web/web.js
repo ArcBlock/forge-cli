@@ -5,6 +5,7 @@ const GraphQLClient = require('@arcblock/graphql-client');
 
 const debug = require('core/debug')('web');
 const { symbols, getSpinner } = require('core/ui');
+const { print, printError, printInfo, printSuccess, printWarning } = require('core/util');
 const { sleep } = require('core/util');
 const { runNativeWebCommand, webUrl } = require('core/env');
 const { getForgeWebProcess } = require('core/forge-process');
@@ -14,12 +15,12 @@ const startWebUI = runNativeWebCommand('daemon', { silent: true });
 function processOutput(output, action) {
   if (/:error/.test(output)) {
     if (/:already_started/.test(output)) {
-      shell.echo(`${symbols.warning} forge web already started`);
+      printWarning('Forge web already started');
     } else {
-      shell.echo(`${symbols.error} forge web ${action} failed: ${output.trim()}`);
+      printError(`Forge web ${action} failed: ${output.trim()}`);
     }
   } else {
-    shell.echo(`${symbols.success} forge web ${action} success!`);
+    printSuccess(`Forge web ${action} success!`);
   }
 }
 
@@ -79,7 +80,7 @@ async function main({ args: [action = 'none'], opts }) {
       break;
     case 'start':
       if (pid) {
-        shell.echo(`${symbols.info} forge web already started.`);
+        printInfo('Forge web already started');
         process.exit(0);
         return;
       }
@@ -93,28 +94,29 @@ async function main({ args: [action = 'none'], opts }) {
       }
 
       spinner.succeed('Forge web successfully started');
-      shell.echo(`${symbols.info} forge web running at:     ${webUrl()}`);
-      shell.echo(`${symbols.info} graphql endpoint at:      ${webUrl()}/api`);
+      printInfo(`Forge web running at:     ${webUrl()}`);
+      printInfo(`GraphQL endpoint at:      ${webUrl()}/api`);
       break;
     case 'stop':
       if (!pid) {
-        shell.echo(`${symbols.info} forge web not started yet`);
+        printInfo('Forge web not started yet');
         process.exit(0);
         return;
       }
 
-      shell.echo(`${symbols.info} Stopping forge web...`);
+      printInfo('Stopping forge web...');
       shell.exec(`kill ${pid}`);
+      printSuccess('Forge web stopped');
       break;
     case 'open':
       if (!pid) {
-        shell.echo(`${symbols.info} forge web not started yet`);
+        printInfo('Forge web not started yet');
         await main({ args: ['start'] });
         await sleep(2000);
       }
 
       const url = opts.graphql ? `${webUrl()}/api/playground` : webUrl();
-      shell.echo(`Opening ${url}...`);
+      print(`Opening ${url}...`);
       shell.exec(`open ${url}`);
       break;
     default:

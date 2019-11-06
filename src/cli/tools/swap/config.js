@@ -2,14 +2,14 @@ const chalk = require('chalk');
 const fuzzy = require('fuzzy');
 const get = require('lodash/get');
 const internalIP = require('internal-ip');
-const isIP = require('is-ip');
 const inquirer = require('inquirer');
 const { print, printError, printInfo, printSuccess, trim } = require('core/util');
-const { formatSecretKey } = require('core/moderator');
+const { formatWallet } = require('core/moderator');
 const fs = require('fs');
 const TOML = require('@iarna/toml');
 
-const { fromSecretKey, WalletType } = require('@arcblock/forge-wallet');
+const { fromSecretKey } = require('@arcblock/forge-wallet');
+const { fromBase64 } = require('@arcblock/forge-util');
 
 const { getForgeSwapConfigFile } = require('core/forge-fs');
 const debug = require('core/debug')('swap:config');
@@ -89,10 +89,6 @@ async function inquire(originalConfig) {
           return 'Application chain host should not be empty';
         }
 
-        if (!isIP.v4(input)) {
-          return 'Please input a valid IPv4 address';
-        }
-
         return true;
       },
     },
@@ -101,13 +97,6 @@ async function inquire(originalConfig) {
       name: 'appChainPort',
       default: get(originalConfig, 'chains.application.port', ''),
       message: 'Please input application chain port:',
-      validate: input => {
-        if (!input) {
-          return 'Application chain port should not be empty';
-        }
-
-        return true;
-      },
     },
     {
       type: 'text',
@@ -118,9 +107,6 @@ async function inquire(originalConfig) {
         if (!input) {
           return 'Asset chain host should not be empty';
         }
-        if (!isIP.v4(input)) {
-          return 'Please input a valid IPv4 address';
-        }
 
         return true;
       },
@@ -130,13 +116,6 @@ async function inquire(originalConfig) {
       name: 'assetChainPort',
       message: 'Please input asset chain port:',
       default: get(originalConfig, 'chains.asset.port', ''),
-      validate: input => {
-        if (!input) {
-          return 'Asset chain port should not be empty';
-        }
-
-        return true;
-      },
     },
     {
       type: 'autocomplete',
@@ -245,18 +224,17 @@ async function inquire(originalConfig) {
 
   const answers = await inquirer.prompt(questions);
 
-  const appSK = formatSecretKey(trim(answers.appSK));
-  const { pk: appPK, address: appAddress } = fromSecretKey(appSK, WalletType()).toJSON();
+  const appSK = trim(answers.appSK);
+  const { pk: appPK, address: appAddress } = formatWallet(fromSecretKey(fromBase64(appSK)));
 
   let assetOwnerSK = trim(answers.assetOwnerSK);
   if (answers.appSkAsAssetOwnerSK) {
     assetOwnerSK = appSK;
   }
 
-  const { pk: assetOwnerPK, address: assetOwnerAddress } = fromSecretKey(
-    assetOwnerSK,
-    WalletType()
-  ).toJSON();
+  const { pk: assetOwnerPK, address: assetOwnerAddress } = formatWallet(
+    fromSecretKey(fromBase64(assetOwnerSK))
+  );
 
   const configs = {
     application: {

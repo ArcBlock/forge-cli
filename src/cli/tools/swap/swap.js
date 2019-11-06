@@ -10,15 +10,7 @@ const findProcess = require('find-process');
 const debug = require('core/debug')('swap');
 const { getReleaseBinPath, getForgeSwapConfigFile } = require('core/forge-fs');
 const { getForgeSwapProcess } = require('core/forge-process');
-const {
-  checkPort,
-  printError,
-  printInfo,
-  printSuccess,
-  printWarning,
-  sleep,
-  waitUntilTruthy,
-} = require('core/util');
+const { printError, printInfo, printWarning, sleep, waitUntilTruthy } = require('core/util');
 const { makeForgeSwapRunCommand, makeNativeCommandRunner } = require('core/libs/common');
 const { getGlobalForgeVersion } = require('core/forge-fs');
 const { getSpinner } = require('core/ui');
@@ -61,11 +53,11 @@ const ensureChains = async (chainsConfig = []) => {
       throw new Error(`Chain ${chalk.cyan(name)} config is empty`);
     }
 
-    const { host, port } = config;
-    const p = await checkPort({ host, port });
-    if (p !== port) {
-      throw new Error(`Can not connect chain host: ${host}`);
-    }
+    // const { host, port } = config;
+    // const p = await checkPort({ host, port });
+    // if (p !== port) {
+    //   throw new Error(`Can not connect chain host: ${host}`);
+    // }
   });
 };
 
@@ -172,12 +164,14 @@ const stopSwap = async () => {
   }
 
   const version = matchResult[1];
-  makeNativeCommandRunner(makeForgeSwapRunCommand(version, { runType: 'stop' }))();
+  makeNativeCommandRunner(makeForgeSwapRunCommand(version, { subcommand: 'stop' }))();
+  const spinner = getSpinner('Waiting for Forge Swap stopped...');
+  spinner.start();
   await waitUntilTruthy(async () => {
     const processInfo = await getForgeSwapProcess();
     return processInfo.pid === 0;
   }, 10 * 1000);
-  printSuccess('Forge swap stopped.');
+  spinner.succeed('Forge Swap stopped.');
 };
 
 async function run({ args: [action = 'config', version] }) {

@@ -10,8 +10,9 @@ const { readForgeSwapConfig } = require('../../tools/swap/config');
 
 const printAllProcesses = async () => {
   const processes = await getAllRunningProcessStats();
+  const swapStats = await getForgeSwapProcessStats();
 
-  if (!processes || !processes.length) {
+  if ((!processes || !processes.length) && !swapStats) {
     printInfo(`forge daemon not started yet, start with ${chalk.cyan('forge start')}`);
     process.exit(0);
   }
@@ -30,7 +31,6 @@ const printAllProcesses = async () => {
     print();
   });
 
-  const swapStats = await getForgeSwapProcessStats();
   if (swapStats) {
     const {
       service: { schema, host, port },

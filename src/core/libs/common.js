@@ -21,7 +21,6 @@ const {
   updateReleaseYaml,
 } = require('../forge-fs');
 
-
 async function getDefaultChainNameHandlerByChains({ chainName } = {}) {
   if (chainName) {
     return chainName;
@@ -157,12 +156,12 @@ function writeCache(key, data) {
   }
 }
 
-const makeForgeSwapRunCommand = (version, { swapConfigPath, runType } = {}) => {
+const makeForgeSwapRunCommand = (version, { swapConfigPath, subcommand } = {}) => {
   const binPath = getReleaseBinPath('forge_swap', version);
   return makeNativeCommand({
     binPath,
     env: swapConfigPath ? `FORGE_SWAP_CONFIG=${swapConfigPath}` : undefined,
-    runType,
+    subcommand,
   });
 };
 const makeNativeCommandRunner = (command, options = {}) => () => {

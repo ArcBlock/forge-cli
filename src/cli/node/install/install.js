@@ -1,9 +1,10 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable consistent-return */
 const chalk = require('chalk');
+const emoji = require('node-emoji');
 const fs = require('fs');
 const { applyForgeVersion } = require('core/libs/common');
-const { getPlatform, print, printError, printInfo, printSuccess } = require('core/util');
+const { getPlatform, print, printError, printInfo } = require('core/util');
 const { isForgeStarted } = require('core/forge-process');
 const { formatVersion, download, DOWNLOAD_FLAGS } = require('../../release/download/lib');
 
@@ -15,6 +16,16 @@ async function main({
 }) {
   try {
     const platform = await getPlatform();
+    if (!userVersion) {
+      printInfo(`By default, we'll install the latest version for you.`); // eslint-disable-line
+      printInfo(
+        `If you want to install a specific version, add the version number in your command like ${chalk.cyan(
+          'forge install 0.40.0'
+        )}`
+      );
+      print();
+    }
+
     printInfo(`Detected platform is: ${platform}`);
     if (mirror && mirror !== DEFAULT_MIRROR) {
       printInfo(`${chalk.yellow(`Using custom mirror: ${mirror}`)}`);
@@ -54,12 +65,12 @@ async function main({
     }
 
     applyForgeVersion(version);
-
-    printSuccess(`Congratulations! forge v${version} installed successfully!`);
     print();
-
-    print(`Now you can create a chain using v${version} with ${chalk.cyan('forge chain:create')}`);
-    print();
+    print(
+      `${emoji.get('tada')} You're all set up! Now run ${chalk.cyan(
+        'forge chain:create'
+      )} to setup your blockchain.`
+    );
   } catch (err) {
     printError(err);
     printError('Forge initialize failed, please try again later');

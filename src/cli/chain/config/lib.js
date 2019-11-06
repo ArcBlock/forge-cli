@@ -8,6 +8,7 @@ const get = require('lodash/get');
 const cloneDeep = require('lodash/cloneDeep');
 const toml = require('@iarna/toml');
 const base64 = require('base64-url');
+const emoji = require('node-emoji');
 const base64Img = require('base64-img');
 const kebabCase = require('lodash/kebabCase');
 const semver = require('semver');
@@ -15,7 +16,7 @@ const semver = require('semver');
 const { isValid, isFromPublicKey } = require('@arcblock/did');
 const { types } = require('@arcblock/mcrypto');
 const { fromRandom, fromSecretKey, WalletType } = require('@arcblock/forge-wallet');
-const { hexToBytes } = require('@arcblock/forge-util');
+const { hexToBytes, toBase64, fromBase64 } = require('@arcblock/forge-util');
 
 const { ensureConfigComment } = require('core/env');
 const { formatWallet, formatSecretKey, getModerator } = require('core/moderator');
@@ -25,6 +26,7 @@ const debug = require('core/debug')('config:lib');
 const { getChainDirectory } = require('core/forge-fs');
 const { setFilePathOfConfig } = require('core/forge-config');
 const globalConfig = require('core/libs/global-config');
+const { inquire } = require('core/libs/interaction');
 
 const { DEFAULT_ICON_BASE64, REQUIRED_DIRS, RESERVED_CHAIN_NAMES } = require('../../../constant');
 
@@ -128,11 +130,27 @@ function isReservedChainName(chainName = '', reservedChainNames = []) {
   return reservedChainNames.includes(chainName);
 }
 
-async function readUserConfigs(
-  configs,
-  chainName = '',
-  { isCreate = false, interactive = true } = {}
-) {
+const chainNameValidateFunc = chainName => {
+  if (!chainName) {
+    return 'The chain name should not be empty';
+  }
+
+  if (!/^[a-zA-Z][a-zA-Z0-9-_]{3,23}$/.test(chainName)) {
+    return 'The chain name should start with a letter, only contain 0-9,a-z,A-Z, and length between 4~24';
+  }
+
+  if (isReservedChainName(chainName, RESERVED_CHAIN_NAMES)) {
+    return `${chalk.cyan(chainName)} is reserved, please use another one`;
+  }
+
+  if (fs.existsSync(getChainDirectory(chainName))) {
+    return `The chain ${chalk.cyan(chainName)} already exists, please use another one.`;
+  }
+
+  return true;
+};
+
+async function readUserConfigs(configs, chainName = '', { interactive = true } = {}) {
   const defaults = cloneDeep(configs);
   defaults.forge.prime = defaults.forge.prime || {};
   defaults.forge.prime.token_holder = defaults.forge.prime.token_holder || {};
@@ -179,45 +197,7 @@ async function readUserConfigs(
 
   const questions = [];
 
-  const chainNameValidateFunc = v => {
-    if (!v) return 'The chain name should not be empty';
-    if (!/^[a-zA-Z][a-zA-Z0-9_\-\s]{3,23}$/.test(v)) {
-      return 'The chain name should start with a letter, only contain 0-9,a-z,A-Z, and length between 4~24';
-    }
-
-    if (isReservedChainName(v, RESERVED_CHAIN_NAMES)) {
-      return `${chalk.cyan(v)} is reserved, please use another one`;
-    }
-
-    if (fs.existsSync(getChainDirectory(v))) {
-      if (isCreate || (!isCreate && v !== chainName)) {
-        return `The chain ${chalk.cyan(v)} already exists, please use another name.`;
-      }
-    }
-
-    return true;
-  };
-
-  if (isCreate) {
-    const chainNameValidateResult = chainNameValidateFunc(chainName);
-    if (chainNameValidateResult === true) {
-      printSuccess(`Chain name: ${chainName}`);
-    } else {
-      if (interactive === false) {
-        throw new Error(chainNameValidateResult);
-      }
-
-      printError(chainNameValidateResult);
-      questions.push({
-        type: 'text',
-        name: 'name',
-        message: 'Please input chain name:',
-        validate: chainNameValidateFunc,
-      });
-    }
-  } else {
-    printSuccess(`Chain name: ${chainName}`);
-  }
+  printSuccess(`Chain ID: ${chainName}`);
 
   questions.push(
     ...[
@@ -508,7 +488,7 @@ async function readUserConfigs(
       moderator = formatWallet(generatedModerator);
       generatedModeratorSK = base64.escape(base64.encode(hexToBytes(generatedModerator.secretKey)));
     } else {
-      moderator = formatWallet(fromSecretKey(formatSecretKey(userModeratorSK)));
+      moderator = formatWallet(formatSecretKey(userModeratorSK));
     }
 
     moderator.balance = 0;
@@ -653,9 +633,10 @@ async function getCustomConfigs(
       interactive,
     });
 
-    const result = mapToLessThanV38(userConfigs);
+    const v38Configs = mapToLessThanV38(userConfigs.configs);
+    userConfigs.configs = v38Configs;
 
-    return result;
+    return userConfigs;
   }
 
   if (semver.gte(forgeCoreVersion, '0.38.0')) {
@@ -672,10 +653,6 @@ async function writeConfigs(targetPath, configs, overwrite = true) {
   }
 
   fs.writeFileSync(targetPath, ensureConfigComment(toml.stringify(configs)));
-  const docUrl = 'https://docs.arcblock.io/forge/latest/core/configuration.html';
-  printSuccess(`Config file ${chalk.cyan(targetPath)} is updated!`);
-  printInfo(`Full configuration documentation: ${chalk.cyan(docUrl)}!`);
-  print(hr);
 }
 
 const previewConfigs = ({ configs, generatedModeratorSK, generatedTokenHolder }) => {
@@ -711,4 +688,190 @@ const previewConfigs = ({ configs, generatedModeratorSK, generatedTokenHolder })
   }
 };
 
-module.exports = { getCustomConfigs, previewConfigs, writeConfigs };
+const readNecessaryConfigs = async ({ defaultConfigs, chainName, silent = false }) => {
+  const defaultConfigsCopy = cloneDeep(defaultConfigs);
+
+  defaultConfigsCopy.forge.prime = defaultConfigsCopy.forge.prime || {};
+  defaultConfigsCopy.forge.prime.token_holder = defaultConfigsCopy.forge.prime.token_holder || {};
+  const tokenHolderDefaults = Object.assign(
+    {
+      address: 'zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz',
+      balance: 4000000000,
+    },
+    defaultConfigsCopy.forge.prime.token_holder || {}
+  );
+
+  const tokenDefaults = Object.assign(
+    {
+      name: 'ArcBlock',
+      symbol: 'ABT',
+      unit: 'arc',
+      description: 'Forge token ABT',
+      icon: DEFAULT_ICON_BASE64,
+      decimal: 18,
+      initial_supply: 7500000000,
+      total_supply: 7500000000,
+      inflation_rate: 0,
+    },
+    defaultConfigsCopy.forge.token || {}
+  );
+
+  const basicQuestions = [
+    {
+      type: 'text',
+      name: 'tokenName',
+      message: "What's the token name?", // eslint-disable-line
+      default: tokenDefaults.name,
+      validate: v => {
+        if (!v) return 'The token name should not be empty';
+        if (!/^[a-zA-Z][a-zA-Z0-9_\-\s]{5,35}$/.test(v)) {
+          return 'The token name should start with a letter, only contain 0-9,a-z,A-Z, and length between 6~36';
+        }
+        return true;
+      },
+    },
+    {
+      type: 'text',
+      name: 'tokenSymbol',
+      message: "What's the token symbol?", // eslint-disable-line
+      default: tokenDefaults.symbol,
+      validate: v => {
+        if (!v) return 'The token symbol should not be empty';
+        if (!/^[a-zA-Z][a-zA-Z0-9]{2,5}$/.test(v)) {
+          return 'The token symbol should start with a letter, only contain 0-9,a-z,A-Z, and length between 3~6';
+        }
+        return true;
+      },
+    },
+  ];
+
+  const chainIdQuestion = {
+    type: 'text',
+    name: 'chainId',
+    message: 'Chain ID:',
+    validate: chainNameValidateFunc,
+  };
+
+  if (chainName) {
+    const chainNameValidateResult = chainNameValidateFunc(chainName);
+    if (chainNameValidateResult === true) {
+      printSuccess(`Chain ID: ${chainName}`);
+    } else if (silent === true) {
+      throw new Error(chainNameValidateResult);
+    } else {
+      printError(chainNameValidateResult);
+      basicQuestions.unshift(chainIdQuestion);
+    }
+  } else {
+    basicQuestions.unshift(chainIdQuestion);
+  }
+
+  const basicConfigs = await inquire(basicQuestions, { silent });
+
+  let moderator = getModerator();
+  if (!moderator) {
+    const { inputModeratorSK, userModeratorSK } = await inquire(
+      [
+        {
+          type: 'confirm',
+          name: 'inputModeratorSK',
+          message: 'Do you already have an administrator secret key?',
+          default: false,
+        },
+        {
+          type: 'text',
+          name: 'userModeratorSK',
+          message: 'Input your secret key:',
+          when: d => d.inputModeratorSK === true,
+          validate: v => {
+            if (!v.trim()) {
+              return 'Secret key should not be empty';
+            }
+
+            return true;
+          },
+        },
+      ],
+      { silent }
+    );
+
+    if (inputModeratorSK === false) {
+      const generatedModerator = fromRandom();
+      moderator = formatWallet(generatedModerator);
+      const generatedModeratorSK = toBase64(generatedModerator.secretKey);
+      globalConfig.setConfig('moderatorSecretKey', generatedModeratorSK);
+      print(
+        chalk.yellow(
+          'Your secret key has been generated and saved in ~/.forgerc.yml. Please take good care of it.'
+        )
+      );
+    } else {
+      moderator = formatWallet(fromSecretKey(fromBase64(userModeratorSK)));
+    }
+  }
+
+  print();
+  print(`${emoji.get('gift')} One more step: about "Checkin Bonus"`);
+  print(
+    chalk.gray(
+      chalk.italic(
+        `${' '.repeat(
+          3
+        )}Checkin Bonus is a special chain feature that enable users on your chain doing checkin to get bonus token.`
+      )
+    )
+  );
+
+  const { chainId = chainName, tokenName, tokenSymbol } = basicConfigs;
+
+  defaultConfigsCopy.tendermint.moniker = `${chainId}-01`;
+  defaultConfigsCopy.tendermint.timeout_commit = '3s';
+  defaultConfigsCopy.tendermint.genesis.chain_id = chainId;
+  defaultConfigsCopy.tendermint.genesis.genesis_time = new Date();
+
+  defaultConfigsCopy.forge.token = Object.assign(tokenDefaults, {
+    name: tokenName,
+    symboll: tokenSymbol,
+  });
+
+  defaultConfigsCopy.forge.prime.moderator = {
+    address: moderator.address,
+    pk: moderator.pk,
+    balance: 0,
+  };
+
+  defaultConfigsCopy.forge.accounts = [
+    {
+      address: moderator.address,
+      pk: moderator.publicKey,
+      balance: tokenDefaults.initial_supply - tokenHolderDefaults.balance,
+    },
+  ];
+
+  const { enableCheckin } = await inquire(
+    {
+      type: 'confirm',
+      name: 'enableCheckin',
+      message: 'Do you want to enable "Checkin Bonus"?',
+      default:
+        typeof get(defaultConfigsCopy, 'forge.transaction.poke') === 'undefined'
+          ? true
+          : defaultConfigsCopy.forge.transaction.poke.amount,
+    },
+    { silent }
+  );
+
+  if (enableCheckin) {
+    defaultConfigsCopy.forge.transaction.poke = Object.assign(
+      {
+        daily_limit: 2500000,
+        amount: 25,
+      },
+      defaultConfigsCopy.forge.transaction.poke || {}
+    );
+  }
+
+  return { configs: defaultConfigsCopy, chainId };
+};
+
+module.exports = { getCustomConfigs, previewConfigs, readNecessaryConfigs, writeConfigs };

@@ -13,7 +13,7 @@ const printAllProcesses = async () => {
   const swapStats = await getForgeSwapProcessStats();
 
   if ((!processes || !processes.length) && !swapStats) {
-    printInfo(`forge daemon not started yet, start with ${chalk.cyan('forge start')}`);
+    printInfo(`Forge is not started yet, start with ${chalk.cyan('forge start')}`);
     process.exit(0);
   }
 

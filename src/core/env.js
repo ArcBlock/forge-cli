@@ -392,7 +392,7 @@ function ensureRequiredDirs() {
     } else {
       try {
         shell.mkdir('-p', dir);
-        shell.echo(`${symbols.success} initialized ${x} dir for forge-cli: ${dir}`);
+        debug(`initialized ${x} dir for forge-cli: ${dir}`);
       } catch (err) {
         shell.echo(`${symbols.success} failed to initialize ${x} dir for forge-cli: ${dir}`, err);
       }

@@ -1,16 +1,21 @@
 const chalk = require('chalk');
 const fs = require('fs');
 const toml = require('@iarna/toml');
+const emoji = require('node-emoji');
+
 const { config } = require('core/env');
 const { setConfigToChain } = require('core/forge-config');
-const { printInfo, printError } = require('core/util');
+const { print, printInfo, printError } = require('core/util');
 const {
   createNewChain,
   getOriginForgeReleaseFilePath,
   getChainReleaseFilePath,
 } = require('core/forge-fs');
+const { hr } = require('core/ui');
 const { hasChains } = require('core/libs/common');
-const { getCustomConfigs, previewConfigs, writeConfigs } = require('../config/lib');
+
+const { DOCUMENT_URL } = require('../../../constant');
+const { previewConfigs, readNecessaryConfigs, writeConfigs } = require('../config/lib');
 
 async function main({ args: [chainName = ''], opts: { defaults, allowMultiChain = false } }) {
   if ((await hasChains()) && allowMultiChain === false) {
@@ -24,22 +29,26 @@ async function main({ args: [chainName = ''], opts: { defaults, allowMultiChain 
       fs.readFileSync(getOriginForgeReleaseFilePath(forgeCoreVersion)).toString()
     );
 
-    const {
-      configs: customConfigs,
-      generatedModeratorSK,
-      generatedTokenHolder,
-      chainId,
-    } = await getCustomConfigs(defaultConfigs, forgeCoreVersion, {
+    const { configs: customConfigs, chainId } = await readNecessaryConfigs({
+      defaultConfigs,
       chainName,
-      interactive: !defaults,
-      isCreate: true,
+      silent: defaults === true,
     });
-
     const configs = await setConfigToChain(customConfigs, chainId, forgeCoreVersion);
-    previewConfigs({ configs, generatedModeratorSK, generatedTokenHolder });
+    previewConfigs({ configs });
     createNewChain(chainId);
     await writeConfigs(getChainReleaseFilePath(chainId), configs);
-    printInfo(`Run ${chalk.cyan(`forge start ${chainId}`)} to start the chain`);
+    print(hr);
+    print(
+      `${emoji.get('tada')} Your blockchain has been created! Now run ${chalk.cyan(
+        `forge start ${chainId}`
+      )} to run your chain.`
+    );
+    printInfo(
+      ` To modify more about your chain, like block time, token supplies, check ${chalk.cyan(
+        DOCUMENT_URL
+      )} and follow the instructions.` // eslint-disable-line
+    );
   } catch (error) {
     printError('Create new chain failed:');
     printError(error);

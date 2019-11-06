@@ -87,8 +87,11 @@ async function main({ opts: { chainName } }) {
   await printVersion(chainName);
   await printOSInformation();
 
-  print('If you want to check other chain\'s version info, please run:'); // prettier-ignore
-  print(chalk.cyan('forge version [chainName]'));
+  print(
+    `If you want to check other chain's version info, please run: ${chalk.cyan(
+      'forge version [chainName]'
+    )}`
+  );
 }
 
 exports.run = main;

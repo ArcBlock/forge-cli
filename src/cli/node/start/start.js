@@ -3,7 +3,7 @@ const chalk = require('chalk');
 const fs = require('fs');
 const shell = require('shelljs');
 
-const { symbols, hr, getSpinner } = require('core/ui');
+const { hr, getSpinner } = require('core/ui');
 const { config } = require('core/env');
 const debug = require('core/debug')('start');
 const { checkStartError } = require('core/forge-fs');
@@ -108,22 +108,14 @@ async function start(chainName, dryRun = false, allowMultiChain) {
 
     await printAllProcesses();
 
-    shell.echo(
-      `${symbols.info} For interactive console, please run ${chalk.cyan(
-        `forge remote -c ${chainName}`
+    printInfo(
+      `To open Forge Web and check all activities happened on your chain, run ${chalk.cyan(
+        `forge web open ‑c ${chainName}`
       )}`
     );
-    shell.echo(
-      `${symbols.info} For forge web interface, please run ${chalk.cyan(
-        `forge web open -c ${chainName}`
-      )}`
-    );
-    shell.echo(`${symbols.info} For above process list, please run ${chalk.cyan('forge ps')}`);
-    shell.echo(
-      `${symbols.info} If you want to know forge status detail, please run ${chalk.cyan(
-        `forge status -c ${chainName}`
-      )}`
-    );
+    printInfo(`To check your Forge status, run ${chalk.cyan(`forge status -c ${chainName}`)}`);
+    printInfo(`To check Forge Processes, run ${chalk.cyan('forge ps')}`);
+    printInfo(`To open Interactive Console, run ${chalk.cyan(`forge remote ‑c ${chainName}`)}`);
     return true;
   } catch (err) {
     debug.error(err);

@@ -15,6 +15,7 @@ module.exports = {
   DEFAULT_WORKSHOP_PORT: 8807,
   DEFAULT_FORGE_GRPC_PORT: 28210,
   DEFAULT_MIRROR: 'https://releases.arcblock.io',
+  DOCUMENT_URL: 'https://docs.arcblock.io/forge/latest/core/configuration.html',
   REMOTE_BLOCKLET_URL: 'https://releases.arcblockio.cn/blocklets.json',
   RELEASE_ASSETS: [
     'forge',

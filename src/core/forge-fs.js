@@ -384,7 +384,7 @@ function createNewChain(chainName = process.env.FORGE_CURRENT_CHAIN) {
   fs.mkdirSync(getDataDirectory(chainName), { recursive: true });
   fs.mkdirSync(path.join(chainDirectory, 'keys'), { recursive: true });
   updateChainConfig(chainName, { version: getGlobalForgeVersion() });
-  printInfo(`Initialized a new empty chain in ${chainDirectory}`);
+  // printInfo(`Initialized a new empty chain in ${chainDirectory}`);
 }
 
 function ensureChainDirectory(chainName = process.env.FORGE_CURRENT_CHAIN) {

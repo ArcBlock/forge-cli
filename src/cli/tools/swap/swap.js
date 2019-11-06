@@ -103,20 +103,6 @@ const ensureRequirements = async swapConfig => {
 };
 
 const startSwap = async (version = '') => {
-  if (!version) {
-    version = getGlobalForgeVersion(); // eslint-disable-line
-  }
-
-  if (version && !semver.valid(version)) {
-    printError('Invalid version:', version);
-    process.exit(1);
-  }
-
-  if (semver.lt(version, '0.39.1')) {
-    printError('Forge swap service only supported at version greater than', chalk.cyan('0.39.1'));
-    process.exit(1);
-  }
-
   printInfo('Using forge swap version', chalk.cyan(version));
 
   const forgeSwapBinPath = getReleaseBinPath('forge_swap', version);
@@ -195,6 +181,20 @@ const stopSwap = async () => {
 };
 
 async function run({ args: [action = 'config', version] }) {
+  if (version && !semver.valid(version)) {
+    printError('Invalid version:', version);
+    process.exit(1);
+  }
+
+  if (!version) {
+    version = getGlobalForgeVersion(); // eslint-disable-line
+  }
+
+  if (semver.lt(version, '0.39.1')) {
+    printError('Forge swap service only supported at version greater than', chalk.cyan('0.39.1'));
+    process.exit(1);
+  }
+
   switch (action) {
     case 'config':
       await configSwap();

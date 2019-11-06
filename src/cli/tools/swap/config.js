@@ -5,6 +5,7 @@ const internalIP = require('internal-ip');
 const isIP = require('is-ip');
 const inquirer = require('inquirer');
 const { print, printError, printInfo, printSuccess, trim } = require('core/util');
+const { formatSecretKey } = require('core/moderator');
 const fs = require('fs');
 const TOML = require('@iarna/toml');
 
@@ -244,7 +245,7 @@ async function inquire(originalConfig) {
 
   const answers = await inquirer.prompt(questions);
 
-  const appSK = trim(answers.appSK);
+  const appSK = formatSecretKey(trim(answers.appSK));
   const { pk: appPK, address: appAddress } = fromSecretKey(appSK, WalletType()).toJSON();
 
   let assetOwnerSK = trim(answers.assetOwnerSK);
@@ -304,20 +305,21 @@ async function inquire(originalConfig) {
 async function configSwap() {
   let swapConfig = {};
   const swapConfigFile = getForgeSwapConfigFile();
-  print('Press ^C to quit.');
   if (fs.existsSync(swapConfigFile)) {
-    try {
-      swapConfig = TOML.parse(fs.readFileSync(swapConfigFile));
-      await inquire(swapConfig);
-      print();
-      printSuccess(`Configs has been wrote in: ${chalk.cyan(swapConfigFile)}`);
-      printSuccess('Forge swap config updated!');
-      printInfo('You need to restart forge swap to make the configs take effect.');
-    } catch (error) {
-      debug(error);
-      printError(new Error(`parse forge swap config failed, forge swap file: ${swapConfigFile}`));
-      process.exit(1);
-    }
+    swapConfig = TOML.parse(fs.readFileSync(swapConfigFile));
+  }
+
+  print('Press ^C to quit.');
+  try {
+    await inquire(swapConfig);
+    print();
+    printSuccess(`Configs has been wrote in: ${chalk.cyan(swapConfigFile)}`);
+    printSuccess('Forge swap config updated!');
+    printInfo('You need to restart forge swap to make the configs take effect.');
+  } catch (error) {
+    debug(error);
+    printError(new Error(`config forge swap failed: ${error.message}`));
+    process.exit(1);
   }
 }
 

@@ -311,7 +311,7 @@ function getNPMConfig(key) {
   return get(conf, key);
 }
 
-const waitUntilTruthy = (handler = () => true, timeout = 30000) =>
+const waitUntilTruthy = (handler = () => true, timeout = 30000, message = '') =>
   // eslint-disable-next-line
   new Promise(async (resolve, reject) => {
     if (await handler()) {
@@ -329,7 +329,7 @@ const waitUntilTruthy = (handler = () => true, timeout = 30000) =>
 
       if (timeElapsed > timeout) {
         clearInterval(timer);
-        reject(new Error(`forge is not started within ${timeout / 1000} seconds`));
+        reject(new Error(message || `timeout for ${timeout / 1000} seconds`));
       }
 
       timeElapsed += interval;

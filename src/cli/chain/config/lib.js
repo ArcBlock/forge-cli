@@ -530,12 +530,6 @@ async function readUserConfigs(configs, chainName = '', { interactive = true } =
     defaults.forge.transaction.poke.amount = 0;
   }
 
-  // moderator config
-  defaults.forge.prime.moderator = moderator || {};
-
-  defaults.forge.prime.moderator.address = moderator.address;
-  defaults.forge.prime.moderator.pk = moderator.publicKey;
-
   // accounts config
   const total = customizeToken ? tokenInitialSupply : tokenDefaults.initial_supply;
   // eslint-disable-next-line no-nested-ternary
@@ -619,15 +613,15 @@ const mapToLessThanV38 = configs => {
 };
 
 async function getCustomConfigs(
-  defaults,
+  configs,
   forgeCoreVersion,
   { chainName = '', isCreate = false, interactive = true } = {}
 ) {
-  const configs = cloneDeep(defaults);
+  const configsCopy = cloneDeep(configs);
 
   if (semver.lt(forgeCoreVersion, '0.38.0')) {
     // for forge core version gte 0.38.0
-    const userConfigs = await readUserConfigs(mapToStandard(configs), chainName, {
+    const userConfigs = await readUserConfigs(mapToStandard(configsCopy), chainName, {
       isCreate,
       interactive,
     });
@@ -639,10 +633,10 @@ async function getCustomConfigs(
   }
 
   if (semver.gte(forgeCoreVersion, '0.38.0')) {
-    return readUserConfigs(configs, chainName, { isCreate, interactive });
+    return readUserConfigs(configsCopy, chainName, { isCreate, interactive });
   }
 
-  return readUserConfigs(configs, chainName, { isCreate, interactive }); // for always return a value in a function
+  return readUserConfigs(configsCopy, chainName, { isCreate, interactive }); // for always return a value in a function
 }
 
 async function writeConfigs(targetPath, configs, overwrite = true) {

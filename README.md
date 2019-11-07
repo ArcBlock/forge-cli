@@ -111,6 +111,7 @@ Commands:
   start [options] [<chainName>]       Start the forge and forge web deamon
   status [type]                       List info of the running chain/node
   stop [options] [<chainName>]        Stop the forge daemon and all related services
+  swap [action] [version]             Start forge swap service
   tx [hash]                           Get a tx detail and display
   tx:ls                               List latest transactions
   upgrade [<chainName>]               Upgrade chain node to new version without reset

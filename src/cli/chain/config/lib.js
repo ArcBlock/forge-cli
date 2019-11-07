@@ -20,12 +20,11 @@ const { hexToBytes, toBase64, fromBase64 } = require('@arcblock/forge-util');
 
 const { ensureConfigComment } = require('core/env');
 const { formatWallet, formatSecretKey, getModerator } = require('core/moderator');
-const { hr, pretty } = require('core/ui');
-const { logError, print, printInfo, printError, printSuccess, printWarning } = require('core/util');
+const { pretty } = require('core/ui');
+const { print, printInfo, printError, printSuccess, printWarning } = require('core/util');
 const debug = require('core/debug')('config:lib');
 const { getChainDirectory } = require('core/forge-fs');
 const { setFilePathOfConfig } = require('core/forge-config');
-const globalConfig = require('core/libs/global-config');
 const { inquire } = require('core/libs/interaction');
 
 const { DEFAULT_ICON_BASE64, REQUIRED_DIRS, RESERVED_CHAIN_NAMES } = require('../../../constant');
@@ -655,27 +654,9 @@ async function writeConfigs(targetPath, configs, overwrite = true) {
   fs.writeFileSync(targetPath, ensureConfigComment(toml.stringify(configs)));
 }
 
-const previewConfigs = ({ configs, generatedModeratorSK, generatedTokenHolder }) => {
+const previewConfigs = ({ configs, generatedTokenHolder }) => {
   print('Config Preview:');
   print(pretty(configs));
-  print(hr);
-
-  if (generatedModeratorSK) {
-    print('\n======================================================');
-    try {
-      globalConfig.setConfig('moderatorSecretKey', generatedModeratorSK);
-      print(chalk.yellow('Your moderator secret key has been preserved in ~/.forgerc.yml'));
-    } catch (error) {
-      printError(
-        chalk.red(
-          'Save moderator secret key to ~/.forgerc.yml failed, please preserve it properly.'
-        )
-      );
-      logError(error);
-    } finally {
-      print(); // just for newline
-    }
-  }
 
   if (generatedTokenHolder) {
     print('\n======================================================');
@@ -684,7 +665,6 @@ const previewConfigs = ({ configs, generatedModeratorSK, generatedTokenHolder })
     print('Address:', chalk.cyan(generatedTokenHolder.address));
     print('PublicKey:', chalk.cyan(generatedTokenHolder.pk));
     print('SecretKey:', chalk.cyan(generatedTokenHolder.sk));
-    print(hr);
   }
 };
 
@@ -769,6 +749,7 @@ const readNecessaryConfigs = async ({ defaultConfigs, chainName, silent = false 
   const basicConfigs = await inquire(basicQuestions, { silent });
 
   let moderator = getModerator();
+  let generatedModeratorSK;
   if (!moderator) {
     const { inputModeratorSK, userModeratorSK } = await inquire(
       [
@@ -798,13 +779,14 @@ const readNecessaryConfigs = async ({ defaultConfigs, chainName, silent = false 
     if (inputModeratorSK === false) {
       const generatedModerator = fromRandom();
       moderator = formatWallet(generatedModerator);
-      const generatedModeratorSK = toBase64(generatedModerator.secretKey);
-      globalConfig.setConfig('moderatorSecretKey', generatedModeratorSK);
-      print(
-        chalk.yellow(
-          'Your secret key has been generated and saved in ~/.forgerc.yml. Please take good care of it.'
-        )
-      );
+      generatedModeratorSK = toBase64(generatedModerator.secretKey);
+      if (!silent) {
+        print(
+          chalk.yellow(
+            'Your secret key will be generated and saved in ~/.forgerc.yml. Please preserve it well.'
+          )
+        );
+      }
     } else {
       moderator = formatWallet(fromSecretKey(fromBase64(userModeratorSK)));
     }
@@ -871,7 +853,7 @@ const readNecessaryConfigs = async ({ defaultConfigs, chainName, silent = false 
     );
   }
 
-  return { configs: defaultConfigsCopy, chainId };
+  return { configs: defaultConfigsCopy, chainId, generatedModeratorSK };
 };
 
 module.exports = { getCustomConfigs, previewConfigs, readNecessaryConfigs, writeConfigs };

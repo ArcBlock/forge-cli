@@ -16,7 +16,7 @@ const { hasChains } = require('core/libs/common');
 const globalConfig = require('core/libs/global-config');
 
 const { DOCUMENT_URL } = require('../../../constant');
-const { previewConfigs, readNecessaryConfigs, writeConfigs } = require('../config/lib');
+const { readNecessaryConfigs, writeConfigs } = require('../config/lib');
 
 async function main({ args: [chainName = ''], opts: { defaults, allowMultiChain = false } }) {
   if ((await hasChains()) && allowMultiChain === false) {
@@ -37,7 +37,6 @@ async function main({ args: [chainName = ''], opts: { defaults, allowMultiChain 
     });
 
     const configs = await setConfigToChain(customConfigs, chainId, forgeCoreVersion);
-    previewConfigs({ configs, generatedModeratorSK });
 
     if (generatedModeratorSK !== undefined) {
       try {

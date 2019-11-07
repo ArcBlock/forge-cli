@@ -28,6 +28,7 @@
   "scripts": {
     "precommit": "yarn lint",
     "prepush": "yarn lint",
+    "postinstall": "node ./src/scripts/post-install.js",
     "test:smoke": "yarn lint && node tools/jest.js",
     "lint": "eslint src",
     "lint:fix": "eslint --fix src"

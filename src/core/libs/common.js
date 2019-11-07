@@ -1,6 +1,7 @@
 /**
  * Common functions, different from `core/util`, this module is at higher level than `core/util`
  */
+const chalk = require('chalk');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -105,10 +106,23 @@ async function fetchLatestCLIVersion(registry, name, options) {
 
 function checkUpdate() {
   debug('check update');
-  updateNotifier({
+  const notifier = updateNotifier({
     pkg: { name: packageName, version: localVersion },
     updateCheckInterval: UPDATE_CHECK_INTERVAL,
-  }).notify();
+  });
+  if (notifier && notifier.update) {
+    notifier.notify({
+      message:
+        // eslint-disable-next-line
+        'New version available! ' +
+        chalk.dim(notifier.update.current) +
+        chalk.reset(' → ') +
+        chalk.green(notifier.update.latest) +
+        ' \nRun ' +
+        chalk.cyan(`npm instal -g ${packageName}`) +
+        ' to update',
+    });
+  }
 }
 
 function readCache(key) {

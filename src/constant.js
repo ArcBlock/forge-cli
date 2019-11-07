@@ -9,6 +9,7 @@ module.exports = {
   CONFIG_FILE_NAME: '.forge_chains',
   CHAIN_DATA_PATH_NAME: 'forge_release',
   CLI_BASE_DIRECTORY,
+  UPDATE_CHECK_INTERVAL: 1000 * 60 * 60 * 24, // one day
   DEFAULT_CHAIN_NAME: 'default',
   DEFAULT_CHAIN_NAME_RETURN: { NO_CHAINS: 1, NO_RUNNING_CHAINS: 2 },
   DEFAULT_FORGE_WEB_PORT: 8210,

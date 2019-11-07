@@ -52,12 +52,6 @@ const ensureChains = async (chainsConfig = []) => {
     if (isEmpty(config)) {
       throw new Error(`Chain ${chalk.cyan(name)} config is empty`);
     }
-
-    // const { host, port } = config;
-    // const p = await checkPort({ host, port });
-    // if (p !== port) {
-    //   throw new Error(`Can not connect chain host: ${host}`);
-    // }
   });
 };
 

@@ -292,21 +292,6 @@ function getConsensusEnginBinPath(version) {
   );
 }
 
-function getStorageEnginePath(version) {
-  return path.join(
-    getForgeReleaseDirectory(),
-    version,
-    'lib',
-    `storage-${version}`,
-    'priv',
-    'ipfs'
-  );
-}
-
-function getReleaseBinPath(releaseName, version) {
-  return path.join(getReleaseDirectory(releaseName), version, 'bin', releaseName);
-}
-
 function getForgeBinPath(version) {
   debug('getForgeBinPath, version:', version);
 
@@ -554,7 +539,6 @@ module.exports = {
   getOriginForgeReleaseFilePath,
   getForgeReleaseDirectory,
   getReleaseDirectory,
-  getStorageEnginePath,
   readChainKeyFilePath,
   isChainExists,
   isEmptyDirectory,

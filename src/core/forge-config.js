@@ -182,7 +182,6 @@ function setFilePathOfConfig(configs, chainName) {
   set(content, 'tendermint.keypath', path.join(getChainDirectory(chainName), 'keys'));
   set(content, 'tendermint.path', path.join(releaseDirectory, 'tendermint'));
 
-  set(content, 'ipfs.path', path.join(releaseDirectory, 'ipfs'));
   set(content, 'cache.path', path.join(releaseDirectory, 'cache', 'mnesia_data_dir'));
 
   set(content, 'workshop.path', getChainWorkshopDirectory(chainName));

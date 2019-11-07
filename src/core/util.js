@@ -109,10 +109,9 @@ function printError(...args) {
  * Check if the port is a free port, if it's available return it, or return -1
  * @param {*} port
  */
-async function checkPort({ host = '127.0.0.1', port }) {
-  const p = +port;
-  const tmp = await getPort({ host, port: p });
-  if (+tmp === p) {
+async function checkPort(port) {
+  const tmp = await getPort({ host: '127.0.0.1', port });
+  if (+tmp === +port) {
     return port;
   }
 
@@ -126,7 +125,7 @@ async function checkPort({ host = '127.0.0.1', port }) {
 async function getPorts(ports) {
   // eslint-disable-next-line
   for (const port of ports) {
-    const tmp = await checkPort({ port }); // eslint-disable-line
+    const tmp = await checkPort(port); // eslint-disable-line
     if (tmp !== -1) {
       return tmp;
     }
@@ -144,7 +143,7 @@ async function getFreePort(port) {
     return getPorts(port);
   }
 
-  return checkPort({ port });
+  return checkPort(port);
 }
 
 const printCurrentChain = currentChainName => {

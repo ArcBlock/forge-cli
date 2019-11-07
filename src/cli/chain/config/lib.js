@@ -204,8 +204,19 @@ async function readUserConfigs(configs, chainName = '', { interactive = true } =
         type: 'number',
         name: 'blockTime',
         message: 'Please input block time (in seconds):',
-        default: 1,
-        validate: getNumberValidator('block time'),
+        default: parseInt(defaults.tendermint.timeout_commit, 10) || 3,
+        validate: v => {
+          const validateRes = getNumberValidator('block time')(v);
+          if (validateRes !== true) {
+            return validateRes;
+          }
+
+          if (parseInt(v, 10) < 3) {
+            return 'The min block time is 3s';
+          }
+
+          return true;
+        },
       },
       {
         type: 'confirm',

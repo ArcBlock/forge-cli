@@ -292,6 +292,10 @@ function getConsensusEnginBinPath(version) {
   );
 }
 
+function getReleaseBinPath(releaseName, version) {
+  return path.join(getReleaseDirectory(releaseName), version, 'bin', releaseName);
+}
+
 function getForgeBinPath(version) {
   debug('getForgeBinPath, version:', version);
 

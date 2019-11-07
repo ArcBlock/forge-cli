@@ -1,7 +1,7 @@
-## 0.40.5.beta.1 (November 07, 2019)
+## 0.40.5 (November 07, 2019)
 
 - feat: use update-notifier package to check update
-- chore: remove  script && set min block time to 3s
+- chore: remove postinstall script && set min block time to 3s
 - chore: remove moderator setting when config chain
 - chore: remove ipfs code
 - chore: modify moderator sk outputs when creat chain

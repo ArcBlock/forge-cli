@@ -52,6 +52,14 @@ function sleep(timeout = 1000) {
   return new Promise(resolve => setTimeout(resolve, timeout));
 }
 
+const trim = str => {
+  if (typeof str === 'string') {
+    return str.trim();
+  }
+
+  return str;
+};
+
 /**
  * Write log to file
  * @param {array} args
@@ -302,8 +310,34 @@ function getNPMConfig(key) {
   return get(conf, key);
 }
 
+const waitUntilTruthy = (handler = () => true, timeout = 30000, message = '') =>
+  // eslint-disable-next-line
+  new Promise(async (resolve, reject) => {
+    if (await handler()) {
+      return resolve(true);
+    }
+
+    let timeElapsed = 0;
+    const interval = 800;
+    // eslint-disable-next-line
+    const timer = setInterval(async () => {
+      if (await handler()) {
+        clearInterval(timer);
+        return resolve(true);
+      }
+
+      if (timeElapsed > timeout) {
+        clearInterval(timer);
+        reject(new Error(message || `timeout for ${timeout / 1000} seconds`));
+      }
+
+      timeElapsed += interval;
+    }, interval);
+  });
+
 module.exports = {
   chainSortHandler,
+  checkPort,
   escapseHomeDir,
   downloadPackageFromNPM,
   fetchAsset,
@@ -329,4 +363,6 @@ module.exports = {
   printWarning,
   strEqual,
   sleep,
+  trim,
+  waitUntilTruthy,
 };

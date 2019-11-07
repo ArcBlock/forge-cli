@@ -415,6 +415,12 @@ function createRpcClient() {
 }
 
 // TODO: need to refact to on name parameter
+/**
+ * @deprecated Use core/libs/common/makeNativeCommandRunnder
+ * @param {*} executable
+ * @param {*} name
+ * @param {*} param2
+ */
 function makeNativeCommandRunner(executable, name, { env } = {}) {
   return function runNativeForgeCommand(subCommand, options = {}) {
     return function rumCommand() {

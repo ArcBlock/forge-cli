@@ -15,11 +15,9 @@ const getBlockletsFunc = async url => {
 };
 
 const getBlocklets = async () => {
-  const result = await wrapSpinner(
-    'Fetching blocklets information...',
-    getBlockletsFunc,
-    REMOTE_BLOCKLET_URL
-  );
+  const result = await wrapSpinner('Fetching blocklets information...', () =>
+    getBlockletsFunc(REMOTE_BLOCKLET_URL)
+  ); // eslint-disable-line
 
   return result;
 };

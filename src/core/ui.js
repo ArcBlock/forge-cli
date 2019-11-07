@@ -89,11 +89,11 @@ const getSpinner = opts => {
   return spinner;
 };
 
-const wrapSpinner = async (message = '', func, ...args) => {
+const wrapSpinner = async (message = '', func) => {
   const spinner = getSpinner(message);
 
   spinner.start();
-  const result = await func(...args);
+  const result = await func();
   spinner.succeed();
   return result;
 };

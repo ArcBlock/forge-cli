@@ -1,21 +1,25 @@
 /**
  * Common functions, different from `core/util`, this module is at higher level than `core/util`
  */
-
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const semver = require('semver');
+const shell = require('shelljs');
 const url = require('url');
 
 const api = require('../api');
-const debug = require('../debug')('common');
+const debug = require('../debug')('core:libs:common');
 const { logError } = require('../util');
 const { symbols } = require('../ui');
 const { DEFAULT_CHAIN_NAME_RETURN, REQUIRED_DIRS } = require('../../constant');
-const { name: packageName, version: localVersion } = require('../../../package.json');
-const { getAllChainNames, getLocalReleases, updateReleaseYaml } = require('../forge-fs');
-const { engines } = require('../../../package');
+const { name: packageName, version: localVersion, engines } = require('../../../package.json');
+const {
+  getAllChainNames,
+  getLocalReleases,
+  getReleaseBinPath,
+  updateReleaseYaml,
+} = require('../forge-fs');
 
 async function getDefaultChainNameHandlerByChains({ chainName } = {}) {
   if (chainName) {
@@ -152,6 +156,20 @@ function writeCache(key, data) {
   }
 }
 
+const makeForgeSwapRunCommand = (version, { swapConfigPath, subcommand } = {}) => {
+  const binPath = getReleaseBinPath('forge_swap', version);
+  return makeNativeCommand({
+    binPath,
+    env: swapConfigPath ? `FORGE_SWAP_CONFIG=${swapConfigPath}` : undefined,
+    subcommand,
+  });
+};
+const makeNativeCommandRunner = (command, options = {}) => () => {
+  debug('makeNativeCommandRunner command', command);
+  const res = shell.exec(command, Object.assign({ silent: false }, options));
+  return res;
+};
+
 const makeNativeCommand = ({ binPath, subcommand = 'daemon', env = '' }) => {
   if (!fs.existsSync(binPath)) {
     throw new Error(`Bin path ${binPath} does not exist`);
@@ -192,4 +210,6 @@ module.exports = {
   hasChains,
   hasReleases,
   makeNativeCommand,
+  makeForgeSwapRunCommand,
+  makeNativeCommandRunner,
 };

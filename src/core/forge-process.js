@@ -143,6 +143,14 @@ async function getStarterProcess(chainName) {
   return getForgeProcessByTag('starter', chainName);
 }
 
+async function getForgeSwapProcess() {
+  const processes = await findProcess('name', 'forge_swap');
+
+  const swapProcess = processes.find(({ cmd }) => cmd.includes('/bin/beam.smp'));
+
+  return { name: 'forge_swap', pid: swapProcess ? swapProcess.pid : 0 };
+}
+
 /**
  * Get processes that started by forge starter, current: forge/tendermint
  * @param {string} chainName
@@ -267,6 +275,21 @@ async function getRunningProcessesStats(chainName = process.env.FORGE_CURRENT_CH
   });
 
   return processesStats;
+}
+
+async function getForgeSwapProcessStats() {
+  const { pid } = await getForgeSwapProcess();
+  if (pid === 0) {
+    return null;
+  }
+
+  const usage = await pidUsage(pid);
+  return {
+    pid,
+    uptime: prettyTime(usage.elapsed, { compact: true }),
+    memory: prettyBytes(usage.memory),
+    cpu: `${usage.cpu.toFixed(2)} %`,
+  };
 }
 
 async function getRunningProcessEndpoints(chainName) {
@@ -394,9 +417,11 @@ module.exports = {
   getAllRunningProcessStats,
   getRunningProcesses,
   getForgeProcess,
+  getForgeSwapProcess,
   getForgeWebProcess,
   getForgeWorkshopProcess,
   getRunningProcessEndpoints,
+  getForgeSwapProcessStats,
   getProcessTag,
   getSimulatorProcess,
   getTopRunningChains,

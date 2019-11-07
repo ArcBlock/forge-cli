@@ -1,3 +1,13 @@
+## 0.40.5.beta.1 (November 07, 2019)
+
+- feat: use update-notifier package to check update
+- chore: remove  script && set min block time to 3s
+- chore: remove moderator setting when config chain
+- chore: remove ipfs code
+- chore: modify moderator sk outputs when creat chain
+- feat: modify the flow of using cli for the first time
+- chore: modify typo in forge web and forge chain:config
+
 ## 0.40.4 (November 06, 2019)
 
 - integrate atomic service

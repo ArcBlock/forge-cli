@@ -27,11 +27,7 @@ module.exports = {
     'forge_swap',
   ],
   SHIFT_WIDTH: ' '.repeat(4),
-  MIRRORS: [
-    'https://releases.arcblock.io',
-    'https://arcblock.oss-cn-beijing.aliyuncs.com',
-    'https://releases.arcblockio.cn',
-  ],
+  MIRRORS: ['https://releases.arcblock.io', 'https://releases.arcblockio.cn'],
   ASSETS_PATH: {
     LATEST_VERSION: 'forge/latest.json',
     VERSIONS: 'forge/versions.json',

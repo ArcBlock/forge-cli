@@ -196,7 +196,7 @@ async function readUserConfigs(configs, chainName = '', { interactive = true } =
 
   const questions = [];
 
-  printSuccess(`Chain ID: ${chainName}`);
+  printSuccess(`Chain Name: ${chainName}`);
 
   questions.push(
     ...[
@@ -227,7 +227,7 @@ async function readUserConfigs(configs, chainName = '', { interactive = true } =
       {
         type: 'text',
         name: 'tokenName',
-        message: "What's the token name?", // eslint-disable-line
+        message: 'Token Name:', // eslint-disable-line
         default: tokenDefaults.name,
         when: d => d.customizeToken,
         validate: v => {
@@ -241,7 +241,7 @@ async function readUserConfigs(configs, chainName = '', { interactive = true } =
       {
         type: 'text',
         name: 'tokenSymbol',
-        message: "What's the token symbol?", // eslint-disable-line
+        message: 'Token Symbol:', // eslint-disable-line
         default: tokenDefaults.symbol,
         when: d => d.customizeToken,
         validate: v => {
@@ -688,10 +688,10 @@ const readNecessaryConfigs = async ({ defaultConfigs, chainName, silent = false 
 
   const tokenDefaults = Object.assign(
     {
-      name: 'ArcBlock',
-      symbol: 'ABT',
-      unit: 'arc',
-      description: 'Forge token ABT',
+      name: 'MyToken',
+      symbol: 'MYT',
+      unit: 'myt',
+      description: 'My token MYT',
       icon: DEFAULT_ICON_BASE64,
       decimal: 18,
       initial_supply: 7500000000,
@@ -705,7 +705,7 @@ const readNecessaryConfigs = async ({ defaultConfigs, chainName, silent = false 
     {
       type: 'text',
       name: 'tokenName',
-      message: "What's the token name?", // eslint-disable-line
+      message: 'Token Name:', // eslint-disable-line
       default: tokenDefaults.name,
       validate: v => {
         if (!v) return 'The token name should not be empty';
@@ -718,7 +718,7 @@ const readNecessaryConfigs = async ({ defaultConfigs, chainName, silent = false 
     {
       type: 'text',
       name: 'tokenSymbol',
-      message: "What's the token symbol?", // eslint-disable-line
+      message: 'Token Symbol:', // eslint-disable-line
       default: tokenDefaults.symbol,
       validate: v => {
         if (!v) return 'The token symbol should not be empty';
@@ -733,14 +733,15 @@ const readNecessaryConfigs = async ({ defaultConfigs, chainName, silent = false 
   const chainIdQuestion = {
     type: 'text',
     name: 'chainId',
-    message: 'Chain ID:',
+    message: 'Chain Name:',
+    default: 'my-chain',
     validate: chainNameValidateFunc,
   };
 
   if (chainName) {
     const chainNameValidateResult = chainNameValidateFunc(chainName);
     if (chainNameValidateResult === true) {
-      printSuccess(`Chain ID: ${chainName}`);
+      printSuccess(`Chain Name: ${chainName}`);
     } else if (silent === true) {
       throw new Error(chainNameValidateResult);
     } else {
@@ -798,13 +799,11 @@ const readNecessaryConfigs = async ({ defaultConfigs, chainName, silent = false 
   }
 
   print();
-  print(`${emoji.get('gift')} One more step: about "Checkin Bonus"`);
+  print(`${emoji.get('gift')} One more thing: Check-in Bonus`);
   print(
     chalk.gray(
       chalk.italic(
-        `${' '.repeat(
-          3
-        )}Checkin Bonus is a special chain feature that enable users on your chain doing checkin to get bonus token.`
+        `${' '.repeat(3)}This is a special feature that allows daily check-ins for bonus tokens`
       )
     )
   );
@@ -839,7 +838,7 @@ const readNecessaryConfigs = async ({ defaultConfigs, chainName, silent = false 
     {
       type: 'confirm',
       name: 'enableCheckin',
-      message: 'Do you want to enable "Checkin Bonus"?',
+      message: 'Do you want to enable "Check-in Bonus"?',
       default:
         typeof get(defaultConfigsCopy, 'forge.transaction.poke') === 'undefined'
           ? true

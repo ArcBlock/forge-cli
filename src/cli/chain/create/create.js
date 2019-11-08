@@ -1,5 +1,6 @@
 const chalk = require('chalk');
 const fs = require('fs');
+const os = require('os');
 const toml = require('@iarna/toml');
 const emoji = require('node-emoji');
 
@@ -12,6 +13,7 @@ const {
   getChainReleaseFilePath,
 } = require('core/forge-fs');
 const { hr } = require('core/ui');
+const { getChainDirectory } = require('core/forge-fs');
 const { hasChains } = require('core/libs/common');
 const globalConfig = require('core/libs/global-config');
 
@@ -58,18 +60,24 @@ async function main({ args: [chainName = ''], opts: { defaults, allowMultiChain 
     }
 
     createNewChain(chainId);
-    await writeConfigs(getChainReleaseFilePath(chainId), configs);
+    const chainReleaseFilePath = getChainReleaseFilePath(chainId);
+    await writeConfigs(chainReleaseFilePath, configs);
     print(hr);
     print(
-      `${emoji.get('tada')} Your blockchain has been created! Now run ${chalk.cyan(
-        `forge start ${chainId}`
-      )} to run your chain.`
+      `${emoji.get('tada')} Congratulations! Your new blockchain has been saved in ${chalk.cyan(
+        getChainDirectory(chainId)
+      )}${os.EOL}`
     );
     printInfo(
-      ` To modify more about your chain, like block time, token supplies, check ${chalk.cyan(
-        DOCUMENT_URL
-      )} and follow the instructions.` // eslint-disable-line
+      ` Configuration for chain ${chalk.cyan(chainId)} is in ${chalk.cyan(chainReleaseFilePath)}`
     );
+    printInfo(
+      // eslint-disable-next-line
+      ` To do further customizations over your chain, like block and asset size, token supply details, check-in bonus setting, etc, please follow instructions in ${chalk.cyan(
+        DOCUMENT_URL
+      )}`
+    );
+    printInfo(` Now run ${chalk.cyan(`forge start ${chainId}`)} to run your chain.`);
   } catch (error) {
     printError('Create new chain failed:');
     printError(error);

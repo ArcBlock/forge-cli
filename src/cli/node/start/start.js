@@ -109,13 +109,17 @@ async function start(chainName, dryRun = false, allowMultiChain) {
     await printAllProcesses();
 
     printInfo(
-      `To open Forge Web and check all activities happened on your chain, run ${chalk.cyan(
-        `forge web open ‑c ${chainName}`
+      `To see real-time chain activities, run ${chalk.cyan(`forge web open -c ${chainName}`)}`
+    );
+    printInfo(
+      `To get detailed chain information, run ${chalk.cyan(`forge status -c ${chainName}`)}`
+    );
+    printInfo(`To stop the chain run ${chalk.cyan(`forge stop ${chainName}`)}`);
+    printInfo(
+      `To get a complete list of running processes for all running chains, run ${chalk.cyan(
+        'forge ps'
       )}`
     );
-    printInfo(`To check your Forge status, run ${chalk.cyan(`forge status -c ${chainName}`)}`);
-    printInfo(`To check Forge Processes, run ${chalk.cyan('forge ps')}`);
-    printInfo(`To open Interactive Console, run ${chalk.cyan(`forge remote ‑c ${chainName}`)}`);
     return true;
   } catch (err) {
     debug.error(err);

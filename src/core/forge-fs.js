@@ -292,17 +292,6 @@ function getConsensusEnginBinPath(version) {
   );
 }
 
-function getStorageEnginePath(version) {
-  return path.join(
-    getForgeReleaseDirectory(),
-    version,
-    'lib',
-    `storage-${version}`,
-    'priv',
-    'ipfs'
-  );
-}
-
 function getReleaseBinPath(releaseName, version) {
   return path.join(getReleaseDirectory(releaseName), version, 'bin', releaseName);
 }
@@ -384,7 +373,6 @@ function createNewChain(chainName = process.env.FORGE_CURRENT_CHAIN) {
   fs.mkdirSync(getDataDirectory(chainName), { recursive: true });
   fs.mkdirSync(path.join(chainDirectory, 'keys'), { recursive: true });
   updateChainConfig(chainName, { version: getGlobalForgeVersion() });
-  print(`Initialized a new empty chain in ${chainDirectory}`);
 }
 
 function ensureChainDirectory(chainName = process.env.FORGE_CURRENT_CHAIN) {
@@ -554,7 +542,6 @@ module.exports = {
   getOriginForgeReleaseFilePath,
   getForgeReleaseDirectory,
   getReleaseDirectory,
-  getStorageEnginePath,
   readChainKeyFilePath,
   isChainExists,
   isEmptyDirectory,

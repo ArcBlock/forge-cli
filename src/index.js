@@ -10,7 +10,6 @@ if (process.argv.some(x => x === '--verbose' || x === '-v')) {
 require('app-module-path').addPath(__dirname);
 
 const chalk = require('chalk');
-const os = require('os');
 const shell = require('shelljs');
 const program = require('commander');
 const path = require('path');
@@ -44,20 +43,6 @@ const onError = error => {
 
 process.on('unhandledRejection', onError);
 process.on('uncaughtException', onError);
-process.on('exit', () => {
-  if (global.newVersionInfo) {
-    const { localVersion, latestVersion, packageName } = global.newVersionInfo;
-    global.newVersionInfo = null;
-    print(
-      chalk.yellow(
-        `${os.EOL}You are using Forge-CLI version ${localVersion}, however version ${latestVersion} is available.` // eslint-disable-line
-      )
-    );
-    print(chalk.yellow('You can upgrade Forge CLI via, npm or yarn:'));
-    print(chalk.yellow(`- npm:  ${chalk.cyan(`npm install -g ${packageName}`)}`));
-    print(chalk.yellow(`- yarn: ${chalk.cyan(`yarn global add ${packageName}`)}`));
-  }
-});
 
 const run = async () => {
   program

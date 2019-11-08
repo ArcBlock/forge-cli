@@ -1,7 +1,8 @@
 /* eslint-disable no-restricted-syntax */
 const fs = require('fs');
 const chalk = require('chalk');
-const { getPlatform, print, printError, printInfo, printSuccess } = require('core/util');
+const emoji = require('node-emoji');
+const { getPlatform, print, printError, printInfo } = require('core/util');
 const { formatVersion, download, DOWNLOAD_FLAGS } = require('./lib');
 
 const { DEFAULT_MIRROR, RELEASE_ASSETS } = require('../../../constant');
@@ -33,17 +34,17 @@ async function main({ args: [userVersion], opts: { mirror = DEFAULT_MIRROR, rele
       process.exit(1);
     }
 
-    printSuccess(`Congratulations! forge v${version} download successfully!`);
     print();
-    print(
+    print(`${emoji.get('tada')} Congratulations! forge v${version} download successfully!`);
+    printInfo(
       `Now you can use this version with ${chalk.cyan(
         `forge use ${version}`
       )}: requires reset chain state`
     );
-    print(
+    printInfo(
       `Or you can upgrade to this version with ${chalk.cyan(
         'forge upgrade'
-      )}: does not requires reset chain state`
+      )}: does not require reset chain state`
     );
     print();
   } catch (err) {

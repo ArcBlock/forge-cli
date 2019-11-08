@@ -23,7 +23,6 @@ function findLogFiles() {
       config.get('forge.path'),
       config.get('forge.logfile', 'logs/forge_transaction.log')
     ),
-    // ipfs: resolveLogPath(config.get('ipfs.path'), config.get('ipfs.logfile', 'logs/ipfs.log')),
     tendermint: resolveLogPath(
       config.get('tendermint.path'),
       config.get('tendermint.logfile', 'logs/tendermint.log')

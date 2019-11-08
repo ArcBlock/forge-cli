@@ -9,12 +9,14 @@ module.exports = {
   CONFIG_FILE_NAME: '.forge_chains',
   CHAIN_DATA_PATH_NAME: 'forge_release',
   CLI_BASE_DIRECTORY,
+  UPDATE_CHECK_INTERVAL: 1000 * 60 * 60 * 24, // one day
   DEFAULT_CHAIN_NAME: 'default',
   DEFAULT_CHAIN_NAME_RETURN: { NO_CHAINS: 1, NO_RUNNING_CHAINS: 2 },
   DEFAULT_FORGE_WEB_PORT: 8210,
   DEFAULT_WORKSHOP_PORT: 8807,
   DEFAULT_FORGE_GRPC_PORT: 28210,
   DEFAULT_MIRROR: 'https://releases.arcblock.io',
+  DOCUMENT_URL: 'https://docs.arcblock.io/forge/latest/core/configuration.html',
   REMOTE_BLOCKLET_URL: 'https://releases.arcblockio.cn/blocklets.json',
   RELEASE_ASSETS: [
     'forge',
@@ -25,11 +27,7 @@ module.exports = {
     'forge_swap',
   ],
   SHIFT_WIDTH: ' '.repeat(4),
-  MIRRORS: [
-    'https://releases.arcblock.io',
-    'https://arcblock.oss-cn-beijing.aliyuncs.com',
-    'https://releases.arcblockio.cn',
-  ],
+  MIRRORS: ['https://releases.arcblock.io', 'https://releases.arcblockio.cn'],
   ASSETS_PATH: {
     LATEST_VERSION: 'forge/latest.json',
     VERSIONS: 'forge/versions.json',

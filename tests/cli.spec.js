@@ -36,7 +36,6 @@ describe('misc', () => {
     const output = await runCommand('version');
     expect(output.includes('forge-core')).toBeTruthy();
     expect(output.includes('forge-cl')).toBeTruthy();
-    expect(output.includes('ipfs')).toBeTruthy();
     expect(output.includes('tendermint')).toBeTruthy();
   });
 });
@@ -46,7 +45,6 @@ describe('node', () => {
     const output = await runCommand('ps');
     expect(output.includes('starter')).toBeTruthy();
     expect(output.includes('forge')).toBeTruthy();
-    expect(output.includes('ipfs')).toBeTruthy();
     expect(output.includes('tendermint')).toBeTruthy();
   });
 });

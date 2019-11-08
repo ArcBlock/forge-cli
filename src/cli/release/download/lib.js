@@ -68,6 +68,7 @@ function fetchReleaseVersion({ mirror, releaseDir }) {
 const fetchAssetsByVersion = async (version, platform) => {
   const versionsInfo = await fetchAsset(ASSETS_PATH.VERSIONS);
   const release = versionsInfo.find(x => semver.eq(version, x.version));
+
   if (release) {
     return release.assets.filter(x => x.name.indexOf(`_${platform}_`) > 0).map(x => x.name);
   }
@@ -231,11 +232,12 @@ function formatVersion({ version, mirror, releaseDir }) {
     return { isLatest: true, version: latestVersion };
   }
 
-  if (!semver.valid(version)) {
+  const cleanedVersion = semver.clean(version);
+  if (!cleanedVersion) {
     return { version, isLatest: false }; // just for consistency
   }
 
-  return { version: semver.coerce(version).version, isLatest: false };
+  return { version: cleanedVersion, isLatest: false };
 }
 
 const DOWNLOAD_FLAGS = {

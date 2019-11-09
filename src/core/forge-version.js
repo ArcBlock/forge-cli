@@ -1,5 +1,10 @@
 const semver = require('semver');
 
+const isForgePatchVersion = version => {
+  const tmp = version.split('-');
+  return tmp.length > 1 && tmp[1].startsWith('p');
+};
+
 const formatVersion = version => {
   const [forgeMajorVersion, forgePatchVersion = ''] = version.split('-');
   const patch = forgePatchVersion.startsWith('p') ? Number(forgePatchVersion.substring(1)) : -1;
@@ -20,6 +25,8 @@ const gt = (v1, v2) => {
   return semver.gt(v1, v2);
 };
 
+const gte = (v1, v2) => gt(v1, v2) || semver.eq(v1, v2);
+
 const lt = (v1, v2) => {
   if (semver.eq(v1, v2) || gt(v1, v2)) {
     return false;
@@ -28,4 +35,6 @@ const lt = (v1, v2) => {
   return true;
 };
 
-module.exports = { gt, lt };
+const lte = (v1, v2) => lt(v1, v2) || semver.eq(v1, v2);
+
+module.exports = { gt, gte, lt, lte, isForgePatchVersion };

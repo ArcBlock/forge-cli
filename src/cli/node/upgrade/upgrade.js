@@ -18,6 +18,7 @@ const { getChainVersion, getChainGraphQLHost } = require('core/libs/common');
 const { isForgeStartedByStarter } = require('core/forge-process');
 const debug = require('core/debug')('upgrade');
 const { ensureModerator } = require('core/moderator');
+const forgeVersion = require('core/forge-version');
 
 const { stop, waitUntilStopped } = require('../stop/stop');
 const { printVersion } = require('../../misc/version/version.js');
@@ -79,7 +80,7 @@ const getConfigs = async ({ currentVersion, info, releases }) => {
           return 'Target version must be valid version';
         }
 
-        if (semver.gt(v, config.get('cli.version'))) {
+        if (forgeVersion.gt(v, config.get('cli.version'))) {
           return `Target version must be greater than version ${currentVersion}`;
         }
 
@@ -123,8 +124,8 @@ async function main({ args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
     const client = createRpcClient();
     const current = config.get('cli.currentVersion');
     const releases = (await listReleases())
-      .filter(({ version }) => semver.gt(version, current))
-      .sort((v1, v2) => semver.gt(v2.version, v1.version))
+      .filter(({ version }) => forgeVersion.gt(version, current))
+      .sort((v1, v2) => forgeVersion.gt(v2.version, v1.version))
       .map(({ version }) => version);
 
     if (!releases.length) {

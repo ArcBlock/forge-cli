@@ -1,6 +1,7 @@
 const semver = require('semver');
 const { fetchAsset, print, printError, printWarning, highlightOfList } = require('core/util');
 const { getLocalVersions } = require('core/forge-fs');
+const forgeVersion = require('core/forge-version');
 
 const { ASSETS_PATH } = require('../../../constant');
 
@@ -21,10 +22,10 @@ const main = async () => {
       .filter(x => x.status === undefined || x.status === 'normal')
       .map(x => x.version)
       .sort((x, y) => {
-        if (semver.gt(x, y)) {
+        if (forgeVersion.gt(x, y)) {
           return 1;
         }
-        if (semver.lt(x, y)) {
+        if (forgeVersion.lt(x, y)) {
           return -1;
         }
         return 0;

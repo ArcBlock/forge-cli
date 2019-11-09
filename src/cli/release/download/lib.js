@@ -21,6 +21,7 @@ const {
 } = require('core/util');
 const debug = require('core/debug')('install');
 const { getReleaseAssets, getReleaseDirectory, isReleaseBinExists } = require('core/forge-fs');
+const forgeVersion = require('core/forge-version');
 
 const { ASSETS_PATH, REQUIRED_DIRS } = require('../../../constant');
 
@@ -30,10 +31,10 @@ function fetchReleaseVersion({ mirror, releaseDir }) {
       .readdirSync(releaseDir)
       .filter(x => semver.valid(x))
       .sort((a, b) => {
-        if (semver.gt(a, b)) {
+        if (forgeVersion.gt(a, b)) {
           return -1;
         }
-        if (semver.lt(b, a)) {
+        if (forgeVersion.lt(b, a)) {
           return 1;
         }
 

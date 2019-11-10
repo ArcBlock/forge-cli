@@ -1,3 +1,7 @@
+## 0.40.6 (November 09, 2019)
+
+- fix: download prerelease version forge assets bug
+
 ## 0.40.5 (November 07, 2019)
 
 - feat: use update-notifier package to check update

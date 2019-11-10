@@ -8,7 +8,7 @@ cli(
   input => action(execute, run, input),
   {
     requirements: {
-      forgeRelease: true,
+      forgeRelease: false,
       runningNode: false,
       rpcClient: false,
       wallet: false,

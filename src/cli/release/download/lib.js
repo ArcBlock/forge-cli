@@ -21,6 +21,7 @@ const {
 } = require('core/util');
 const debug = require('core/debug')('install');
 const { getReleaseAssets, getReleaseDirectory, isReleaseBinExists } = require('core/forge-fs');
+const forgeVersion = require('core/forge-version');
 
 const { ASSETS_PATH, REQUIRED_DIRS } = require('../../../constant');
 
@@ -30,10 +31,10 @@ function fetchReleaseVersion({ mirror, releaseDir }) {
       .readdirSync(releaseDir)
       .filter(x => semver.valid(x))
       .sort((a, b) => {
-        if (semver.gt(a, b)) {
+        if (forgeVersion.gt(a, b)) {
           return -1;
         }
-        if (semver.lt(b, a)) {
+        if (forgeVersion.lt(b, a)) {
           return 1;
         }
 
@@ -68,6 +69,7 @@ function fetchReleaseVersion({ mirror, releaseDir }) {
 const fetchAssetsByVersion = async (version, platform) => {
   const versionsInfo = await fetchAsset(ASSETS_PATH.VERSIONS);
   const release = versionsInfo.find(x => semver.eq(version, x.version));
+
   if (release) {
     return release.assets.filter(x => x.name.indexOf(`_${platform}_`) > 0).map(x => x.name);
   }
@@ -231,11 +233,12 @@ function formatVersion({ version, mirror, releaseDir }) {
     return { isLatest: true, version: latestVersion };
   }
 
-  if (!semver.valid(version)) {
+  const cleanedVersion = semver.clean(version);
+  if (!cleanedVersion) {
     return { version, isLatest: false }; // just for consistency
   }
 
-  return { version: semver.coerce(version).version, isLatest: false };
+  return { version: cleanedVersion, isLatest: false };
 }
 
 const DOWNLOAD_FLAGS = {

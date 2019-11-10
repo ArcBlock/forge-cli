@@ -181,14 +181,18 @@ const makeNativeCommand = ({ binPath, subcommand = 'daemon', env = '' }) => {
 const getChainGraphQLHost = config =>
   process.env.FORGE_GQL_ENDPOINT || `http://127.0.0.1:${config.get('forge.web.port', 8210)}/api`;
 
+const checkSatisfiedForgeVersion = (version, range) =>
+  semver.satisfies(version, range, { includePrerelease: true });
+
 module.exports = {
   DEFAULT_CHAIN_NAME_RETURN,
   applyForgeVersion,
-  checkUpdate,
   cache: {
     write: writeCache,
     read: readCache,
   },
+  checkSatisfiedForgeVersion,
+  checkUpdate,
   fetchPackageJSON,
   fetchLatestCLIVersion,
   getChainGraphQLHost,

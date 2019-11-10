@@ -28,7 +28,7 @@ const {
 } = require('./forge-fs');
 const { makeRange, getPort, getFreePort, print, printError, printInfo } = require('./util');
 const { hr, symbols } = require('./ui');
-const { applyForgeVersion, hasReleases } = require('./libs/common');
+const { applyForgeVersion, hasReleases, checkSatisfiedForgeVersion } = require('./libs/common');
 const debug = require('./debug')('forge-config');
 const { version, engines } = require('../../package.json');
 
@@ -283,7 +283,7 @@ async function ensureForgeRelease({
       const curVersion = getForgeVersionFromYaml(releaseYamlPath, 'current');
 
       if (!semver.valid(curVersion)) {
-        throw new Error(`no valid version field found in release config ${releaseYamlPath}`);
+        throw new Error(`Valid version field not found in release config ${releaseYamlPath}`);
       }
       cliConfig.globalVersion = curVersion;
 
@@ -373,7 +373,7 @@ async function ensureForgeRelease({
       debug(`${symbols.success} Using forge release dir: ${cliReleaseDir}`);
       debug(`${symbols.success} Using forge executable: ${forgeBinPath}`);
 
-      if (semver.satisfies(currentVersion, engines.forge)) {
+      if (checkSatisfiedForgeVersion(currentVersion, engines.forge)) {
         return cliConfig;
       }
 

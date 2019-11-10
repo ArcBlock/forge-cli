@@ -409,6 +409,7 @@ async function getTopRunningChains({ chainName } = {}) {
 
 module.exports = {
   findServicePid,
+  findForgeEpmdDeamon,
   isForgeStopped,
   isForgeStarted,
   isForgeStartedByStarter,

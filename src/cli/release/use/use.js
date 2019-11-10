@@ -4,6 +4,7 @@ const semver = require('semver');
 const { isForgeStarted } = require('core/forge-process');
 const debug = require('core/debug')('release:use');
 const { updateReleaseYaml, listReleases, getGlobalForgeVersion } = require('core/forge-fs');
+const { checkSatisfiedForgeVersion } = require('core/libs/common');
 const { print, printError, printSuccess, printWarning } = require('core/util');
 
 const { version: cliVersion, engines } = require('../../../../package.json');
@@ -21,14 +22,14 @@ async function main({
       process.exit(1);
     }
 
-    if (!semver.satisfies(userVersion, engines.forge)) {
+    if (!checkSatisfiedForgeVersion(userVersion, engines.forge)) {
       printError(
         `forge-cli@${cliVersion} requires forge@${engines.forge} to work, but got ${userVersion}!`
       );
       process.exit(1);
     }
 
-    const { version } = semver.coerce(userVersion);
+    const version = semver.clean(userVersion);
     const globalVersion = getGlobalForgeVersion();
     if (semver.valid(globalVersion) && semver.eq(version, globalVersion)) {
       printWarning(`Already using forge release v${version}`);

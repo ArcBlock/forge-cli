@@ -8,9 +8,10 @@ const debug = require('core/debug')('stop');
 
 const {
   isForgeStarted,
+  getRunningProcesses,
+  getAllProcesses,
   stopForgeProcesses,
   stopAllForgeProcesses,
-  getRunningProcesses,
 } = require('core/forge-process');
 
 function waitUntilStopped(chainName) {
@@ -46,11 +47,20 @@ async function stop(chainName, all = false) {
       const spinner = getSpinner(`Waiting for chain ${chalk.yellow(chainName)} to stop...`);
       spinner.start();
 
-      const handle = stopForgeProcesses.bind(null, chainName);
+      const runningChains = await getAllProcesses();
+      let handle = null;
+      if (runningChains.length === 1) {
+        debug('stop all processes');
+        handle = stopAllForgeProcesses;
+      } else {
+        handle = stopForgeProcesses.bind(null, chainName);
+      }
+
       const stoppedProcesses = await handle();
 
       debug(`stopped processes ${stoppedProcesses.map(x => x.pid)}`);
       await waitUntilStopped(chainName);
+
       spinner.succeed(`Chain ${chalk.yellow(chainName)} stopped!`);
     }
 

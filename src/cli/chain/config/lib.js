@@ -8,7 +8,6 @@ const get = require('lodash/get');
 const cloneDeep = require('lodash/cloneDeep');
 const toml = require('@iarna/toml');
 const base64 = require('base64-url');
-const emoji = require('node-emoji');
 const base64Img = require('base64-img');
 const kebabCase = require('lodash/kebabCase');
 const semver = require('semver');
@@ -798,16 +797,6 @@ const readNecessaryConfigs = async ({ defaultConfigs, chainName, silent = false 
     }
   }
 
-  print();
-  print(`${emoji.get('gift')} One more thing: Check-in Bonus`);
-  print(
-    chalk.gray(
-      chalk.italic(
-        `${' '.repeat(3)}This is a special feature that allows daily check-ins for bonus tokens`
-      )
-    )
-  );
-
   const { chainId = chainName, tokenName, tokenSymbol } = basicConfigs;
 
   defaultConfigsCopy.tendermint.moniker = `${chainId}-01`;
@@ -834,28 +823,13 @@ const readNecessaryConfigs = async ({ defaultConfigs, chainName, silent = false 
     },
   ];
 
-  const { enableCheckin } = await inquire(
+  defaultConfigsCopy.forge.transaction.poke = Object.assign(
     {
-      type: 'confirm',
-      name: 'enableCheckin',
-      message: 'Do you want to enable "Check-in Bonus"?',
-      default:
-        typeof get(defaultConfigsCopy, 'forge.transaction.poke') === 'undefined'
-          ? true
-          : defaultConfigsCopy.forge.transaction.poke.amount,
+      daily_limit: 2500000,
+      amount: 25,
     },
-    { silent }
+    defaultConfigsCopy.forge.transaction.poke || {}
   );
-
-  if (enableCheckin) {
-    defaultConfigsCopy.forge.transaction.poke = Object.assign(
-      {
-        daily_limit: 2500000,
-        amount: 25,
-      },
-      defaultConfigsCopy.forge.transaction.poke || {}
-    );
-  }
 
   return { configs: defaultConfigsCopy, chainId, generatedModeratorSK };
 };

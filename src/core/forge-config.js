@@ -152,10 +152,19 @@ async function setConfig(
   set(content, 'tendermint.sock_rpc', `tcp://127.0.0.1:${tendermintRpcPort}`);
   set(content, 'tendermint.sock_grpc', `tcp://127.0.0.1:${tendermintGrpcPort}`);
   set(content, 'tendermint.sock_p2p', `tcp://0.0.0.0:${tendermintP2pPort}`);
-  set(content, 'workshop.host', internalIpV4);
-  set(content, 'workshop.schema', 'http');
-  set(content, 'workshop.port', workshopPort);
-  set(content, 'workshop.local_forge', `tcp://127.0.0.1:${forgeGrpcPort}`);
+
+  const workshopConfig = {
+    host: internalIpV4,
+    schema: 'http',
+    port: workshopPort,
+    local_forge: `tcp://127.0.0.1:${forgeGrpcPort}`,
+    hyjal: {
+      chain: {
+        host: `http://${internalIpV4}:${forgeWebPort}/api/`,
+      },
+    },
+  };
+  set(content, 'workshop', workshopConfig);
 
   if (moderator) {
     const tmp = Object.assign({}, moderator);

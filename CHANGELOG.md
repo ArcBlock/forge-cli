@@ -1,3 +1,8 @@
+## 0.40.7 (November 10, 2019)
+
+- remove checkin function from create chain
+- adapt latest workshop config
+
 ## 0.40.6 (November 09, 2019)
 
 - fix: download prerelease version forge assets bug

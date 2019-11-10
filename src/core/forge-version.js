@@ -2,7 +2,7 @@ const semver = require('semver');
 
 const isForgePatchVersion = version => {
   const tmp = version.split('-');
-  return tmp.length > 1 && tmp[1].startsWith('p');
+  return tmp.length > 1 && /p\d+/.test(tmp[1]);
 };
 
 const formatVersion = version => {

@@ -4,6 +4,7 @@ exports.block = require('./block');
 exports.blocklet = require('./blocklet');
 exports.chain = require('./chain');
 exports.contract = require('./contract');
+exports.deploy = require('./deploy');
 exports.misc = require('./misc');
 exports.node = require('./node');
 exports.release = require('./release');

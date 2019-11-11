@@ -2,7 +2,6 @@ exports.declare = require('./declare');
 exports.install = require('./install');
 exports.join = require('./join');
 exports.logs = require('./logs');
-exports.prepare = require('./prepare');
 exports.ps = require('./ps');
 exports.remote = require('./remote');
 exports.start = require('./start');

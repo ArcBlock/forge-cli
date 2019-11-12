@@ -1,3 +1,13 @@
+## 1.0.0 (November 12, 2019)
+
+- bump Forge CLI version to 1.0.0
+- feat: upgrade forge js sdk to 1.0.0
+- chore: not support strict upgrade rule temporarily
+- chore: update forge quick start video in README
+- chore: remove unnecessary code about chain from use command
+- fix: forge releases sort bug when upgrade
+- chore: rename prepare to deploy:prepare #300
+
 ## 0.40.7 (November 10, 2019)
 
 - remove checkin function from create chain

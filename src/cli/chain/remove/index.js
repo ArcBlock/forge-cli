@@ -15,6 +15,7 @@ cli(
       runningNode: false,
       rpcClient: false,
       wallet: false,
+      chainName: true,
       chainExists: true,
     },
     parseArgs: chainName => ({

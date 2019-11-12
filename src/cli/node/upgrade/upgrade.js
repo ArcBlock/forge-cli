@@ -136,7 +136,17 @@ const getAvailableUpgradeReleases = (releases = [], currentVersion) => {
       );
     });
 
-  return filteredReleases.sort((v1, v2) => forgeVersion.gt(v2, v1));
+  return filteredReleases.sort((v1, v2) => {
+    if (forgeVersion.gt(v2, v1)) {
+      return 1;
+    }
+
+    if (forgeVersion.lt(v2, v1)) {
+      return -1;
+    }
+
+    return 0;
+  });
 };
 
 const shouldSendUpgradeTx = (fromVersion, toVersion) => {

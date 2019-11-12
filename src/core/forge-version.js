@@ -37,4 +37,4 @@ const lt = (v1, v2) => {
 
 const lte = (v1, v2) => lt(v1, v2) || semver.eq(v1, v2);
 
-module.exports = { gt, gte, lt, lte, isForgePatchVersion };
+module.exports = { gt, gte, lt, lte, eq: semver.eq, isForgePatchVersion };

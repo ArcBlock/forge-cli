@@ -1,3 +1,8 @@
+## 0.40.8 (November 12, 2019)
+
+- fix use version bug
+- chore: rename prepare to deploy:prepare #300
+
 ## 0.40.7 (November 10, 2019)
 
 - remove checkin function from create chain

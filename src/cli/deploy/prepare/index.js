@@ -4,7 +4,7 @@ const { cli, action } = require('core/cli');
 const { execute, run } = require('./prepare');
 
 cli(
-  'prepare',
+  'deploy:prepare',
   'Prepare node for deploying a multi-node chain',
   input => action(execute, run, input),
   {

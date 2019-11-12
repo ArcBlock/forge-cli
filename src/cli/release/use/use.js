@@ -2,18 +2,14 @@ const chalk = require('chalk');
 const semver = require('semver');
 
 const { isForgeStarted } = require('core/forge-process');
-const debug = require('core/debug')('release:use');
 const { updateReleaseYaml, listReleases, getGlobalForgeVersion } = require('core/forge-fs');
 const { checkSatisfiedForgeVersion } = require('core/libs/common');
-const { print, printError, printSuccess, printWarning } = require('core/util');
+const { printError, printSuccess, printWarning } = require('core/util');
 
 const { version: cliVersion, engines } = require('../../../../package.json');
 
 // eslint-disable-next-line consistent-return
-async function main({
-  args: [userVersion],
-  opts: { chainName = process.env.FORGE_CURRENT_CHAIN, allowMultiChain = false },
-}) {
+async function main({ args: [userVersion], opts: { allowMultiChain = false } }) {
   try {
     if (!semver.valid(userVersion)) {
       printError(
@@ -55,13 +51,7 @@ async function main({
 
     updateReleaseYaml('forge', version);
 
-    debug(`'${chainName}' chain version updated:`, version);
-
     printSuccess(`Forge v${version} activated successfully!`);
-    if (chainName) {
-      print();
-      print(`Now you can start forge with ${chalk.cyan(`forge start ${chainName}`)}`);
-    }
   } catch (err) {
     printError(err);
     printError('Forge release activate failed');

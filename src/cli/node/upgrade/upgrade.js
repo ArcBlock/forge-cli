@@ -126,17 +126,25 @@ const getAvailableUpgradeReleases = (releases = [], currentVersion) => {
   const filteredReleases = releases
     .map(({ version }) => version)
     .filter(version => {
-      const nextMinorVersion = semver.inc(currentVersion, 'minor');
+      // TODO: does not support strict upgrade rule temporarily
+      // const nextMinorVersion = semver.inc(currentVersion, 'minor');
+      // forgeVersion.lte(version, nextMinorVersion)
       const minVersion = semver.coerce(currentVersion).version;
 
-      return (
-        semver.neq(version, currentVersion) &&
-        forgeVersion.gte(version, minVersion) &&
-        forgeVersion.lte(version, nextMinorVersion)
-      );
+      return semver.neq(version, currentVersion) && forgeVersion.gte(version, minVersion);
     });
 
-  return filteredReleases.sort((v1, v2) => forgeVersion.gt(v2, v1));
+  return filteredReleases.sort((v1, v2) => {
+    if (forgeVersion.gt(v2, v1)) {
+      return 1;
+    }
+
+    if (forgeVersion.lt(v2, v1)) {
+      return -1;
+    }
+
+    return 0;
+  });
 };
 
 const shouldSendUpgradeTx = (fromVersion, toVersion) => {

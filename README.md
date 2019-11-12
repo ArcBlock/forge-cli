@@ -38,7 +38,7 @@
 
 ## QuickStart
 
-[![asciicast](https://asciinema.org/a/253439.svg)](https://asciinema.org/a/253439)
+[![asciicast](https://asciinema.org/a/280694.svg)](https://asciinema.org/a/280694)
 
 ## Install
 
@@ -97,6 +97,7 @@ Commands:
   contract:deploy [itxPath]           Deploy a compiled contract to ABT Node
   contract:ls                         List contracts
   declare:node                        Declare the current node to be a validator candidate
+  deploy:prepare [options]            Prepare node for deploying a multi-node chain
   download [options] [version]        Download a forge release without activate it
   help [subcommand]                   Show help of a sub command
   install [options] [version]         Download and setup forge release on this machine
@@ -104,7 +105,6 @@ Commands:
   logs [type]                         Show logs for various forge components
   ls                                  List forge releases installed locally
   ls:remote                           List remote forge releases available for install
-  prepare [options]                   Prepare node for deploying a multi-node chain
   ps                                  List running forge component processes
   remote [shellName]                  Connects to the running system via a remote shell
   simulator [action]                  Start/stop simulator and generate random traffic

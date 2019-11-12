@@ -141,6 +141,10 @@ async function listReleases() {
   if (remoteReleasesInfo.length > 0) {
     result = result.filter(({ version, assets }) => {
       const tmp = remoteReleasesInfo.find(x => semver.eq(x.version, version));
+      if (!tmp) {
+        return true;
+      }
+
       return isEqual(assets, tmp.assets);
     });
   }

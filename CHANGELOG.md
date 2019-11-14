@@ -1,3 +1,7 @@
+## 1.0.1 (November 13, 2019)
+
+- chore: update cli doc links
+
 ## 1.0.0 (November 12, 2019)
 
 - bump Forge CLI version to 1.0.0

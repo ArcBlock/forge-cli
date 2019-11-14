@@ -44,7 +44,7 @@ async function main({ opts: { mode = 'init', writeConfig = false } }) {
     fsExtra.removeSync(`${chainRoot}/keys`);
 
     // 1. initialize the node using forge executable
-    let command = `FORGE_CONFIG=${configPath} ${forgePath} eval 'Application.ensure_all_started(:consensus)'`;
+    let command = `FORGE_CONFIG=${configPath} ${forgePath} eval 'Application.ensure_all_started(:consensus);Process.sleep(3000)'`; // eslint-disable-line
     const spinner = getSpinner('Generating node keys...');
     spinner.start();
     const { code, stderr } = shell.exec(command, { silent: true });
@@ -57,6 +57,7 @@ async function main({ opts: { mode = 'init', writeConfig = false } }) {
 
     // 2. create persistent_peers string
     command = `${tmPath} --home ${chainRoot}/forge_release/tendermint show_node_id`;
+    debug('command', command);
     const result = shell.exec(command, { silent: true });
     if (result.code !== 0 || !result.stdout.trim()) {
       spinner.fail('Cannot get node id, abort');

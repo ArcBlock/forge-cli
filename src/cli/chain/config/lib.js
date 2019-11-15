@@ -5,6 +5,7 @@ const chalk = require('chalk');
 const numeral = require('numeral');
 const inquirer = require('inquirer');
 const get = require('lodash/get');
+const lowerCase = require('lodash/lowerCase');
 const cloneDeep = require('lodash/cloneDeep');
 const toml = require('@iarna/toml');
 const base64 = require('base64-url');
@@ -690,7 +691,6 @@ const readNecessaryConfigs = async ({ defaultConfigs, chainName, silent = false 
       name: 'MyToken',
       symbol: 'MYT',
       unit: 'myt',
-      description: 'My token MYT',
       icon: DEFAULT_ICON_BASE64,
       decimal: 18,
       initial_supply: 7500000000,
@@ -806,7 +806,9 @@ const readNecessaryConfigs = async ({ defaultConfigs, chainName, silent = false 
 
   defaultConfigsCopy.forge.token = Object.assign(tokenDefaults, {
     name: tokenName,
-    symboll: tokenSymbol,
+    symbol: tokenSymbol,
+    unit: lowerCase(tokenSymbol),
+    description: `My token ${tokenSymbol}`,
   });
 
   defaultConfigsCopy.forge.prime.moderator = {

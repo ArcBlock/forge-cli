@@ -119,7 +119,7 @@ function checkUpdate() {
         chalk.reset(' → ') +
         chalk.green(notifier.update.latest) +
         ' \nRun ' +
-        chalk.cyan(`npm instal -g ${packageName}`) +
+        chalk.cyan(`npm install -g ${packageName}`) +
         ' to update',
     });
   }

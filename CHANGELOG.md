@@ -1,3 +1,7 @@
+## 1.0.2 (November 15, 2019)
+
+- fix: CLI upgrade description typo
+
 ## 1.0.1 (November 13, 2019)
 
 - chore: update cli doc links

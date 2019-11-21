@@ -51,14 +51,13 @@ async function setupEnv(requirements, args = {}) {
   await ensureNonRoot();
   ensureRequiredDirs();
 
-  await ensureChainName(requirements.chainName, requirements.chainExists, args);
+  await ensureChainName(requirements.chainName, args);
   if (process.env.FORGE_CURRENT_CHAIN) {
     printInfo(`Working on ${chalk.cyan(process.env.FORGE_CURRENT_CHAIN)} chain`);
   }
 
   await ensureChainExists({
     requirement: requirements.chainExists,
-    chainNameRequirement: requirements.chainName,
     chainName: process.env.FORGE_CURRENT_CHAIN,
     configPath: process.env.FORGE_CONFIG,
   });
@@ -114,7 +113,7 @@ async function ensureRunningChain(requirement) {
   }
 }
 
-async function ensureChainName(requirement = true, chainExistsRequirement, args) {
+async function ensureChainName(requirement = true, args) {
   if (args.chainName) {
     process.env.FORGE_CURRENT_CHAIN = args.chainName;
     return;
@@ -132,7 +131,7 @@ async function ensureChainName(requirement = true, chainExistsRequirement, args)
     return;
   }
 
-  if (requirement || chainExistsRequirement) {
+  if (requirement) {
     if (typeof requirement === 'function') {
       const chainName = await requirement(args);
       if (chainName === DEFAULT_CHAIN_NAME_RETURN.NO_CHAINS) {
@@ -163,12 +162,7 @@ async function ensureChainName(requirement = true, chainExistsRequirement, args)
   }
 }
 
-async function ensureChainExists({
-  requirement = true,
-  chainNameRequirement,
-  chainName,
-  configPath,
-}) {
+async function ensureChainExists({ requirement = true, chainName, configPath }) {
   if (configPath) {
     const chainId = getChainNameFromForgeConfig(process.env.FORGE_CONFIG);
 
@@ -178,11 +172,7 @@ async function ensureChainExists({
     }
   }
 
-  if (chainNameRequirement === false) {
-    return;
-  }
-
-  if (requirement === true) {
+  if (chainName && requirement === true) {
     if (!hasChains()) {
       printError(
         `There are no chains found, please run ${chalk.cyan('forge chain:create')} to create.`

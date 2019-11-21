@@ -9,6 +9,7 @@ cli('logs [type]', 'Show logs for various forge components', input => action(exe
     runningNode: false,
     rpcClient: true,
     wallet: false,
+    chainName: true,
     chainExists: true,
   },
   options: [],

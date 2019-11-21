@@ -14,7 +14,6 @@ function resolveLogPath(folder, file) {
 
 function findLogFiles() {
   return {
-    app: resolveLogPath(config.get('app.path'), config.get('app.logfile', 'logs/app.log')),
     error: resolveLogPath(
       config.get('forge.path'),
       config.get('forge.logfile', 'logs/forge_error.log')
@@ -45,7 +44,12 @@ function tailLogFile(logs, type) {
   }
 
   Object.keys(logs).forEach(key => {
-    if (!fs.existsSync(logs[key])) {
+    if (logs[key] && !fs.existsSync(logs[key])) {
+      const dirname = path.dirname(logs[key]);
+      if (!fs.existsSync(dirname)) {
+        fs.mkdirSync(dirname, { recursive: true });
+      }
+
       shell.touch(logs[key]);
     }
   });

@@ -1,3 +1,7 @@
+## 1.0.3 (November 21, 2019)
+
+- feat: print common tools version info if there was no chain name specified #333
+
 ## 1.0.2 (November 15, 2019)
 
 - fix: CLI upgrade description typo

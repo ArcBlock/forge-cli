@@ -3,14 +3,13 @@ const os = require('os');
 const shell = require('shelljs');
 
 const {
-  config,
   runNativeWebCommand,
   runNativeSimulatorCommand,
   runNativeWorkshopCommand,
 } = require('core/env');
 const debug = require('core/debug')('version');
 const { print } = require('core/util');
-const { getConsensusEnginBinPath } = require('core/forge-fs');
+const { getConsensusEnginBinPath, getGlobalForgeVersion } = require('core/forge-fs');
 const { getChainVersion, makeNativeCommand } = require('core/libs/common');
 
 const { SHIFT_WIDTH } = require('../../../constant');
@@ -37,8 +36,7 @@ const getConsenseVersion = currentVersion => {
     const { code, stdout, stderr } = shell.exec(command, { silent: true });
     if (code === 0) {
       const consensusVersion = stdout.trim();
-      const { consensusEngine = 'tendermint' } = config.get('forge');
-      return `${consensusEngine} ${consensusVersion}`;
+      return `tendermint ${consensusVersion}`;
     }
 
     debug('consensus version error:', stderr);
@@ -64,29 +62,31 @@ const printVersion = async chainName => {
   const versions = [
     `forge_core ${currentVersion}`,
     consensusVersion,
-    `forge_cli ${forgeCliVersion}`,
     forgeWebVersion,
     simulatorVersion,
     workshopVersion,
   ].filter(Boolean);
 
-  print();
-  print('Forge components:');
-  versions.forEach(item => print(`${SHIFT_WIDTH}- ${item}`));
+  print(`Forge components of ${chainName} chain:`);
+  versions.sort().forEach(item => print(`${SHIFT_WIDTH}- ${item}`));
 
   print();
 };
 
 const printOSInformation = () => {
-  print('OS:');
-  print(`${SHIFT_WIDTH}${os.type()} kernel ${os.release()}; ${os.arch()}`);
-  print();
+  print(`OS: ${os.type()} kernel ${os.release()}; ${os.arch()}`);
 };
 
 async function main({ opts: { chainName } }) {
-  await printVersion(chainName);
-  await printOSInformation();
+  print();
+  if (chainName) {
+    await printVersion(chainName);
+  }
 
+  print(`Forge CLI: ${forgeCliVersion}`);
+  print(`Global forge: ${getGlobalForgeVersion()}`);
+  await printOSInformation();
+  print();
   print(
     `If you want to check other chain's version info, please run: ${chalk.cyan(
       'forge version [chainName]'

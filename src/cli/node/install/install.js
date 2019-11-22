@@ -6,7 +6,12 @@ const fs = require('fs');
 const { applyForgeVersion } = require('core/libs/common');
 const { getPlatform, print, printError, printInfo } = require('core/util');
 const { isForgeStarted } = require('core/forge-process');
-const { formatVersion, download, DOWNLOAD_FLAGS } = require('../../release/download/lib');
+const {
+  createAsset,
+  formatVersion,
+  download,
+  DOWNLOAD_FLAGS,
+} = require('../../release/download/lib');
 
 const { DEFAULT_MIRROR, RELEASE_ASSETS } = require('../../../constant');
 
@@ -27,9 +32,6 @@ async function main({
     }
 
     printInfo(`Detected platform is: ${platform}`);
-    if (mirror && mirror !== DEFAULT_MIRROR) {
-      printInfo(`${chalk.yellow(`Using custom mirror: ${mirror}`)}`);
-    }
 
     if (releaseDir && fs.existsSync(releaseDir)) {
       printInfo(`${chalk.yellow(`Using local releaseDir: ${releaseDir}`)}`);
@@ -45,12 +47,14 @@ async function main({
       }
     }
 
-    const { version, isLatest } = formatVersion({ version: userVersion, mirror, releaseDir });
-    const downloadResult = await download({
+    const { version, isLatest } = formatVersion(userVersion);
+    const asset = createAsset({
       version,
-      mirror,
-      releaseDir,
+      mirror: releaseDir || mirror,
       platform,
+    });
+
+    const downloadResult = await download(asset, {
       whitelistAssets: RELEASE_ASSETS,
       force,
       isLatest,

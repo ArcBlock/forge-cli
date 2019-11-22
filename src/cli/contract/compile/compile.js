@@ -139,17 +139,25 @@ async function compileJavascript({ sourceDir, targetDir, config, protoFile, outp
 
   const { name, type_urls: typeUrls } = config;
   const targetJsDir = path.join(targetDir, name, 'javascript');
-  shell.exec(`mkdir -p ${targetJsDir}`);
+  fs.mkdirSync(targetJsDir, { recursive: true });
 
-  shell.exec(
+  const protocResult = shell.exec(
     // eslint-disable-next-line max-len
     `grpc_tools_node_protoc --proto_path=/tmp/forge_compiler_vendors --proto_path=${sourceDir} --js_out=import_style=commonjs,binary:${targetJsDir} --plugin=protoc-gen-grpc=\`which grpc_tools_node_protoc_plugin\` ${protoFile}`
   );
-  printSuccess(`Protobuf js generated: ${targetJsDir.replace(outputPrefix, '')}/protocol_pb.js`);
+
+  if (protocResult.code !== 0) {
+    throw new Error(protocResult.stderr);
+  }
+
+  const protobufJsFile = fs.readdirSync(targetJsDir).find(x => path.extname(x) === '.js');
+  const relativeDir = targetJsDir.replace(outputPrefix, '');
+
+  printSuccess(`Protobuf js generated: ${path.join(relativeDir, protobufJsFile)}`);
   shell.exec(
     `pbjs -p /tmp/forge_compiler_vendors -p ${sourceDir} -t json -o ${targetJsDir}/protocol_spec.json ${protoFile}`
   );
-  printSuccess(`JSON spec generated: ${targetJsDir.replace(outputPrefix, '')}/protocol_spec.json`);
+  printSuccess(`JSON spec generated: ${relativeDir}/protocol_spec.json`);
 
   // 3. generate type urls for javascript
   const results = Object.keys(typeUrls || {}).reduce((obj, url) => {
@@ -158,9 +166,7 @@ async function compileJavascript({ sourceDir, targetDir, config, protoFile, outp
     return obj;
   }, {});
   fs.writeFileSync(`${targetJsDir}/protocol_url.json`, JSON.stringify(results));
-  printSuccess(
-    `type_urls json generated: ${targetJsDir.replace(outputPrefix, '')}/protocol_url.json`
-  );
+  printSuccess(`type_urls json generated: ${relativeDir}/protocol_url.json`);
 
   // 4. generate javascript entry file
   fs.writeFileSync(
@@ -169,7 +175,7 @@ async function compileJavascript({ sourceDir, targetDir, config, protoFile, outp
 const provider = require('@arcblock/forge-proto/provider');
 const { addProvider } = require('@arcblock/forge-message');
 // const { addProvider } = require('@arcblock/forge-message/lite');
-const types = require('./protocol_pb.js');
+const types = require('./${protobufJsFile}');
 const specs = require('./protocol_spec.json');
 const urls = require('./protocol_url.json');
 

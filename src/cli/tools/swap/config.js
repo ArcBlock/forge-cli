@@ -18,7 +18,6 @@ inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'))
 
 async function inquire(originalConfig) {
   const internalIPV4 = await internalIP.v4();
-
   const questions = [
     {
       type: 'text',
@@ -81,9 +80,9 @@ async function inquire(originalConfig) {
     },
     {
       type: 'text',
-      name: 'applicationChainHost',
-      message: 'Please input application chain host:',
-      default: get(originalConfig, 'chains.application.host', internalIPV4),
+      name: 'appChainGraphQLApi',
+      message: 'Please input application chain GraphQL API address:',
+      default: get(originalConfig, 'chains.application.host', 'http://127.0.0.1:8210/api'),
       validate: input => {
         if (!input) {
           return 'Application chain host should not be empty';
@@ -94,15 +93,9 @@ async function inquire(originalConfig) {
     },
     {
       type: 'text',
-      name: 'appChainPort',
-      default: get(originalConfig, 'chains.application.port', ''),
-      message: 'Please input application chain port:',
-    },
-    {
-      type: 'text',
-      name: 'assetChainHost',
-      message: 'Please input asset chain host:',
-      default: get(originalConfig, 'chains.asset.host', internalIPV4),
+      name: 'assetGraphQLApi',
+      message: 'Please input asset chain GraphQL API address:',
+      default: get(originalConfig, 'chains.asset.host', 'http://127.0.0.1:8211/api'),
       validate: input => {
         if (!input) {
           return 'Asset chain host should not be empty';
@@ -110,12 +103,6 @@ async function inquire(originalConfig) {
 
         return true;
       },
-    },
-    {
-      type: 'text',
-      name: 'assetChainPort',
-      message: 'Please input asset chain port:',
-      default: get(originalConfig, 'chains.asset.port', ''),
     },
     {
       type: 'autocomplete',
@@ -265,12 +252,10 @@ async function inquire(originalConfig) {
     },
     chains: {
       asset: {
-        host: trim(answers.assetChainHost),
-        port: trim(answers.assetChainPort),
+        host: trim(answers.assetGraphQLApi),
       },
       application: {
-        host: trim(answers.applicationChainHost),
-        port: trim(answers.appChainPort),
+        host: trim(answers.appChainGraphQLApi),
       },
     },
   };

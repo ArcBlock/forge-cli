@@ -15,12 +15,12 @@ const startWebUI = runNativeWebCommand('daemon', { silent: true });
 function processOutput(output, action) {
   if (/:error/.test(output)) {
     if (/:already_started/.test(output)) {
-      printWarning('Forge web already started');
+      printWarning('Forge Web already started');
     } else {
-      printError(`Forge web ${action} failed: ${output.trim()}`);
+      printError(`Forge Web ${action} failed: ${output.trim()}`);
     }
   } else {
-    printSuccess(`Forge web ${action} success!`);
+    printSuccess(`Forge Web ${action} success!`);
   }
 }
 
@@ -80,37 +80,37 @@ async function main({ args: [action = 'none'], opts }) {
       break;
     case 'start':
       if (pid) {
-        printInfo('Forge web already started');
+        printInfo('Forge Web already started');
         process.exit(0);
         return;
       }
 
-      const spinner = getSpinner('Waiting for forge web to start...');
+      const spinner = getSpinner('Waiting for Forge Web to start...');
       spinner.start();
       const succeed = await startForgeWeb(20000);
       if (!succeed) {
-        spinner.fail(`forge web start failed, please retry with ${chalk.cyan('forge web start')}`);
+        spinner.fail(`Forge web start failed, please retry with ${chalk.cyan('Forge Web start')}`);
         break;
       }
 
-      spinner.succeed('Forge web successfully started');
-      printInfo(`Forge web running at:     ${webUrl()}`);
+      spinner.succeed('Forge Web successfully started');
+      printInfo(`Forge Web running at:     ${webUrl()}`);
       printInfo(`GraphQL endpoint at:      ${webUrl()}/api`);
       break;
     case 'stop':
       if (!pid) {
-        printInfo('Forge web not started yet');
+        printInfo('Forge Web not started yet');
         process.exit(0);
         return;
       }
 
-      printInfo('Stopping forge web...');
+      printInfo('Stopping Forge Web...');
       shell.exec(`kill ${pid}`);
-      printSuccess('Forge web stopped');
+      printSuccess('Forge Web stopped');
       break;
     case 'open':
       if (!pid) {
-        printInfo('Forge web not started yet');
+        printInfo('Forge Web not started yet');
         await main({ args: ['start'] });
         await sleep(2000);
       }

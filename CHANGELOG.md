@@ -1,3 +1,9 @@
+## 1.0.4 (November 22, 2019)
+
+- chore: modify 'forge web' to 'Forge Web'
+- feat: adapt to latest forge swap configuration #341
+- fix: compile contract error #342
+
 ## 1.0.3 (November 21, 2019)
 
 - feat: print common tools version info if there was no chain name specified #333

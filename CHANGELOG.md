@@ -1,3 +1,8 @@
+## 1.0.5 (November 25, 2019)
+
+- refact: fetch latest releases
+- refact: download module
+
 ## 1.0.4 (November 22, 2019)
 
 - chore: modify 'forge web' to 'Forge Web'

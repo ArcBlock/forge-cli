@@ -5,23 +5,38 @@ const chalk = require('chalk');
 
 const { config, createRpcClient } = require('core/env');
 const { hr, getSpinner, pretty } = require('core/ui');
-const { print, printError, printInfo, printSuccess, strEqual } = require('core/util');
+const {
+  fetchAsset,
+  getPlatform,
+  print,
+  printError,
+  printInfo,
+  printSuccess,
+  printWarning,
+  strEqual,
+} = require('core/util');
 const { validateTxPromise } = require('core/tx');
 const {
   checkStartError,
-  listReleases,
   readChainConfigFromEnv,
   updateChainConfig,
   updateReleaseYaml,
 } = require('core/forge-fs');
-const { getChainVersion, getChainGraphQLHost } = require('core/libs/common');
+const {
+  getChainVersion,
+  listReleases,
+  getLocalVersions,
+  getChainGraphQLHost,
+} = require('core/libs/common');
 const { isForgeStartedByStarter } = require('core/forge-process');
 const debug = require('core/debug')('upgrade');
 const { ensureModerator } = require('core/moderator');
 const forgeVersion = require('core/forge-version');
 
+const { ASSETS_PATH, DEFAULT_MIRROR } = require('../../../constant');
 const { stop, waitUntilStopped } = require('../stop/stop');
-const { printVersion } = require('../../misc/version/version.js');
+const { printVersion } = require('../../misc/version/version');
+const { createAsset, download, DOWNLOAD_FLAGS } = require('../../release/download/libs/index');
 
 function isStoppedToUpgrade(chainName) {
   return new Promise(resolve => {
@@ -122,17 +137,31 @@ const confirmUpgrade = async message => {
   return confirm;
 };
 
-const getAvailableUpgradeReleases = (releases = [], currentVersion) => {
-  const filteredReleases = releases
-    .map(({ version }) => version)
-    .filter(version => {
-      // TODO: does not support strict upgrade rule temporarily
-      // const nextMinorVersion = semver.inc(currentVersion, 'minor');
-      // forgeVersion.lte(version, nextMinorVersion)
-      const minVersion = semver.coerce(currentVersion).version;
+const getReleases = async (currentVersion, mirror) => {
+  let releases = [];
+  try {
+    releases = await fetchAsset(ASSETS_PATH.VERSIONS, mirror);
+  } catch (error) {
+    printWarning('Fetch remote releases failed:', error.message);
+  }
 
-      return semver.neq(version, currentVersion) && forgeVersion.gte(version, minVersion);
-    });
+  if (releases.length === 0) {
+    releases = await listReleases();
+  }
+
+  return releases.map(({ version }) => version);
+};
+
+const getAvailableUpgradeReleases = (releases = [], currentVersion) => {
+  const minVersion = semver.coerce(currentVersion).version;
+  // eslint-disable-next-line
+  const filteredReleases = releases.filter(version => {
+    // TODO: does not support strict upgrade rule temporarily
+    // const nextMinorVersion = semver.inc(currentVersion, 'minor');
+    // forgeVersion.lte(version, nextMinorVersion)
+
+    return semver.neq(version, currentVersion) && forgeVersion.gte(version, minVersion);
+  });
 
   return filteredReleases.sort((v1, v2) => {
     if (forgeVersion.gt(v2, v1)) {
@@ -231,11 +260,32 @@ const upgradeNode = async ({ chainName, height, rpcClient: client, version }) =>
   }
 };
 
-async function main({ args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
+const downloadIfRequires = async (version, mirror) => {
+  const localReleases = await getLocalVersions();
+  if (!localReleases.find(v => semver.eq(v, version))) {
+    const platform = await getPlatform();
+
+    const asset = createAsset({
+      version,
+      mirror,
+      platform,
+    });
+
+    const downloadResult = await download(asset);
+    if (downloadResult !== DOWNLOAD_FLAGS.SUCCESS) {
+      throw new Error(`download v${version} failed`);
+    }
+  }
+};
+
+async function main({
+  args: [chainName = process.env.FORGE_CURRENT_CHAIN],
+  opts: { mirror = DEFAULT_MIRROR },
+}) {
   try {
     const client = createRpcClient();
     const currentVersion = config.get('cli.currentVersion');
-    const releases = getAvailableUpgradeReleases(await listReleases(), currentVersion);
+    const releases = getAvailableUpgradeReleases(await getReleases(), currentVersion);
 
     if (!releases.length) {
       printSuccess('Abort because no available newer version to upgrade!');
@@ -243,10 +293,12 @@ async function main({ args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
       process.exit(0);
     }
 
-    const { version } = await readUpgradeVersion({
+    let { version } = await readUpgradeVersion({
       currentVersion,
       releases,
     });
+
+    version = semver.clean(version);
 
     if (shouldSendUpgradeTx(currentVersion, version)) {
       const { info } = await client.getChainInfo();
@@ -257,11 +309,13 @@ async function main({ args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
           version
         )} at height ${chalk.cyan(height)}, and this cannot be undo, are your sure?`
       );
+
       if (!confirm) {
         printError('Abort because user cancellation!');
         process.exit(0);
       }
 
+      await downloadIfRequires(version, mirror);
       await upgradeNode({ chainName, height, rpcClient: client, version });
     } else {
       const confirm = await confirmUpgrade('Confirm to upgrade?');
@@ -270,6 +324,7 @@ async function main({ args: [chainName = process.env.FORGE_CURRENT_CHAIN] }) {
         process.exit(0);
       }
 
+      await downloadIfRequires(version, mirror);
       await stop(chainName);
     }
 

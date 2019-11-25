@@ -2,7 +2,8 @@ const chalk = require('chalk');
 const semver = require('semver');
 const { print, printInfo, printError, highlightOfList } = require('core/util');
 const debug = require('core/debug')('list');
-const { getGlobalForgeVersion, listReleases } = require('core/forge-fs');
+const { getGlobalForgeVersion } = require('core/forge-fs');
+const { listReleases } = require('core/libs/common');
 
 async function main() {
   try {

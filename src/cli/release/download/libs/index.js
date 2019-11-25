@@ -11,7 +11,7 @@ const { getSpinner } = require('core/ui');
 const { printError, printInfo, printSuccess, printWarning } = require('core/util');
 const { getReleaseAssets, getReleaseDirectory, isReleaseBinExists } = require('core/forge-fs');
 
-const { DEFAULT_MIRROR } = require('../../../../constant');
+const { DEFAULT_MIRROR, RELEASE_ASSETS } = require('../../../../constant');
 const HttpAsset = require('./http-asset');
 const FSAsset = require('./fs-asset');
 
@@ -50,7 +50,10 @@ function clearLocalAssets(assets = [], version) {
  * @param {*} options
  * @return {DOWNLOAD_FLAGS}
  */
-async function download(asset, { whitelistAssets, force, isLatest }) {
+async function download(
+  asset,
+  { whitelistAssets = RELEASE_ASSETS, force = false, isLatest = false } = {}
+) {
   if (asset.baseUri && asset.baseUri !== DEFAULT_MIRROR) {
     printInfo(`${chalk.yellow(`Using custom mirror: ${asset.baseUri}`)}`);
   }

@@ -2,8 +2,8 @@ const chalk = require('chalk');
 const semver = require('semver');
 
 const { isForgeStarted } = require('core/forge-process');
-const { updateReleaseYaml, listReleases, getGlobalForgeVersion } = require('core/forge-fs');
-const { checkSatisfiedForgeVersion } = require('core/libs/common');
+const { updateReleaseYaml, getGlobalForgeVersion } = require('core/forge-fs');
+const { checkSatisfiedForgeVersion, listReleases } = require('core/libs/common');
 const { printError, printSuccess, printWarning } = require('core/util');
 
 const { version: cliVersion, engines } = require('../../../../package.json');

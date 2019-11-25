@@ -3,7 +3,7 @@ const fs = require('fs');
 const chalk = require('chalk');
 const emoji = require('node-emoji');
 const { getPlatform, print, printError, printInfo } = require('core/util');
-const { createAsset, download, formatVersion, DOWNLOAD_FLAGS } = require('./lib');
+const { createAsset, download, formatVersion, DOWNLOAD_FLAGS } = require('./libs/index');
 
 const { DEFAULT_MIRROR, RELEASE_ASSETS } = require('../../../constant');
 

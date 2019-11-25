@@ -11,7 +11,7 @@ const {
   formatVersion,
   download,
   DOWNLOAD_FLAGS,
-} = require('../../release/download/lib');
+} = require('../../release/download/libs/index');
 
 const { DEFAULT_MIRROR, RELEASE_ASSETS } = require('../../../constant');
 

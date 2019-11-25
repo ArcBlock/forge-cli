@@ -67,7 +67,7 @@ class HttpAsset extends BaseAsset {
   }
 
   async getAllAssets() {
-    const versionsInfo = await fetchAsset(ASSETS_PATH.VERSIONS, this.mirror);
+    const versionsInfo = await fetchAsset(ASSETS_PATH.VERSIONS, this.baseUri);
     const release = versionsInfo.find(x => semver.eq(this.version, x.version));
     if (release) {
       return release.assets.filter(x => x.name.indexOf(`_${this.platform}_`) > 0).map(x => x.name);
@@ -78,7 +78,7 @@ class HttpAsset extends BaseAsset {
 
   getInfo(name) {
     const fileName = this.getFileName(name);
-    const uri = URL.resolve(this.mirror, `forge/${this.version}/${fileName}`);
+    const uri = URL.resolve(this.baseUri, `forge/${this.version}/${fileName}`);
 
     return { uri, name: fileName };
   }

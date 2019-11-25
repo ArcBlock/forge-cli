@@ -11,9 +11,9 @@ const { getSpinner } = require('core/ui');
 const { printError, printInfo, printSuccess, printWarning } = require('core/util');
 const { getReleaseAssets, getReleaseDirectory, isReleaseBinExists } = require('core/forge-fs');
 
-const { DEFAULT_MIRROR } = require('../../../constant');
-const HttpAsset = require('./libs/http-asset');
-const FSAsset = require('./libs/fs-asset');
+const { DEFAULT_MIRROR } = require('../../../../constant');
+const HttpAsset = require('./http-asset');
+const FSAsset = require('./fs-asset');
 
 const DOWNLOAD_FLAGS = {
   SUCCESS: 0,
@@ -51,8 +51,8 @@ function clearLocalAssets(assets = [], version) {
  * @return {DOWNLOAD_FLAGS}
  */
 async function download(asset, { whitelistAssets, force, isLatest }) {
-  if (asset.mirror && asset.mirror !== DEFAULT_MIRROR) {
-    printInfo(`${chalk.yellow(`Using custom mirror: ${asset.mirror}`)}`);
+  if (asset.baseUri && asset.baseUri !== DEFAULT_MIRROR) {
+    printInfo(`${chalk.yellow(`Using custom mirror: ${asset.baseUri}`)}`);
   }
 
   const versionAssets = await asset.getAllAssets();
@@ -127,10 +127,10 @@ async function formatVersion(version) {
 
 const createAsset = ({ mirror, version, platform }) => {
   if (fs.existsSync(mirror)) {
-    return new FSAsset({ mirror, version, platform });
+    return new FSAsset({ baseUri: mirror, version, platform });
   }
 
-  return new HttpAsset({ mirror, version, platform });
+  return new HttpAsset({ baseUri: mirror, version, platform });
 };
 
 module.exports = {

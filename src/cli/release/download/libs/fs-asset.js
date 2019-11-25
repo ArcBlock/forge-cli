@@ -18,7 +18,7 @@ class FSAsset extends BaseAsset {
   }
 
   async getAllAssets() {
-    const assetsFolder = path.join(this.mirror, this.version);
+    const assetsFolder = path.join(this.baseUri, this.version);
     if (!fs.existsSync(assetsFolder)) {
       throw new Error(`v${this.version} assets not found in local release directory`);
     }
@@ -28,7 +28,7 @@ class FSAsset extends BaseAsset {
   }
 
   getInfo(name) {
-    const assetPath = path.join(this.mirror, this.version, this.getFileName(name));
+    const assetPath = path.join(this.baseUri, this.version, this.getFileName(name));
     if (fs.existsSync(assetPath)) {
       printSuccess(`Release asset find ${assetPath}`);
       return { name, uri: assetPath };

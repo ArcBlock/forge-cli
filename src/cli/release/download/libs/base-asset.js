@@ -21,8 +21,8 @@ async function expandReleaseTarball(filePath, subFolder, version) {
 }
 
 class BaseAsset {
-  constructor({ mirror, version, platform }) {
-    this.mirror = mirror;
+  constructor({ baseUri, version, platform }) {
+    this.baseUri = baseUri;
     this.version = version;
     this.platform = platform;
   }
@@ -32,10 +32,6 @@ class BaseAsset {
   }
 
   download() {
-    throw new Error('Not Implement');
-  }
-
-  fetchLatest() {
     throw new Error('Not Implement');
   }
 

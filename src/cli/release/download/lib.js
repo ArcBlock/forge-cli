@@ -1,9 +1,9 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable consistent-return */
+const axios = require('axios');
 const chalk = require('chalk');
 const fs = require('fs');
 const fsExtra = require('fs-extra');
-const shell = require('shelljs');
 const semver = require('semver');
 const URL = require('url');
 const debug = require('core/debug')('install');
@@ -92,19 +92,17 @@ async function download(asset, { whitelistAssets, force, isLatest }) {
 
   return isSuccess ? DOWNLOAD_FLAGS.SUCCESS : DOWNLOAD_FLAGS.FAILED;
 }
-const fetchLatest = () => {
+const fetchLatest = async () => {
   const spinner = getSpinner('Fetching forge release version...');
   spinner.start();
 
   try {
-    // TODO: 重构为 axios
     const url = URL.resolve(DEFAULT_MIRROR, 'forge/latest.json');
-    const { code, stdout, stderr } = shell.exec(`curl "${url}"`, { silent: true });
-    if (code !== 0) {
-      throw new Error(stderr);
-    }
+    debug('latest.json url:', url);
+    const resp = await axios.get(url);
+    debug('latest.json response:', resp.data);
 
-    const { latest: version } = JSON.parse(stdout.trim()) || {};
+    const { latest: version } = resp.data;
     spinner.succeed(`Latest forge release version: v${version}`);
     return version;
   } catch (err) {
@@ -113,9 +111,9 @@ const fetchLatest = () => {
   }
 };
 
-function formatVersion(version) {
+async function formatVersion(version) {
   if (!version || version === 'latest') {
-    const latestVersion = fetchLatest();
+    const latestVersion = await fetchLatest();
 
     return { isLatest: true, version: latestVersion };
   }

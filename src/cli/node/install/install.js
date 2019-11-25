@@ -47,7 +47,7 @@ async function main({
       }
     }
 
-    const { version, isLatest } = formatVersion(userVersion);
+    const { version, isLatest } = await formatVersion(userVersion);
     const asset = createAsset({
       version,
       mirror: releaseDir || mirror,

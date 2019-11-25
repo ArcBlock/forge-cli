@@ -17,7 +17,7 @@ async function main({ args: [userVersion], opts: { mirror = DEFAULT_MIRROR, rele
       printInfo(`${chalk.yellow(`Using local releaseDir: ${releaseDir}.`)}`);
     }
 
-    const { version, isLatest } = formatVersion(userVersion);
+    const { version, isLatest } = await formatVersion(userVersion);
     const asset = createAsset({
       version,
       mirror: releaseDir || mirror,

@@ -1,3 +1,7 @@
+## 1.0.6 (November 25, 2019)
+
+- fix download patch version forge error
+
 ## 1.0.5 (November 25, 2019)
 
 - refact: fetch latest releases

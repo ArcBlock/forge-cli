@@ -118,11 +118,12 @@ async function formatVersion(version) {
     return { isLatest: true, version: latestVersion };
   }
 
-  if (!semver.valid(version)) {
+  const cleanedVersion = semver.clean(version);
+  if (!cleanedVersion) {
     return { version, isLatest: false }; // just for consistency
   }
 
-  return { version: semver.coerce(version).version, isLatest: false };
+  return { version: cleanedVersion, isLatest: false };
 }
 
 const createAsset = ({ mirror, version, platform }) => {

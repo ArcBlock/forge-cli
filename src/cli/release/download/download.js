@@ -3,7 +3,7 @@ const fs = require('fs');
 const chalk = require('chalk');
 const emoji = require('node-emoji');
 const { getPlatform, print, printError, printInfo } = require('core/util');
-const { formatVersion, download, DOWNLOAD_FLAGS } = require('./lib');
+const { createAsset, download, formatVersion, DOWNLOAD_FLAGS } = require('./libs/index');
 
 const { DEFAULT_MIRROR, RELEASE_ASSETS } = require('../../../constant');
 
@@ -12,19 +12,19 @@ async function main({ args: [userVersion], opts: { mirror = DEFAULT_MIRROR, rele
   try {
     const platform = await getPlatform();
     printInfo(`Detected platform is: ${platform}`);
-    if (mirror && mirror !== DEFAULT_MIRROR) {
-      printInfo(`${chalk.yellow(`Using custom mirror: ${mirror}`)}.`);
-    }
+
     if (releaseDir && fs.existsSync(releaseDir)) {
       printInfo(`${chalk.yellow(`Using local releaseDir: ${releaseDir}.`)}`);
     }
 
-    const { version, isLatest } = formatVersion({ version: userVersion, mirror, releaseDir });
-    const downloadResult = await download({
+    const { version, isLatest } = await formatVersion(userVersion);
+    const asset = createAsset({
       version,
-      mirror,
-      releaseDir,
+      mirror: releaseDir || mirror,
       platform,
+    });
+
+    const downloadResult = await download(asset, {
       whitelistAssets: RELEASE_ASSETS,
       force,
       isLatest,

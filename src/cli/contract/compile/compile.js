@@ -1,4 +1,5 @@
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const shell = require('shelljs');
 const chalk = require('chalk');
@@ -7,8 +8,9 @@ const { getSpinner } = require('core/ui');
 const debug = require('core/debug')('compile');
 const { isFile, isDirectory } = require('core/forge-fs');
 const { logError, print, printInfo, printError, printSuccess } = require('core/util');
-const { downloadAsset } = require('../../release/download/lib');
+const globalConfig = require('core/libs/global-config');
 
+const { downloadAsset } = require('../../release/download/libs/http-asset');
 const { DEFAULT_MIRROR, REQUIRED_DIRS } = require('../../../constant');
 
 // eslint-disable-next-line consistent-return
@@ -77,9 +79,14 @@ async function ensureForgeCompiler() {
   }
 
   // Download forge-compiler binary
-  const version = fetchCompilerVersion();
-  const asset = fetchCompilerInfo(version);
-  const compilerPath = await downloadAsset(asset);
+  const mirror = globalConfig.getConfig('mirror') || DEFAULT_MIRROR;
+  const version = fetchCompilerVersion(mirror);
+  const compilerInfo = fetchCompilerInfo(version, mirror);
+  const compilerPath = await downloadAsset({
+    uri: compilerInfo.url,
+    fileName: compilerInfo.name,
+    dest: path.join(os.homedir(), compilerInfo.name),
+  });
   debug('download compiler to: ', compilerPath);
   shell.mv(compilerPath, targetPath);
   shell.exec(`chmod a+x ${targetPath}`);

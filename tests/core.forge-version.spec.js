@@ -2,7 +2,7 @@
 
 const forgeVersion = require('../src/core/forge-version');
 
-describe.only('core.forge-version', () => {
+describe('core.forge-version', () => {
   describe('gt', () => {
     it('should 0.1.1 great than 0.1.0', () => {
       expect(forgeVersion.gt('0.1.1', '0.1.0')).toBe(true);

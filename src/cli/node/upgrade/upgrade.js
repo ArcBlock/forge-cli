@@ -65,6 +65,7 @@ const execExceptionOnError = failedMessage => (...args) => {
     throw new Error(`${failedMessage}: ${stderr}, exit code: ${code}`);
   }
 };
+
 const startChain = chainName => {
   execExceptionOnError('start forge failed')(`forge start ${chainName} --color always`);
 };

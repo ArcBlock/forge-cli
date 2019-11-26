@@ -31,7 +31,7 @@ all: pre-build build post-build
 
 test:
 	@echo "Running test suites..."
-	@node src/index.js
+	@npm run test:unit
 
 lint:
 	@echo "Linting the software..."

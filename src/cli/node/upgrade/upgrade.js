@@ -160,7 +160,6 @@ const getAvailableUpgradeReleases = (releases = [], currentVersion) => {
     // TODO: does not support strict upgrade rule temporarily
     // const nextMinorVersion = semver.inc(currentVersion, 'minor');
     // forgeVersion.lte(version, nextMinorVersion)
-
     return semver.neq(version, currentVersion) && forgeVersion.gte(version, minVersion);
   });
 

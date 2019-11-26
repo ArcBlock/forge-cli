@@ -124,6 +124,7 @@ const readUpgradeVersion = async ({ currentVersion, releases }) => {
       return true;
     },
   });
+
   return answers;
 };
 
@@ -263,6 +264,7 @@ const upgradeNode = async ({ chainName, height, rpcClient: client, version }) =>
 const downloadIfRequires = async (version, mirror) => {
   const localReleases = await getLocalVersions();
   if (!localReleases.find(v => semver.eq(v, version))) {
+    printInfo(`Downloading v${version}`);
     const platform = await getPlatform();
 
     const asset = createAsset({
@@ -275,6 +277,7 @@ const downloadIfRequires = async (version, mirror) => {
     if (downloadResult !== DOWNLOAD_FLAGS.SUCCESS) {
       throw new Error(`download v${version} failed`);
     }
+    printInfo(`Download v${version} successfully`);
   }
 };
 

@@ -330,6 +330,30 @@ const waitUntilTruthy = (handler = () => true, timeout = 30000, message = '') =>
     }, interval);
   });
 
+/**
+ * Retry async function
+ * @param {AsyncFunction} asyncFunction
+ * @param {number} retryCount
+ * @return {AsyncFunction}
+ */
+const promiseRetry = (asyncFunction, retryCount = 1) => async args =>
+  new Promise(async (resolve, reject) => {
+    const internal = (count = 0) => {
+      asyncFunction(args)
+        .then(resolve)
+        .catch(err => {
+          printError(err);
+          if (count < retryCount) {
+            internal(count + 1);
+          } else {
+            reject(err);
+          }
+        });
+    };
+
+    internal(0);
+  });
+
 module.exports = {
   chainSortHandler,
   checkPort,
@@ -356,6 +380,7 @@ module.exports = {
   printInfo,
   printSuccess,
   printWarning,
+  promiseRetry,
   strEqual,
   sleep,
   trim,

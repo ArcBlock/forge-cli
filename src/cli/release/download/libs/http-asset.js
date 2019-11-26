@@ -5,7 +5,7 @@ const semver = require('semver');
 const URL = require('url');
 const { symbols, getProgress } = require('core/ui');
 const { api } = require('core/api');
-const { fetchAsset, printInfo } = require('core/util');
+const { fetchAsset, printInfo, promiseRetry } = require('core/util');
 const debug = require('core/debug')('install');
 
 const { ASSETS_PATH } = require('../../../../constant');
@@ -62,8 +62,7 @@ const downloadAsset = ({ uri, fileName, dest }) =>
 class HttpAsset extends BaseAsset {
   constructor(...args) {
     super(...args);
-
-    this.download = downloadAsset;
+    this.download = promiseRetry(downloadAsset, 3);
   }
 
   async getAllAssets() {

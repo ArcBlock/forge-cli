@@ -1,6 +1,6 @@
 const semver = require('semver');
 const { fetchAsset, print, printError, printWarning, highlightOfList } = require('core/util');
-const { getLocalVersions } = require('core/forge-fs');
+const { getLocalVersions } = require('core/libs/common');
 const forgeVersion = require('core/forge-version');
 
 const { ASSETS_PATH } = require('../../../constant');

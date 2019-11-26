@@ -24,11 +24,15 @@ const {
   getChainWorkshopDirectory,
   getChainDirectory,
   getChainReleaseFilePath,
-  getLocalVersions,
 } = require('./forge-fs');
 const { makeRange, getPort, getFreePort, print, printError, printInfo } = require('./util');
 const { hr, symbols } = require('./ui');
-const { applyForgeVersion, hasReleases, checkSatisfiedForgeVersion } = require('./libs/common');
+const {
+  applyForgeVersion,
+  checkSatisfiedForgeVersion,
+  getLocalVersions,
+  hasReleases,
+} = require('./libs/common');
 const debug = require('./debug')('forge-config');
 const { version, engines } = require('../../package.json');
 

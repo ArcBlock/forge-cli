@@ -1,3 +1,11 @@
+## 1.0.7 (November 26, 2019)
+
+- fix unit test in makefile
+- fix import module error
+- remove unused empty line
+- add test to script hooks
+- feat: load remote forge releases when upgrade #334
+
 ## 1.0.6 (November 25, 2019)
 
 - fix download patch version forge error

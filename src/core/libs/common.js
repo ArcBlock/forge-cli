@@ -3,6 +3,7 @@
  */
 const chalk = require('chalk');
 const fs = require('fs');
+const isEqual = require('lodash/isEqual');
 const os = require('os');
 const path = require('path');
 const semver = require('semver');
@@ -18,6 +19,7 @@ const {
   DEFAULT_CHAIN_NAME_RETURN,
   REQUIRED_DIRS,
 } = require('../../constant');
+const { getConfig } = require('./global-config');
 const pkg = require('../../../package.json');
 const {
   getAllChainNames,
@@ -25,6 +27,7 @@ const {
   getReleaseBinPath,
   updateReleaseYaml,
 } = require('../forge-fs');
+const { fetchReleaseAssetsInfo, getPlatform, logError, printSuccess } = require('../util');
 
 const { name: packageName, version: localVersion, engines } = pkg;
 
@@ -62,6 +65,7 @@ function getTopChainName() {
 async function applyForgeVersion(version) {
   updateReleaseYaml('forge', version);
   updateReleaseYaml('simulator', version);
+  printSuccess(`Forge v${version} activated successfully!`);
 }
 
 function getMinSupportForgeVersion() {
@@ -184,6 +188,50 @@ const getChainGraphQLHost = config =>
 const checkSatisfiedForgeVersion = (version, range) =>
   semver.satisfies(version, range, { includePrerelease: true });
 
+async function listReleases() {
+  const platform = await getPlatform();
+  let remoteReleasesInfo = [];
+  try {
+    const mirror = getConfig('mirror');
+    remoteReleasesInfo = await fetchReleaseAssetsInfo(platform, mirror);
+  } catch (error) {
+    debug('fetch remote releases information failed:', error.message);
+    logError(error);
+  }
+
+  const versionAssetsMap = await getLocalReleases();
+
+  let result = Object.keys(versionAssetsMap)
+    .map(version => {
+      if (versionAssetsMap[version]) {
+        return { version, assets: versionAssetsMap[version] };
+      }
+
+      return null;
+    })
+    .filter(Boolean);
+
+  if (remoteReleasesInfo.length > 0) {
+    result = result.filter(({ version, assets }) => {
+      const tmp = remoteReleasesInfo.find(x => semver.eq(x.version, version));
+      return isEqual(assets, tmp.assets);
+    });
+  }
+
+  return result;
+}
+
+async function getLocalVersions() {
+  const releases = await listReleases();
+
+  const versions = [];
+  releases.forEach(({ version }) => {
+    versions.push(version);
+  });
+
+  return [...new Set(versions)];
+}
+
 module.exports = {
   DEFAULT_CHAIN_NAME_RETURN,
   applyForgeVersion,
@@ -193,6 +241,7 @@ module.exports = {
   },
   checkSatisfiedForgeVersion,
   checkUpdate,
+  getLocalVersions,
   fetchPackageJSON,
   fetchLatestCLIVersion,
   getChainGraphQLHost,
@@ -203,6 +252,7 @@ module.exports = {
   getTopChainName,
   hasChains,
   hasReleases,
+  listReleases,
   makeNativeCommand,
   makeForgeSwapRunCommand,
   makeNativeCommandRunner,

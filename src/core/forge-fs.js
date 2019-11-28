@@ -5,15 +5,12 @@ const os = require('os');
 const shell = require('shelljs');
 const yaml = require('yaml');
 const semver = require('semver');
-const isEqual = require('lodash/isEqual');
 const get = require('lodash/get');
 const TOML = require('@iarna/toml');
 
 const debug = require('core/debug')('forge-fs');
 const {
   chainSortHandler,
-  fetchReleaseAssetsInfo,
-  getPlatform,
   logError,
   print,
   printWarning,
@@ -114,53 +111,6 @@ async function getLocalReleases() {
   });
 
   return versionAssetsMap;
-}
-
-async function listReleases() {
-  const platform = await getPlatform();
-  let remoteReleasesInfo = [];
-  try {
-    remoteReleasesInfo = await fetchReleaseAssetsInfo(platform);
-  } catch (error) {
-    debug('fetch remote releases information failed:', error.message);
-    logError(error);
-  }
-
-  const versionAssetsMap = await getLocalReleases();
-
-  let result = Object.keys(versionAssetsMap)
-    .map(version => {
-      if (versionAssetsMap[version]) {
-        return { version, assets: versionAssetsMap[version] };
-      }
-
-      return null;
-    })
-    .filter(Boolean);
-
-  if (remoteReleasesInfo.length > 0) {
-    result = result.filter(({ version, assets }) => {
-      const tmp = remoteReleasesInfo.find(x => semver.eq(x.version, version));
-      if (!tmp) {
-        return true;
-      }
-
-      return isEqual(assets, tmp.assets);
-    });
-  }
-
-  return result;
-}
-
-async function getLocalVersions() {
-  const releases = await listReleases();
-
-  const versions = [];
-  releases.forEach(({ version }) => {
-    versions.push(version);
-  });
-
-  return [...new Set(versions)];
 }
 
 function backupIncompleteChains(chainFolderNames = []) {
@@ -541,7 +491,6 @@ module.exports = {
   getReleaseBinPath,
   getRootConfigDirectory,
   readTendermintHomeDir,
-  getLocalVersions,
   getForgeVersionFromYaml,
   getOriginForgeReleaseFilePath,
   getForgeReleaseDirectory,
@@ -553,7 +502,6 @@ module.exports = {
   isReleaseBinExists,
   isDirectory,
   isFile,
-  listReleases,
   readChainConfig,
   readChainConfigFromEnv,
   updateReleaseYaml,

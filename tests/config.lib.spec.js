@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 const rewire = require('rewire');
 
-const forgeConfigLib = rewire('../src/cli/node/config/lib');
+const forgeConfigLib = rewire('../src/cli/chain/config/lib');
 // const { initialSupplyValidator, getNumberValidator } = require('../src/cli/node/config/lib');
 
 const DAYS_OF_YEAR = forgeConfigLib.__get__('DAYS_OF_YEAR');
@@ -48,13 +48,15 @@ describe('config.lib.pokeAmountValidator', () => {
 
 describe('config.lib.dailyLimitValidator', () => {
   const dailyLimitValidator = forgeConfigLib.__get__('dailyLimitValidator');
-  it('daily poke limit should greater than poke amount', () => {
+  it('daily poke limitation should greater than poke amount', () => {
     expect(dailyLimitValidator(99, { pokeAmount: 100 })).toEqual(
       expect.stringMatching(/daily poke limit should greater/i)
     );
+
     expect(
       dailyLimitValidator(101, { pokeAmount: 100, tokenInitialSupply: 100 * DAYS_OF_YEAR * 4 })
-    ).toEqual(true);
+    ).toEqual(expect.stringMatching(/Daily poke limit is too big/i));
+
     expect(
       dailyLimitValidator(100, { pokeAmount: 100, tokenInitialSupply: 100 * DAYS_OF_YEAR * 4 })
     ).toEqual(true);

@@ -1,6 +1,6 @@
 {
   "name": "@arcblock/forge-cli",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "a general set of CLI for arcblock Forge framework",
   "license": "Apache-2.0",
   "main": "src/index.js",
@@ -26,10 +26,11 @@
     "access": "public"
   },
   "scripts": {
-    "precommit": "yarn lint",
-    "prepush": "yarn lint",
+    "precommit": "yarn test:unit",
+    "prepush": "yarn test:unit",
     "postinstall": "node ./src/scripts/post-install.js",
-    "test:smoke": "yarn lint && node tools/jest.js",
+    "test:unit": "yarn lint && node tools/jest.js --coverage",
+    "test:unit:watch": "yarn lint && node tools/jest.js --watch",
     "lint": "eslint src",
     "lint:fix": "eslint --fix src"
   },

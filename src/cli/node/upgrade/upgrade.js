@@ -139,10 +139,10 @@ const confirmUpgrade = async message => {
   return confirm;
 };
 
-const getReleases = async (currentVersion, mirror) => {
+const getReleases = async mirror => {
   let releases = [];
   try {
-    releases = await fetchAsset(ASSETS_PATH.VERSIONS, mirror);
+    releases = (await fetchAsset(ASSETS_PATH.VERSIONS, mirror)) || [];
   } catch (error) {
     printWarning('Fetch remote releases failed:', error.message);
   }
@@ -288,7 +288,7 @@ async function main({
   try {
     const client = createRpcClient();
     const currentVersion = config.get('cli.currentVersion');
-    const releases = getAvailableUpgradeReleases(await getReleases(), currentVersion);
+    const releases = getAvailableUpgradeReleases(await getReleases(mirror), currentVersion);
 
     if (!releases.length) {
       printSuccess('Abort because no available newer version to upgrade!');

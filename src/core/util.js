@@ -16,7 +16,7 @@ const moment = require('moment');
 const rc = require('rc');
 
 const { symbols, hr } = require('./ui');
-const { MIRRORS, REQUIRED_DIRS, ASSETS_PATH, SHIFT_WIDTH } = require('../constant');
+const { REQUIRED_DIRS, ASSETS_PATH, DEFAULT_MIRROR, SHIFT_WIDTH } = require('../constant');
 const debug = require('./debug')('util');
 
 /**
@@ -197,18 +197,13 @@ const chainSortHandler = (xName, yName) => {
 
 const strEqual = (strA = '', strB = '') => strA.toUpperCase() === strB.toUpperCase();
 
-const fetchAssetRace = async urlPath => {
-  const tasks = MIRRORS.map(mirror => axios.get(url.resolve(mirror, urlPath)));
-  const resp = await Promise.race(tasks);
-
-  debug('fetchAssetRace.config', resp.config);
-  return resp.data || [];
+const fetchAsset = async (assetPath, mirror = DEFAULT_MIRROR) => {
+  const resp = await axios.get(url.resolve(mirror, assetPath));
+  return resp.data;
 };
 
-const fetchAsset = async assetPath => fetchAssetRace(assetPath);
-
-const fetchReleaseAssetsInfo = async platform => {
-  const data = await fetchAsset(ASSETS_PATH.VERSIONS);
+const fetchReleaseAssetsInfo = async (platform, mirror) => {
+  const data = await fetchAsset(ASSETS_PATH.VERSIONS, mirror);
   const result = [];
   if (Array.isArray(data)) {
     data.forEach(({ version, assets }) => {

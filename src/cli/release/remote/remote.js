@@ -3,7 +3,7 @@ const { fetchAsset, print, printError, printWarning, highlightOfList } = require
 const { getLocalVersions } = require('core/libs/common');
 const forgeVersion = require('core/forge-version');
 
-const { ASSETS_PATH } = require('../../../constant');
+const { ASSETS_PATH, DEFAULT_MIRROR } = require('../../../constant');
 
 const printList = (list = [], localVersions = []) => {
   if (list.length === 0) {
@@ -15,9 +15,9 @@ const printList = (list = [], localVersions = []) => {
   }
 };
 
-const main = async () => {
+const main = async ({ opts: { mirror = DEFAULT_MIRROR } }) => {
   try {
-    const versionsInfo = await fetchAsset(ASSETS_PATH.VERSIONS);
+    const versionsInfo = await fetchAsset(ASSETS_PATH.VERSIONS, mirror);
     const versions = versionsInfo
       .filter(x => x.status === undefined || x.status === 'normal')
       .map(x => x.version)

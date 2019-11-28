@@ -27,7 +27,7 @@ const {
   getReleaseBinPath,
   updateReleaseYaml,
 } = require('../forge-fs');
-const { fetchReleaseAssetsInfo, getPlatform, logError } = require('../util');
+const { fetchReleaseAssetsInfo, getPlatform, logError, printSuccess } = require('../util');
 
 const { name: packageName, version: localVersion, engines } = pkg;
 
@@ -65,6 +65,7 @@ function getTopChainName() {
 async function applyForgeVersion(version) {
   updateReleaseYaml('forge', version);
   updateReleaseYaml('simulator', version);
+  printSuccess(`Forge v${version} activated successfully!`);
 }
 
 function getMinSupportForgeVersion() {

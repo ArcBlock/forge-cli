@@ -61,6 +61,7 @@ async function main({
     });
 
     if (downloadResult === DOWNLOAD_FLAGS.ALREADY_EXISTS) {
+      applyForgeVersion(version);
       process.exit(0);
     }
 

@@ -18,4 +18,30 @@ describe('#util', () => {
       expect(util.parseTimeStrToMS('10h')).toEqual(10 * 60 * 60 * 1000);
     });
   });
+
+  describe('#promiseRetry', () => {
+    test('should retry specified times if always failed', done => {
+      const mockFunc = jest.fn(async () => {
+        throw new Error('test');
+      });
+
+      util
+        .promiseRetry(mockFunc, 3)()
+        .finally(() => {
+          expect(mockFunc.mock.calls.length).toBe(3 + 1); // first execute add retry times
+          done();
+        });
+    });
+
+    test('should not retry if always succeed', done => {
+      const mockFunc = jest.fn(async () => {});
+
+      util
+        .promiseRetry(mockFunc, 3)()
+        .finally(() => {
+          expect(mockFunc.mock.calls.length).toBe(1); // first execute add retry times
+          done();
+        });
+    });
+  });
 });

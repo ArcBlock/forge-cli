@@ -27,7 +27,7 @@ describe('#util', () => {
 
       util
         .promiseRetry(mockFunc, 3)()
-        .finally(() => {
+        .catch(() => {
           expect(mockFunc.mock.calls.length).toBe(3 + 1); // first execute add retry times
           done();
         });
@@ -38,10 +38,11 @@ describe('#util', () => {
 
       util
         .promiseRetry(mockFunc, 3)()
-        .finally(() => {
+        .then(() => {
           expect(mockFunc.mock.calls.length).toBe(1); // first execute add retry times
           done();
-        });
+        })
+        .catch(done);
     });
   });
 });

@@ -331,9 +331,9 @@ const waitUntilTruthy = (handler = () => true, timeout = 30000, message = '') =>
   });
 
 /**
- * Retry async function
+ * Build a retry async function
  * @param {AsyncFunction} asyncFunction
- * @param {number} retryCount
+ * @param {number} retryCount max retry times if exception occurred
  * @return {AsyncFunction}
  */
 const promiseRetry = (asyncFunction, retryCount = 1) => async args =>

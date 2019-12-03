@@ -1,6 +1,10 @@
+## 1.0.9 (December 03, 2019)
+
+- chore: bump version
+
 ## 1.0.8 (November 26, 2019)
 
-feat: retry download if failed #332
+- feat: retry download if failed #332
 
 ## 1.0.7 (November 26, 2019)
 

@@ -50,7 +50,7 @@ const readmeContent = `![forge-cli](https://www.arcblock.io/.netlify/functions/b
 ## Requirements
 
 - Linux/Mac Command Line, **windows is not support currently**, [iTerm](http://www.iterm2.com/) is recommended.
-- [Node.js](https://nodejs.org/): please install using [nvm](https://github.com/creationix/nvm), v8+
+- [Node.js](https://nodejs.org/): please install using [nvm](https://github.com/creationix/nvm), >= v10 && <= v12.x
 
 ## QuickStart
 

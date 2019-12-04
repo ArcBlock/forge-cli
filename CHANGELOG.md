@@ -1,3 +1,9 @@
+## 1.0.10 (December 04, 2019)
+
+- chore: remove useless app logs
+- [unit test] libs.getForgeDistributionByOS
+- feat: print more accurate OS distribution when install/download #348
+
 ## 1.0.9 (December 03, 2019)
 
 - chore: bump version

@@ -1,6 +1,6 @@
-const path = require('path');
 const fs = require('fs');
 const os = require('os');
+const path = require('path');
 const axios = require('axios');
 const crypto = require('crypto');
 const get = require('lodash/get');
@@ -14,9 +14,17 @@ const getPort = require('get-port');
 const prettyMilliseconds = require('pretty-ms');
 const moment = require('moment');
 const rc = require('rc');
+const util = require('util');
+const toLower = require('lodash/toLower');
 
 const { symbols, hr } = require('./ui');
-const { REQUIRED_DIRS, ASSETS_PATH, DEFAULT_MIRROR, SHIFT_WIDTH } = require('../constant');
+const {
+  REQUIRED_DIRS,
+  ASSETS_PATH,
+  DEFAULT_MIRROR,
+  SHIFT_WIDTH,
+  SUPPORTED_OS,
+} = require('../constant');
 const debug = require('./debug')('util');
 
 /**
@@ -103,6 +111,12 @@ function printError(...args) {
   }
 
   print.apply(null, [symbols.error, ...args]);
+}
+
+function printSupportedOS(supportedOS = []) {
+  supportedOS.forEach(({ dist, release }) => {
+    print(`- ${dist}: ${release} or above`);
+  });
 }
 
 /**
@@ -256,36 +270,40 @@ const downloadPackageFromNPM = async (name, dest, registry = '') => {
   return dest;
 };
 
-function getPlatform() {
-  return new Promise((resolve, reject) => {
-    const platform = process.env.FORGE_CLI_PLATFORM;
-    if (platform && ['darwin', 'centos'].includes(platform)) {
-      shell.echo(
-        `${symbols.info} ${chalk.yellow(
-          `Using custom platform: ${process.env.FORGE_CLI_PLATFORM}`
-        )}`
-      );
-      resolve(platform);
-      return;
-    }
+/**
+ * getos async version
+ */
+async function getOsAsync() {
+  const osInfo = await util.promisify(getos)();
+  if (osInfo.os === 'darwin') {
+    osInfo.dist = 'darwin';
+  }
 
-    getos((err, info) => {
-      if (err) {
-        return reject(err);
-      }
+  return osInfo;
+}
 
-      if (info.os === 'darwin') {
-        return resolve(info.os);
-      }
+function getForgeDistributionByOS(osPlatform) {
+  if (osPlatform === 'darwin') {
+    return osPlatform;
+  }
 
-      if (info.os === 'linux') {
-        return resolve('centos');
-      }
+  if (osPlatform === 'linux') {
+    return 'centos';
+  }
 
-      debug(`${info.os} is not supported by forge currently`);
-      return resolve(info.os);
-    });
-  });
+  debug(`${osPlatform} is not supported by forge currently`);
+  return osPlatform;
+}
+
+async function getForgeDistribution() {
+  const platform = process.env.FORGE_CLI_PLATFORM;
+  if (platform && ['darwin', 'centos'].includes(platform)) {
+    printInfo(`${chalk.yellow(`Using custom platform: ${process.env.FORGE_CLI_PLATFORM}`)}`);
+    return platform;
+  }
+
+  const info = await getOsAsync();
+  return getForgeDistributionByOS(info.os);
 }
 
 function highlightOfList(func, value, leftPad = SHIFT_WIDTH) {
@@ -354,6 +372,20 @@ const promiseRetry = (asyncFunction, retryCount = 1) => async args =>
     internal(0);
   });
 
+const warningUnSupportedOS = (distribution = '') => {
+  distribution = toLower(distribution).trim(); // eslint-disable-line
+
+  // prettier-ignore
+  const supportedOSInfo = distribution && SUPPORTED_OS.find(({ dist }) => toLower(dist).includes(distribution));
+
+  if (!supportedOSInfo) {
+    printWarning(
+      'Seems you are running Forge on a not supported platform, things may not work as expected, Forge is fully tested on the following platforms:'
+    );
+    printSupportedOS(SUPPORTED_OS);
+  }
+};
+
 module.exports = {
   chainSortHandler,
   checkPort,
@@ -362,7 +394,9 @@ module.exports = {
   fetchAsset,
   fetchReleaseAssetsInfo,
   getNPMConfig,
-  getPlatform,
+  getForgeDistribution,
+  getForgeDistributionByOS,
+  getOsAsync,
   getPort,
   getPackageConfig,
   getFreePort,
@@ -379,10 +413,12 @@ module.exports = {
   printError,
   printInfo,
   printSuccess,
+  printSupportedOS,
   printWarning,
   promiseRetry,
   strEqual,
   sleep,
   trim,
   waitUntilTruthy,
+  warningUnSupportedOS,
 };

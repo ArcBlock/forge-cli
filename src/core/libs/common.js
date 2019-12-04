@@ -27,7 +27,7 @@ const {
   getReleaseBinPath,
   updateReleaseYaml,
 } = require('../forge-fs');
-const { fetchReleaseAssetsInfo, getPlatform, logError, printSuccess } = require('../util');
+const { fetchReleaseAssetsInfo, getForgeDistribution, logError, printSuccess } = require('../util');
 
 const { name: packageName, version: localVersion, engines } = pkg;
 
@@ -189,11 +189,11 @@ const checkSatisfiedForgeVersion = (version, range) =>
   semver.satisfies(version, range, { includePrerelease: true });
 
 async function listReleases() {
-  const platform = await getPlatform();
+  const forgeDistribution = await getForgeDistribution();
   let remoteReleasesInfo = [];
   try {
     const mirror = getConfig('mirror');
-    remoteReleasesInfo = await fetchReleaseAssetsInfo(platform, mirror);
+    remoteReleasesInfo = await fetchReleaseAssetsInfo(forgeDistribution, mirror);
   } catch (error) {
     debug('fetch remote releases information failed:', error.message);
     logError(error);

@@ -44,4 +44,18 @@ describe('#util', () => {
         });
     });
   });
+
+  describe('#getForgeDistributionByOS', () => {
+    test('should be darwin if platform is darwin', () => {
+      expect(util.getForgeDistributionByOS('darwin')).toBe('darwin');
+    });
+
+    test('should be centos if platform is linux', () => {
+      expect(util.getForgeDistributionByOS('linux')).toBe('centos');
+    });
+
+    test('should be passed platform if platform is unsupported', () => {
+      expect(util.getForgeDistributionByOS('arcblock')).toBe('arcblock');
+    });
+  });
 });

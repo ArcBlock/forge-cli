@@ -4,7 +4,14 @@ const chalk = require('chalk');
 const emoji = require('node-emoji');
 const fs = require('fs');
 const { applyForgeVersion } = require('core/libs/common');
-const { getPlatform, print, printError, printInfo } = require('core/util');
+const {
+  getForgeDistribution,
+  getOsAsync,
+  print,
+  printError,
+  printInfo,
+  warningUnSupportedOS,
+} = require('core/util');
 const { isForgeStarted } = require('core/forge-process');
 const {
   createAsset,
@@ -20,18 +27,21 @@ async function main({
   opts: { mirror = DEFAULT_MIRROR, allowMultiChain, releaseDir, force = false },
 }) {
   try {
-    const platform = await getPlatform();
     if (!userVersion) {
       printInfo(`By default, we'll install the latest version for you.`); // eslint-disable-line
       printInfo(
         `If you want to install a specific version, add the version number in your command like ${chalk.cyan(
-          'forge install 0.40.0'
+          'forge install 1.0.0'
         )}`
       );
       print();
     }
 
-    printInfo(`Detected platform is: ${platform}`);
+    const osInfo = await getOsAsync();
+    printInfo(`Detected platform is: ${osInfo.dist}`);
+    warningUnSupportedOS(osInfo.dist);
+
+    const platform = await getForgeDistribution();
 
     if (releaseDir && fs.existsSync(releaseDir)) {
       printInfo(`${chalk.yellow(`Using local releaseDir: ${releaseDir}`)}`);

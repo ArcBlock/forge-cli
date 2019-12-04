@@ -376,7 +376,7 @@ const warningUnSupportedOS = (distribution = '') => {
   distribution = toLower(distribution).trim(); // eslint-disable-line
 
   // prettier-ignore
-  const supportedOSInfo = distribution && SUPPORTED_OS.find(({ dist }) => toLower(dist).includes(distribution));
+  const supportedOSInfo = distribution && SUPPORTED_OS.find(({ dist }) => distribution.includes(toLower(dist)));
 
   if (!supportedOSInfo) {
     printWarning(

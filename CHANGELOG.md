@@ -1,3 +1,7 @@
+## 1.0.11 (December 04, 2019)
+
+- hotfix: warning un supported OS error
+
 ## 1.0.10 (December 04, 2019)
 
 - chore: remove useless app logs

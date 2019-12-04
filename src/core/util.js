@@ -1,6 +1,6 @@
-const path = require('path');
 const fs = require('fs');
 const os = require('os');
+const path = require('path');
 const axios = require('axios');
 const crypto = require('crypto');
 const get = require('lodash/get');
@@ -15,9 +15,16 @@ const prettyMilliseconds = require('pretty-ms');
 const moment = require('moment');
 const rc = require('rc');
 const util = require('util');
+const toLower = require('lodash/toLower');
 
 const { symbols, hr } = require('./ui');
-const { REQUIRED_DIRS, ASSETS_PATH, DEFAULT_MIRROR, SHIFT_WIDTH } = require('../constant');
+const {
+  REQUIRED_DIRS,
+  ASSETS_PATH,
+  DEFAULT_MIRROR,
+  SHIFT_WIDTH,
+  SUPPORTED_OS,
+} = require('../constant');
 const debug = require('./debug')('util');
 
 /**
@@ -104,6 +111,12 @@ function printError(...args) {
   }
 
   print.apply(null, [symbols.error, ...args]);
+}
+
+function printSupportedOS(supportedOS = []) {
+  supportedOS.forEach(({ dist, release }) => {
+    print(`- ${dist}: ${release} or above`);
+  });
 }
 
 /**
@@ -359,6 +372,20 @@ const promiseRetry = (asyncFunction, retryCount = 1) => async args =>
     internal(0);
   });
 
+const warningUnSupportedOS = (distribution = '') => {
+  distribution = toLower(distribution).trim(); // eslint-disable-line
+
+  // prettier-ignore
+  const supportedOSInfo = distribution && SUPPORTED_OS.find(({ dist }) => toLower(dist).includes(distribution));
+
+  if (!supportedOSInfo) {
+    printWarning(
+      'Seems you are running Forge on a not supported platform, things may not work as expected, Forge is fully tested on the following platforms:'
+    );
+    printSupportedOS(SUPPORTED_OS);
+  }
+};
+
 module.exports = {
   chainSortHandler,
   checkPort,
@@ -386,10 +413,12 @@ module.exports = {
   printError,
   printInfo,
   printSuccess,
+  printSupportedOS,
   printWarning,
   promiseRetry,
   strEqual,
   sleep,
   trim,
   waitUntilTruthy,
+  warningUnSupportedOS,
 };

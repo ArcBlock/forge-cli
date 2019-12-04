@@ -4,7 +4,14 @@ const chalk = require('chalk');
 const emoji = require('node-emoji');
 const fs = require('fs');
 const { applyForgeVersion } = require('core/libs/common');
-const { getForgeDistribution, getOsAsync, print, printError, printInfo } = require('core/util');
+const {
+  getForgeDistribution,
+  getOsAsync,
+  print,
+  printError,
+  printInfo,
+  warningUnSupportedOS,
+} = require('core/util');
 const { isForgeStarted } = require('core/forge-process');
 const {
   createAsset,
@@ -32,6 +39,8 @@ async function main({
 
     const osInfo = await getOsAsync();
     printInfo(`Detected platform is: ${osInfo.dist}`);
+    warningUnSupportedOS(osInfo.dist);
+
     const platform = await getForgeDistribution();
 
     if (releaseDir && fs.existsSync(releaseDir)) {

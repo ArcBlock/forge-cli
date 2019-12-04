@@ -2,7 +2,14 @@
 const fs = require('fs');
 const chalk = require('chalk');
 const emoji = require('node-emoji');
-const { getForgeDistribution, getOsAsync, print, printError, printInfo } = require('core/util');
+const {
+  getForgeDistribution,
+  getOsAsync,
+  print,
+  printError,
+  printInfo,
+  warningUnSupportedOS,
+} = require('core/util');
 const { createAsset, download, formatVersion, DOWNLOAD_FLAGS } = require('./libs/index');
 
 const { DEFAULT_MIRROR, RELEASE_ASSETS } = require('../../../constant');
@@ -13,6 +20,7 @@ async function main({ args: [userVersion], opts: { mirror = DEFAULT_MIRROR, rele
     const platform = await getForgeDistribution();
     const osInfo = await getOsAsync();
     printInfo(`Detected platform is: ${osInfo.dist}`);
+    warningUnSupportedOS(osInfo.dist);
 
     if (releaseDir && fs.existsSync(releaseDir)) {
       printInfo(`${chalk.yellow(`Using local releaseDir: ${releaseDir}.`)}`);

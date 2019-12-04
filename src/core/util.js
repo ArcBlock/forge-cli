@@ -14,6 +14,7 @@ const getPort = require('get-port');
 const prettyMilliseconds = require('pretty-ms');
 const moment = require('moment');
 const rc = require('rc');
+const util = require('util');
 
 const { symbols, hr } = require('./ui');
 const { REQUIRED_DIRS, ASSETS_PATH, DEFAULT_MIRROR, SHIFT_WIDTH } = require('../constant');
@@ -256,36 +257,40 @@ const downloadPackageFromNPM = async (name, dest, registry = '') => {
   return dest;
 };
 
-function getPlatform() {
-  return new Promise((resolve, reject) => {
-    const platform = process.env.FORGE_CLI_PLATFORM;
-    if (platform && ['darwin', 'centos'].includes(platform)) {
-      shell.echo(
-        `${symbols.info} ${chalk.yellow(
-          `Using custom platform: ${process.env.FORGE_CLI_PLATFORM}`
-        )}`
-      );
-      resolve(platform);
-      return;
-    }
+/**
+ * getos async version
+ */
+async function getOsAsync() {
+  const osInfo = await util.promisify(getos)();
+  if (osInfo.os === 'darwin') {
+    osInfo.dist = 'darwin';
+  }
 
-    getos((err, info) => {
-      if (err) {
-        return reject(err);
-      }
+  return osInfo;
+}
 
-      if (info.os === 'darwin') {
-        return resolve(info.os);
-      }
+async function getForgeDistributionByOS(osPlatform) {
+  if (osPlatform === 'darwin') {
+    return osPlatform;
+  }
 
-      if (info.os === 'linux') {
-        return resolve('centos');
-      }
+  if (osPlatform === 'linux') {
+    return 'centos';
+  }
 
-      debug(`${info.os} is not supported by forge currently`);
-      return resolve(info.os);
-    });
-  });
+  debug(`${osPlatform} is not supported by forge currently`);
+  return osPlatform;
+}
+
+async function getForgeDistribution() {
+  const platform = process.env.FORGE_CLI_PLATFORM;
+  if (platform && ['darwin', 'centos'].includes(platform)) {
+    printInfo(`${chalk.yellow(`Using custom platform: ${process.env.FORGE_CLI_PLATFORM}`)}`);
+    return platform;
+  }
+
+  const info = await getOsAsync();
+  return getForgeDistributionByOS(info.os);
 }
 
 function highlightOfList(func, value, leftPad = SHIFT_WIDTH) {
@@ -362,7 +367,8 @@ module.exports = {
   fetchAsset,
   fetchReleaseAssetsInfo,
   getNPMConfig,
-  getPlatform,
+  getForgeDistribution,
+  getOsAsync,
   getPort,
   getPackageConfig,
   getFreePort,

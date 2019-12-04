@@ -7,7 +7,7 @@ const { config, createRpcClient } = require('core/env');
 const { hr, getSpinner, pretty } = require('core/ui');
 const {
   fetchAsset,
-  getPlatform,
+  getForgeDistribution,
   print,
   printError,
   printInfo,
@@ -265,7 +265,7 @@ const downloadIfRequires = async (version, mirror) => {
   const localReleases = await getLocalVersions();
   if (!localReleases.find(v => semver.eq(v, version))) {
     printInfo(`Downloading v${version}`);
-    const platform = await getPlatform();
+    const platform = await getForgeDistribution();
 
     const asset = createAsset({
       version,

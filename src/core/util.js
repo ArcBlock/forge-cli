@@ -269,7 +269,7 @@ async function getOsAsync() {
   return osInfo;
 }
 
-async function getForgeDistributionByOS(osPlatform) {
+function getForgeDistributionByOS(osPlatform) {
   if (osPlatform === 'darwin') {
     return osPlatform;
   }
@@ -368,6 +368,7 @@ module.exports = {
   fetchReleaseAssetsInfo,
   getNPMConfig,
   getForgeDistribution,
+  getForgeDistributionByOS,
   getOsAsync,
   getPort,
   getPackageConfig,

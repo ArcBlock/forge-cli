@@ -15,7 +15,9 @@ const {
   getChainDirectory,
   isChainExists,
   isDirectory,
+  isFile,
   getChainReleaseFilePath,
+  getChainWebConfigPath,
   getChainNameFromForgeConfig,
 } = require('core/forge-fs');
 const { ensureForgeRelease } = require('core/forge-config');
@@ -440,8 +442,17 @@ function makeNativeCommandRunner(executable, name, { env } = {}) {
       )}"`;
       let command = `${erlAflagsParam} FORGE_CONFIG=${forgeConfigPath} ${binPath} ${subCommand}`;
 
-      if (['webBinPath', 'simulatorBinPath'].includes(executable)) {
-        command = `${erlAflagsParam} FORGE_CONFIG=${forgeConfigPath} FORGE_SOCK_GRPC=${sockGrpc} ${binPath} ${subCommand}`; // eslint-disable-line
+      if (executable === 'webBinPath') {
+        const webConfigPath = getChainWebConfigPath(name);
+        if (isFile(webConfigPath)) {
+          command = `${erlAflagsParam} FORGE_WEB_CONFIG=${webConfigPath} FORGE_SOCK_GRPC=${sockGrpc} ${binPath} ${subCommand}`; // eslint-disable-line
+        } else {
+          command = `${erlAflagsParam} FORGE_SOCK_GRPC=${sockGrpc} ${binPath} ${subCommand}`; // eslint-disable-line
+        }
+      }
+
+      if (executable === 'simulatorBinPath') {
+        command = `${erlAflagsParam} FORGE_SOCK_GRPC=${sockGrpc} ${binPath} ${subCommand}`; // eslint-disable-line
       }
 
       if (env) {

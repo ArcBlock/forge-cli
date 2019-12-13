@@ -40,6 +40,15 @@ const readChainConfigFromEnv = () => {
   return {};
 };
 
+const readWebConfigFromEnv = () => {
+  const configPath = process.env.FORGE_WEB_CONFIG;
+  if (configPath && isFile(configPath)) {
+    return configPath;
+  }
+
+  return '';
+};
+
 const readChainConfig = (chainName, key, defaultValue = '') => {
   let configPath = '';
 
@@ -184,8 +193,12 @@ function getDataDirectory(chainName = process.env.FORGE_CURRENT_CHAIN) {
   return path.join(getChainDirectory(chainName), CHAIN_DATA_PATH_NAME);
 }
 
-function getCurrentReleaseFilePath() {
+function getCurrentForgeConfigPath() {
   return path.join(getCurrentWorkingDirectory(), 'forge_release.toml');
+}
+
+function getCurrentForgeWebConfigPath() {
+  return path.join(getCurrentWorkingDirectory(), 'forge_web.toml');
 }
 
 function getReleaseDirectory(name, version) {
@@ -221,8 +234,8 @@ function getForgeSwapReleaseDirectory(version) {
   return getReleaseDirectory('forge_swap', version);
 }
 
-function getOriginForgeReleaseFilePath(version) {
-  debug('getOriginForgeReleaseFilePath');
+function getOriginForgeConfigPath(version) {
+  debug('getOriginForgeConfigPath');
 
   return path.join(
     getForgeReleaseDirectory(),
@@ -231,6 +244,19 @@ function getOriginForgeReleaseFilePath(version) {
     `forge-${version}`,
     'priv',
     'forge_release.toml'
+  );
+}
+
+function getOriginForgeWebConfigPath(version) {
+  debug('getOriginWebConfigPath');
+
+  return path.join(
+    getForgeWebReleaseDirectory(),
+    version,
+    'lib',
+    `forge_web-${version}`,
+    'priv',
+    'config/default.toml'
   );
 }
 
@@ -306,6 +332,15 @@ function getChainReleaseFilePath(chainName = process.env.FORGE_CURRENT_CHAIN) {
   }
 
   return path.join(getChainDirectory(chainName), 'forge_release.toml');
+}
+
+function getChainWebConfigPath(chainName = process.env.FORGE_CURRENT_CHAIN) {
+  const configPath = readWebConfigFromEnv();
+  if (configPath) {
+    return configPath;
+  }
+
+  return path.join(getChainDirectory(chainName), 'forge_web.toml');
 }
 
 function readChainKeyFilePath(chainName = process.env.FORGE_CURRENT_CHAIN) {
@@ -472,7 +507,8 @@ module.exports = {
   getForgeSwapReleaseDirectory,
   getChainNameFromForgeConfig,
   getConsensusEnginBinPath,
-  getCurrentReleaseFilePath,
+  getCurrentForgeConfigPath,
+  getCurrentForgeWebConfigPath,
   getDataDirectory,
   getForgeBinPath,
   getChainDirectory,
@@ -484,6 +520,7 @@ module.exports = {
   getGlobalConfigFilePath,
   getGlobalForgeVersion,
   getChainReleaseFilePath,
+  getChainWebConfigPath,
   getChainWorkshopDirectory,
   getLocalReleases,
   getReleaseDir,
@@ -492,7 +529,8 @@ module.exports = {
   getRootConfigDirectory,
   readTendermintHomeDir,
   getForgeVersionFromYaml,
-  getOriginForgeReleaseFilePath,
+  getOriginForgeConfigPath,
+  getOriginForgeWebConfigPath,
   getForgeReleaseDirectory,
   getReleaseDirectory,
   readChainKeyFilePath,

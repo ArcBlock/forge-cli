@@ -8,9 +8,12 @@ const { config } = require('core/env');
 const { setConfigToChain } = require('core/forge-config');
 const { logError, print, printInfo, printError } = require('core/util');
 const {
+  isFile,
   createNewChain,
-  getOriginForgeReleaseFilePath,
+  getOriginForgeConfigPath,
+  getOriginForgeWebConfigPath,
   getChainReleaseFilePath,
+  getChainWebConfigPath,
 } = require('core/forge-fs');
 const { hr } = require('core/ui');
 const { getChainDirectory } = require('core/forge-fs');
@@ -29,7 +32,7 @@ async function main({ args: [chainName = ''], opts: { defaults, allowMultiChain 
   try {
     const forgeCoreVersion = config.get('cli').globalVersion;
     const defaultConfigs = toml.parse(
-      fs.readFileSync(getOriginForgeReleaseFilePath(forgeCoreVersion)).toString()
+      fs.readFileSync(getOriginForgeConfigPath(forgeCoreVersion)).toString()
     );
 
     const { configs: customConfigs, chainId, generatedModeratorSK } = await readNecessaryConfigs({
@@ -63,6 +66,14 @@ async function main({ args: [chainName = ''], opts: { defaults, allowMultiChain 
     const chainReleaseFilePath = getChainReleaseFilePath(chainId);
     await writeConfigs(chainReleaseFilePath, configs);
     print(hr);
+
+    // Copy forge web config
+    const defaultWebConfigPath = getOriginForgeWebConfigPath(forgeCoreVersion);
+    if (isFile(defaultWebConfigPath)) {
+      const chainWebConfigPath = getChainWebConfigPath(chainId);
+      fs.copyFileSync(defaultWebConfigPath, chainWebConfigPath);
+    }
+
     print(
       `${emoji.get('tada')} Congratulations! Your new blockchain has been saved in ${chalk.cyan(
         getChainDirectory(chainId)

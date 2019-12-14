@@ -1,5 +1,6 @@
-// eslint-disable-next-line import/no-unresolved
+const chalk = require('chalk');
 const { cli, action } = require('core/cli');
+const { print } = require('core/util');
 const { getTopRunningChains } = require('core/forge-process');
 const { execute, run } = require('./declare');
 
@@ -15,7 +16,15 @@ cli(
       wallet: false,
       chainName: getTopRunningChains,
       currentChainRunning: true,
+      chainExists: true,
     },
-    options: [],
+    handlers: {
+      '--help': () => {
+        print(`
+Examples:
+- ${chalk.cyan('forge declare:node')}                   Declare current node on chain
+      `);
+      },
+    },
   }
 );

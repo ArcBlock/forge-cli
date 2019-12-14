@@ -18,11 +18,15 @@ cli(
       currentChainRunning: true,
       chainExists: true,
     },
+    options: [
+      ['--validator', 'Declare validator account on chain'],
+    ],
     handlers: {
       '--help': () => {
         print(`
 Examples:
 - ${chalk.cyan('forge declare:node')}                   Declare current node on chain
+- ${chalk.cyan('forge declare:node --validator')}                   Declare current node on chain
       `);
       },
     },

@@ -1,5 +1,6 @@
-module.exports = require('./create');
 exports.config = require('./config');
-module.exports = require('./list');
-module.exports = require('./remove');
-module.exports = require('./reset');
+exports.create = require('./create');
+exports.list = require('./list');
+exports.remove = require('./remove');
+exports.reset = require('./reset');
+exports.validator = require('./validator');

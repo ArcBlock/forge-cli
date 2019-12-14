@@ -88,7 +88,7 @@ async function getQuestions(validators) {
     // When we want to delete existing validator
     {
       type: 'text',
-      name: 'deleteAddress',
+      name: 'removeAddress',
       message: 'Please select validator address',
       when: inputs => inputs.action === 'delete',
       validate: v => validateAddress(v, true),
@@ -126,7 +126,41 @@ function getAccountState(client, address) {
   });
 }
 
-async function main({ opts: { chainName } }) {
+async function getAnswers(validators, address, power) {
+  // We have an address and power, just run in silent mode
+  if (address) {
+    if (!isValid(address)) {
+      throw new Error('Invalid validator address specified, a valid DID is required');
+    }
+
+    if (Number(power) < 0) {
+      throw new Error('Invalid voting power specified, non-negative number is required');
+    }
+
+    const answers = { confirm: true };
+    if (validators.find(x => x.address === address)) {
+      if (Number(power) > 0) {
+        answers.action = 'update';
+        answers.updateAddress = address;
+        answers.updateVotingPower = power;
+      } else {
+        answers.action = 'remove';
+        answers.removeAddress = address;
+      }
+    } else {
+      answers.action = 'add';
+      answers.newAddress = address;
+      answers.newVotingPower = power;
+    }
+
+    return answers;
+  }
+
+  const questions = await getQuestions(validators);
+  return inquirer.prompt(questions);
+}
+
+async function main({ opts: { chainName, address, power } }) {
   const client = createRpcClient();
   const currentVersion = getChainVersion(chainName);
   const moderator = await ensureModerator(client, { currentVersion });
@@ -136,22 +170,23 @@ async function main({ opts: { chainName } }) {
 
   print(hr);
   printWarning('If you are adding a new validator, please ensure the node is synced');
-  printWarning(`If the node is node connected to the network, run ${chalk.cyan('forge join')} to connect`);
+  printWarning(
+    `If the node is node connected to the network, run ${chalk.cyan('forge join')} to connect`
+  );
   print(hr);
   printInfo('Current validators');
   print(hr);
   printValidators(validators);
 
-  const questions = await getQuestions(validators);
   const {
     action,
     newAddress,
     newVotingPower,
     updateAddress,
     updateVotingPower,
-    deleteAddress,
+    removeAddress,
     confirm,
-  } = await inquirer.prompt(questions);
+  } = await getAnswers(validators, address, power);
 
   if (!confirm) {
     printWarning('User aborted.');
@@ -160,7 +195,10 @@ async function main({ opts: { chainName } }) {
 
   const updateValidators = async candidates => {
     try {
-      const hash = await client.sendUpdateValidatorTx({ tx: { itx: { candidates } }, wallet: moderator });
+      const hash = await client.sendUpdateValidatorTx({
+        tx: { itx: { candidates } },
+        wallet: moderator,
+      });
       printSuccess(`Validator ${action} successfully`);
       printInfo(`Run ${chalk.cyan(`forge tx ${hash}`)} to check transaction`);
     } catch (err) {
@@ -173,7 +211,9 @@ async function main({ opts: { chainName } }) {
     const { state } = await getAccountState(client, newAddress);
     if (!state) {
       printError(
-        `Validator not declared no chain, run ${chalk.cyan('forge declare:node')} on that node and then try again`
+        `Validator not declared no chain, run ${chalk.cyan(
+          'forge declare:node --validator'
+        )} on that node and then try again`
       );
       process.exit(1);
     }
@@ -186,7 +226,7 @@ async function main({ opts: { chainName } }) {
   }
 
   if (action === 'remove') {
-    await updateValidators([{ address: deleteAddress, power: 0 }]);
+    await updateValidators([{ address: removeAddress, power: 0 }]);
   }
 }
 

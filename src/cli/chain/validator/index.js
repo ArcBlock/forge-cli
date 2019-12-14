@@ -26,7 +26,7 @@ cli(
         // prettier-ignore
         print(`
 Examples:
-- ${chalk.cyan('forge chain:validator')}                            List all validators
+- ${chalk.cyan('forge chain:validator')}                            List all validators and update interactively
 - ${chalk.cyan('forge chain:validator --address abc --power 10')}   Add new validator abc and set voting power to 10
 - ${chalk.cyan('forge chain:validator --address abc --power 0')}    Delete validator with the address abc
 - ${chalk.cyan('forge chain:validator --address abc --power 100')}  Update validator abc to set voting power to 100

@@ -1,3 +1,11 @@
+## 1.0.12 (December 15, 2019)
+
+- chore: bump forge sdk version
+- feat: support validator update in silent mode
+- feat: support validator declare option
+- feat: basic validator update features #354
+- feat: support config the restricted declare feature in latest forge web #355
+
 ## 1.0.11 (December 04, 2019)
 
 - hotfix: warning un supported OS error

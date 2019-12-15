@@ -89,6 +89,7 @@ Commands:
   chain:ls                            List all chains
   chain:remove <chainName>            Remove chain state and config
   chain:reset <chainName>             Reset chain state, but keeps the config
+  chain:validator [options]           Update(add, remove, change) or list validators
   config [options] [key] [value]      Config forge cli configs
   contract:activate [name|address]    Activate a contract by name or address
   contract:compile [sourceDir]        Compile a forge contract
@@ -96,7 +97,7 @@ Commands:
   contract:deactivate [name|address]  Deactivate a contract
   contract:deploy [itxPath]           Deploy a compiled contract to ABT Node
   contract:ls                         List contracts
-  declare:node                        Declare the current node to be a validator candidate
+  declare:node [options]              Declare the current node to be a validator candidate
   deploy:prepare [options]            Prepare node for deploying a multi-node chain
   download [options] [version]        Download a forge release without activate it
   help [subcommand]                   Show help of a sub command

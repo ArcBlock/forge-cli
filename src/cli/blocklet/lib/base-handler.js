@@ -71,7 +71,15 @@ class BaseHandler {
     }
 
     if (scripts['install-dependencies']) {
+      printInfo('install-dependencies:custom');
+
       this.execExitOnError(`${scripts['install-dependencies']}`, {
+        cwd: this.blockletDir,
+      });
+    } else if (fsExtra.existsSync(path.join(this.blockletDir, 'package.json'))) {
+      printInfo('install-dependencies:npm');
+
+      this.execExitOnError('npm install', {
         cwd: this.blockletDir,
       });
     }

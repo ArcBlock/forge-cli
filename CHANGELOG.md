@@ -1,3 +1,7 @@
+## 1.0.13 (February 29, 2020)
+
+- optimizing install blocket dependencies
+
 ## 1.0.12 (December 15, 2019)
 
 - chore: bump forge sdk version

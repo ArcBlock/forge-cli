@@ -35,7 +35,7 @@ const promptTargetDirectory = async (checkEmpty = true) => {
   const { targetDir } = await inquirer.prompt({
     type: 'text',
     name: 'targetDir',
-    message: 'Please input target directory:',
+    message: 'Where do you want to put the generated project/dApp?',
     validate: input => {
       if (!input) return 'Target directory should not be empty';
 

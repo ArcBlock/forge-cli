@@ -1,4 +1,5 @@
 const fs = require('fs');
+const fsExtra = require('fs-extra');
 const os = require('os');
 const path = require('path');
 const axios = require('axios');
@@ -14,6 +15,7 @@ const getPort = require('get-port');
 const prettyMilliseconds = require('pretty-ms');
 const moment = require('moment');
 const rc = require('rc');
+const ssri = require('ssri');
 const util = require('util');
 const toLower = require('lodash/toLower');
 
@@ -245,19 +247,40 @@ function getPackageConfig(filePath) {
   return packageJSON;
 }
 
+const verifyNpmPackageIntegrity = (content, packageName) => {
+  const { code, stdout: expectedIntegrity, stderr } = shell.exec(
+    `npm view ${packageName} dist.integrity`,
+    {
+      silent: true,
+    }
+  );
+
+  if (code !== 0) {
+    throw new Error(stderr);
+  }
+
+  if (ssri.checkData(content, expectedIntegrity) === false) {
+    printInfo('expected integrity', expectedIntegrity);
+    printInfo('actual integrity', ssri.fromData(content));
+    throw new Error(`${packageName} verify integrity failed`);
+  }
+
+  return true;
+};
+
 const downloadPackageFromNPM = async (name, dest, registry = '') => {
-  fs.mkdirSync(dest, { recursive: true });
+  printInfo('Downloading package...');
   debug('starter directory:', dest);
 
-  printInfo('Downloading package...');
   let packCommand = `npm pack ${name} --color`;
-  if (name) {
+  if (registry) {
     packCommand = `${packCommand} --registry=${registry}`;
   }
 
+  const tmpDir = os.tmpdir();
   const { code, stdout, stderr } = shell.exec(packCommand, {
     silent: true,
-    cwd: dest,
+    cwd: os.tmpdir(),
   });
 
   if (code !== 0) {
@@ -265,7 +288,21 @@ const downloadPackageFromNPM = async (name, dest, registry = '') => {
   }
 
   const packageName = stdout.trim();
-  await tar.x({ file: path.join(dest, packageName), C: dest, strip: 1 });
+  const tarballPath = path.join(tmpDir, packageName);
+  if (!fs.existsSync(tarballPath)) {
+    throw new Error(`download ${packageName} failed`);
+  }
+
+  verifyNpmPackageIntegrity(fs.readFileSync(tarballPath), name);
+
+  fs.mkdirSync(dest, { recursive: true });
+  await tar.x({ file: tarballPath, C: dest, strip: 1 });
+
+  try {
+    fsExtra.removeSync(tarballPath);
+  } catch (error) {
+    printWarning('remove temp tarball file failed:', tarballPath);
+  }
 
   return dest;
 };

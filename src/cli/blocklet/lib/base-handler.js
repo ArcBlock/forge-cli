@@ -18,7 +18,7 @@ const copyFiles = (sourceRoot, file, target) => {
   if (Array.isArray(file)) {
     files.forEach(f => {
       let t = target;
-      if (isDirectory) {
+      if (isDirectory(f)) {
         t = path.join(t, f);
       }
 

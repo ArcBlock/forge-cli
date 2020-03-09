@@ -1,3 +1,7 @@
+## 1.0.15 (March 09, 2020)
+
+- fix blocklet:use bug
+
 ## 1.0.14 (March 04, 2020)
 
 - add npm package integrity verification when run blocklet:use

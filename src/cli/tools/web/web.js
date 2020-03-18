@@ -9,6 +9,7 @@ const { symbols, getSpinner } = require('core/ui');
 const { printError, printInfo, printSuccess, printWarning } = require('core/util');
 const { runNativeWebCommand, webUrl } = require('core/env');
 const { getForgeWebProcess } = require('core/forge-process');
+const { addChainHostToNetworkList } = require('core/forge-fs');
 
 const startWebUI = runNativeWebCommand('daemon', { silent: true });
 
@@ -50,7 +51,7 @@ async function checkGraphQLServerStarted(client, maxRetry = 6) {
   });
 }
 
-async function startForgeWeb(timeout = 10000) {
+async function startForgeWeb(name, timeout = 10000) {
   const { stderr } = startWebUI();
 
   if (stderr) {
@@ -59,16 +60,21 @@ async function startForgeWeb(timeout = 10000) {
     return false;
   }
 
-  const client = new GraphQLClient(`${webUrl()}/api`);
+  const endpoint = `${webUrl()}/api`;
+  const client = new GraphQLClient(endpoint);
   if (!(await checkGraphQLServerStarted(client, Math.ceil(timeout / 1000)))) {
     debug(`${symbols.error} graphql service failed to start!`);
     return false;
   }
 
+  addChainHostToNetworkList({ name, endpoint });
   return true;
 }
 
-async function main({ args: [action = 'none'] }) {
+async function main({
+  args: [action = 'none'],
+  opts: { chainName = process.env.FORGE_CURRENT_CHAIN } = {},
+}) {
   const { pid } = await getForgeWebProcess();
 
   debug(`forge web pid: ${pid}`);
@@ -87,7 +93,7 @@ async function main({ args: [action = 'none'] }) {
 
       const spinner = getSpinner('Waiting for Forge Web to start...');
       spinner.start();
-      const succeed = await startForgeWeb(20000);
+      const succeed = await startForgeWeb(chainName, 20000);
       if (!succeed) {
         spinner.fail(`Forge web start failed, please retry with ${chalk.cyan('Forge Web start')}`);
         break;
@@ -113,7 +119,7 @@ async function main({ args: [action = 'none'] }) {
       const port = 3000;
 
       const openBrowser = () => {
-        const url = `http://localhost:${port}`;
+        const url = `http://localhost:${port}?network=${chainName}`;
         printInfo(`Opening ${url}`);
         shell.exec(`open ${url}`);
       };

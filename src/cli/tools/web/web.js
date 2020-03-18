@@ -2,11 +2,11 @@
 const chalk = require('chalk');
 const shell = require('shelljs');
 const GraphQLClient = require('@arcblock/graphql-client');
+const pm2 = require('pm2');
 
 const debug = require('core/debug')('web');
 const { symbols, getSpinner } = require('core/ui');
-const { print, printError, printInfo, printSuccess, printWarning } = require('core/util');
-const { sleep } = require('core/util');
+const { printError, printInfo, printSuccess, printWarning } = require('core/util');
 const { runNativeWebCommand, webUrl } = require('core/env');
 const { getForgeWebProcess } = require('core/forge-process');
 
@@ -68,7 +68,7 @@ async function startForgeWeb(timeout = 10000) {
   return true;
 }
 
-async function main({ args: [action = 'none'], opts }) {
+async function main({ args: [action = 'none'] }) {
   const { pid } = await getForgeWebProcess();
 
   debug(`forge web pid: ${pid}`);
@@ -109,15 +109,50 @@ async function main({ args: [action = 'none'], opts }) {
       printSuccess('Forge Web stopped');
       break;
     case 'open':
-      if (!pid) {
-        printInfo('Forge Web not started yet');
-        await main({ args: ['start'] });
-        await sleep(2000);
-      }
+      const pm2Id = 'arc-forge-web';
+      const port = 3000;
 
-      const url = opts.graphql ? `${webUrl()}/api/playground` : webUrl();
-      print(`Opening ${url}...`);
-      shell.exec(`open ${url}`);
+      const openBrowser = () => {
+        const url = `http://localhost:${port}`;
+        printInfo(`Opening ${url}`);
+        shell.exec(`open ${url}`);
+      };
+
+      pm2.describe(pm2Id, (describeError, [info]) => {
+        if (describeError) {
+          throw describeError;
+        }
+
+        if (info && info.pm2_env && info.pm2_env.status === 'online') {
+          pm2.disconnect();
+          openBrowser(port);
+          return;
+        }
+
+        pm2.start(
+          {
+            name: pm2Id,
+            script: './server.js',
+            max_memory_restart: '100M',
+            cwd: __dirname,
+            env: {
+              FORGE_WEB_PROT: port,
+            },
+          },
+          err => {
+            pm2.disconnect();
+
+            if (err) {
+              printError('Forge Web exited error', err);
+              return;
+            }
+
+            printInfo(`Forge Web is listening on port ${port}`);
+            openBrowser(port);
+          }
+        );
+      });
+
       break;
     default:
       break;

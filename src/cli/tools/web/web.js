@@ -3,7 +3,7 @@ const detectPort = require('detect-port');
 const shell = require('shelljs');
 const pm2 = require('pm2');
 
-const { printError, printInfo, printWarning } = require('core/util');
+const { printError, printInfo } = require('core/util');
 const { getAllProcesses } = require('core/forge-process');
 
 const { DEFAULT_CHAIN_NODE_PORT } = require('../../../constant');
@@ -16,12 +16,6 @@ async function main({
   switch (action) {
     case 'none':
       shell.exec('forge web -h --color always');
-      break;
-    case 'start':
-      printWarning('Not implement yet');
-      break;
-    case 'stop':
-      printWarning('Not implement yet');
       break;
     case 'open':
       const pm2Id = 'arc-forge-web';

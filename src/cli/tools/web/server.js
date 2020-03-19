@@ -24,12 +24,9 @@ const responseNetworks = res => {
   }
 };
 
-const serve = serveStatic(
-  path.join(__dirname, '../../../../node_modules/@arcblock/forge-web/build'),
-  {
-    index: ['index.html', 'index.htm'],
-  }
-);
+const serve = serveStatic(path.join(__dirname, '../../../../node_modules/@arcblock/forge-web'), {
+  index: ['index.html', 'index.htm'],
+});
 
 const server = http.createServer((req, res) => {
   try {

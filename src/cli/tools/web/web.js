@@ -27,7 +27,7 @@ async function main({
       const pm2Id = 'arc-forge-web';
       const cName = chainName || (await getTopRunningChains());
 
-      const openBrowser = (port, network) => {
+      const openBrowser = (network, port) => {
         let url = `http://localhost:${port}`;
         if (cName) {
           url += `?network=${network}`;
@@ -43,7 +43,7 @@ async function main({
 
         if (info && info.pm2_env && info.pm2_env.status === 'online') {
           pm2.disconnect();
-          openBrowser(info.pm2_env.env.FORGE_WEB_PROT, cName);
+          openBrowser(cName, info.pm2_env.env.FORGE_WEB_PROT);
           return;
         }
 
@@ -55,7 +55,7 @@ async function main({
             max_memory_restart: '100M',
             cwd: __dirname,
             env: {
-              FORGE_WEB_PROT: detectPort,
+              FORGE_WEB_PROT: detectedProt,
             },
           },
           err => {

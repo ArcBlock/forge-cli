@@ -4,7 +4,7 @@ const shell = require('shelljs');
 const pm2 = require('pm2');
 
 const { printError, printInfo, printWarning } = require('core/util');
-const { getTopRunningChains } = require('core/forge-process');
+const { getAllProcesses } = require('core/forge-process');
 
 const { DEFAULT_CHAIN_NODE_PORT } = require('../../../constant');
 
@@ -25,11 +25,19 @@ async function main({
       break;
     case 'open':
       const pm2Id = 'arc-forge-web';
-      const cName = chainName || (await getTopRunningChains());
+      let cName = chainName;
+
+      // get first runing chain
+      if (!cName) {
+        const runingChains = await getAllProcesses();
+        if (runingChains && runingChains.length > 0) {
+          cName = runingChains[0].name;
+        }
+      }
 
       const openBrowser = (network, port) => {
         let url = `http://localhost:${port}`;
-        if (cName) {
+        if (network) {
           url += `?network=${network}`;
         }
         printInfo(`Opening ${url}`);

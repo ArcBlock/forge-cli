@@ -68,7 +68,7 @@
     "@arcblock/forge-proto": "^1.0.15",
     "@arcblock/forge-util": "^1.0.13",
     "@arcblock/forge-wallet": "^1.0.17",
-    "@arcblock/forge-web": "^1.0.18",
+    "@arcblock/forge-web": "^1.0.21",
     "@arcblock/graphql-client": "^1.0.17",
     "@arcblock/grpc-client": "^1.0.17",
     "@arcblock/mcrypto": "^1.0.13",

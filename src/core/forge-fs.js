@@ -539,7 +539,7 @@ const cleanChainHostsFromNetworkList = (names = []) => {
       .trim() || '[]'
   ).filter(x => names.includes(x.name));
 
-  fs.writeSync(ABT_NETWORKS_PATH, JSON.stringify(networks));
+  fs.writeFileSync(ABT_NETWORKS_PATH, JSON.stringify(networks));
 };
 
 module.exports = {

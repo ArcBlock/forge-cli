@@ -4,11 +4,10 @@ const deprecated = require('depd')('@arcblock/cli');
 const shell = require('shelljs');
 const { printError, printInfo, printWarning } = require('core/util');
 const { symbols, getSpinner } = require('core/ui');
-const { getAllRunningProcessStats } = require('core/forge-process');
 const debug = require('core/debug')('stop');
 
 const {
-  isForgeStarted,
+  isForgeStopped,
   getRunningProcesses,
   getAllProcesses,
   stopForgeProcesses,
@@ -19,7 +18,7 @@ const { cleanChainHostsFromNetworkList } = require('core/forge-fs');
 
 const cleanChainHosts = async () => {
   try {
-    const processes = await getAllRunningProcessStats();
+    const processes = await getAllProcesses();
     cleanChainHostsFromNetworkList(processes.map(({ name }) => name));
   } catch (error) {
     printWarning('remove chain hosts from networks list failed', error.message);
@@ -28,12 +27,12 @@ const cleanChainHosts = async () => {
 
 function waitUntilStopped(chainName) {
   return new Promise(async resolve => {
-    if (!(await isForgeStarted(chainName))) {
+    if (await isForgeStopped(chainName)) {
       return resolve();
     }
 
     const timer = setInterval(async () => {
-      if (!(await isForgeStarted(chainName))) {
+      if (await isForgeStopped(chainName)) {
         clearInterval(timer);
         return resolve();
       }
@@ -100,7 +99,7 @@ async function main({ opts: { force, all }, args: [chainName = process.env.FORGE
 
   const tmp = await stop(chainName, force || all);
 
-  cleanChainHosts();
+  await cleanChainHosts();
 
   process.exit(tmp ? 0 : 1);
 }

@@ -63,6 +63,7 @@ async function setupEnv(requirements, args = {}) {
     chainName: process.env.FORGE_CURRENT_CHAIN,
     configPath: process.env.FORGE_CONFIG,
   });
+
   await ensureCurrentChainRunning(
     requirements.currentChainRunning,
     process.env.FORGE_CURRENT_CHAIN

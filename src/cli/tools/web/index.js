@@ -1,7 +1,6 @@
 const shell = require('shelljs');
 const chalk = require('chalk');
 const { cli, action } = require('core/cli');
-const { getTopRunningChains } = require('core/forge-process');
 const { execute, run } = require('./web');
 
 cli(
@@ -10,12 +9,12 @@ cli(
   input => action(execute, run, input),
   {
     requirements: {
-      forgeRelease: true,
-      runningNode: true,
-      rpcClient: true,
+      forgeRelease: false,
+      runningNode: false,
+      rpcClient: false,
       wallet: false,
-      chainName: getTopRunningChains,
-      currentChainRunning: true,
+      chainName: false,
+      currentChainRunning: false,
     },
     options: [['--graphql', 'Open graphql playground instead of forge admin panel']],
     handlers: {

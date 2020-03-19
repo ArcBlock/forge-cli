@@ -1,5 +1,6 @@
 /* eslint no-case-declarations:"off" */
 const chalk = require('chalk');
+const detectPort = require('detect-port');
 const shell = require('shelljs');
 const GraphQLClient = require('@arcblock/graphql-client');
 const pm2 = require('pm2');
@@ -8,8 +9,10 @@ const debug = require('core/debug')('web');
 const { symbols, getSpinner } = require('core/ui');
 const { printError, printInfo, printSuccess, printWarning } = require('core/util');
 const { runNativeWebCommand, webUrl } = require('core/env');
-const { getForgeWebProcess } = require('core/forge-process');
+const { getTopRunningChains, getForgeWebProcess } = require('core/forge-process');
 const { addChainHostToNetworkList } = require('core/forge-fs');
+
+const { DEFAULT_CHAIN_NODE_PORT } = require('../../../constant');
 
 const startWebUI = runNativeWebCommand('daemon', { silent: true });
 
@@ -75,7 +78,7 @@ async function main({
   args: [action = 'none'],
   opts: { chainName = process.env.FORGE_CURRENT_CHAIN } = {},
 }) {
-  const { pid } = await getForgeWebProcess();
+  const { pid } = await getForgeWebProcess(chainName);
 
   debug(`forge web pid: ${pid}`);
 
@@ -116,25 +119,29 @@ async function main({
       break;
     case 'open':
       const pm2Id = 'arc-forge-web';
-      const port = 3000;
+      const cName = chainName || (await getTopRunningChains());
 
-      const openBrowser = () => {
-        const url = `http://localhost:${port}?network=${chainName}`;
+      const openBrowser = (port, network) => {
+        let url = `http://localhost:${port}`;
+        if (cName) {
+          url += `?network=${network}`;
+        }
         printInfo(`Opening ${url}`);
         shell.exec(`open ${url}`);
       };
 
-      pm2.describe(pm2Id, (describeError, [info]) => {
+      pm2.describe(pm2Id, async (describeError, [info]) => {
         if (describeError) {
           throw describeError;
         }
 
         if (info && info.pm2_env && info.pm2_env.status === 'online') {
           pm2.disconnect();
-          openBrowser(port);
+          openBrowser(info.pm2_env.env.FORGE_WEB_PROT, cName);
           return;
         }
 
+        const detectedProt = await detectPort(DEFAULT_CHAIN_NODE_PORT);
         pm2.start(
           {
             name: pm2Id,
@@ -142,7 +149,7 @@ async function main({
             max_memory_restart: '100M',
             cwd: __dirname,
             env: {
-              FORGE_WEB_PROT: port,
+              FORGE_WEB_PROT: detectPort,
             },
           },
           err => {
@@ -153,8 +160,8 @@ async function main({
               return;
             }
 
-            printInfo(`Forge Web is listening on port ${port}`);
-            openBrowser(port);
+            printInfo(`Forge Web is listening on port ${detectedProt}`);
+            openBrowser(cName, detectedProt);
           }
         );
       });

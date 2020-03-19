@@ -48,4 +48,4 @@ const server = http.createServer((req, res) => {
   return serve(req, res, finalhandler(req, res));
 });
 
-server.listen(process.env.FORGE_WEB_PROT || 3000);
+server.listen(process.env.FORGE_WEB_PROT);

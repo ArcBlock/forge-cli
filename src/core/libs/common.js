@@ -21,12 +21,7 @@ const {
 } = require('../../constant');
 const { getConfig } = require('./global-config');
 const pkg = require('../../../package.json');
-const {
-  getAllChainNames,
-  getLocalReleases,
-  getReleaseBinPath,
-  updateReleaseYaml,
-} = require('../forge-fs');
+const { getAllChainNames, getLocalReleases, updateReleaseYaml } = require('../forge-fs');
 const { fetchReleaseAssetsInfo, getForgeDistribution, logError, printSuccess } = require('../util');
 
 const { name: packageName, version: localVersion, engines } = pkg;
@@ -150,14 +145,6 @@ function writeCache(key, data) {
   }
 }
 
-const makeForgeSwapRunCommand = (version, { swapConfigPath, subcommand } = {}) => {
-  const binPath = getReleaseBinPath('forge_swap', version);
-  return makeNativeCommand({
-    binPath,
-    env: swapConfigPath ? `FORGE_SWAP_CONFIG=${swapConfigPath}` : undefined,
-    subcommand,
-  });
-};
 const makeNativeCommandRunner = (command, options = {}) => () => {
   debug('makeNativeCommandRunner command', command);
   const res = shell.exec(command, Object.assign({ silent: false }, options));
@@ -254,6 +241,5 @@ module.exports = {
   hasReleases,
   listReleases,
   makeNativeCommand,
-  makeForgeSwapRunCommand,
   makeNativeCommandRunner,
 };

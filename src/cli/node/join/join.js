@@ -112,7 +112,6 @@ async function main({ args: [endpoint = ''], opts: { yes, chainName } }) {
       const keysToMerge = [
         'forge.pub_sub_key',
         'forge.token',
-        'forge.token_swap',
         'forge.stake',
         'forge.prime',
         'forge.accounts',

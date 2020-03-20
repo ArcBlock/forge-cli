@@ -119,7 +119,7 @@ Commands:
   use [version]                       Activate an already downloaded forge release
   version [<chainName>]               Output version for all forge components
   wallet:create                       Create a local wallet and dump its public/private key
-  web [options] [action]              Start/stop the web interface of running forge chain/node
+  web [action]                        Open the web interface of running forge chain/node
   workshop [action]                   Start/stop the dApps workshop
 
 Examples:

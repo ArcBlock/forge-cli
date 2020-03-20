@@ -42,7 +42,7 @@ const readmeContent = `![forge-cli](https://www.arcblock.io/.netlify/functions/b
 - Create wallets and accounts on blockchain
 - Read/subscribe accounts/blocks/transactions/assets on blockchain
 - Send transactions to the blockchain
-- Use forge components such as forge-web and dapps-workshop
+- Use forge components such as forge-web
 - Compile and deploy transaction protocol
 - Do stake to node/user/asset
 - Bootstrap dApps with starters from [here](https://github.com/ArcBlock/forge-dapp-starters)

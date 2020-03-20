@@ -219,10 +219,6 @@ function getForgeWebReleaseDirectory(version) {
   return getReleaseDirectory('forge_web', version);
 }
 
-function getForgeWorkshopReleaseDirectory(version) {
-  return getReleaseDirectory('forge_workshop', version);
-}
-
 function getForgeSimulatorReleaseDirectory(version) {
   return getReleaseDirectory('simulator', version);
 }
@@ -346,10 +342,6 @@ function getChainWebConfigPath(chainName = process.env.FORGE_CURRENT_CHAIN) {
 
 function readChainKeyFilePath(chainName = process.env.FORGE_CURRENT_CHAIN) {
   return readChainConfig(chainName, 'tendermint.keypath');
-}
-
-function getChainWorkshopDirectory(chainName = process.env.FORGE_CURRENT_CHAIN) {
-  return path.join(getChainDirectory(chainName), 'workshop');
 }
 
 function createNewChain(chainName = process.env.FORGE_CURRENT_CHAIN) {
@@ -563,12 +555,10 @@ module.exports = {
   getChainConfig,
   getForgeSimulatorReleaseDirectory,
   getForgeWebReleaseDirectory,
-  getForgeWorkshopReleaseDirectory,
   getGlobalConfigFilePath,
   getGlobalForgeVersion,
   getChainReleaseFilePath,
   getChainWebConfigPath,
-  getChainWorkshopDirectory,
   getLocalReleases,
   getReleaseDir,
   getReleaseAssets,

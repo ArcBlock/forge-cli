@@ -133,10 +133,6 @@ async function getForgeWebProcess(chainName) {
   return getForgeProcessByTag('web', chainName);
 }
 
-async function getForgeWorkshopProcess(chainName) {
-  return getForgeProcessByTag('workshop', chainName);
-}
-
 async function getSimulatorProcess(chainName) {
   return getForgeProcessByTag('simulator', chainName);
 }
@@ -242,7 +238,6 @@ async function getRunningProcesses(chainName) {
   const processes = await Promise.all([
     getForgeWebProcess(chainName),
     getSimulatorProcess(chainName),
-    getForgeWorkshopProcess(chainName),
   ]);
 
   const coreProcesses = await getCoreProcess(chainName);
@@ -304,8 +299,6 @@ async function getRunningProcessEndpoints(chainName) {
     } else if (strEqual(name, 'forge')) {
       const grpcUri = get(cfg, 'forge.sock_grpc', '');
       result[name] = `${grpcUri}`;
-    } else if (strEqual(name, 'workshop')) {
-      result[name] = `http://127.0.0.1:${get(cfg, 'workshop.port')}`;
     }
   });
 
@@ -422,7 +415,6 @@ module.exports = {
   getForgeProcess,
   getForgeSwapProcess,
   getForgeWebProcess,
-  getForgeWorkshopProcess,
   getRunningProcessEndpoints,
   getForgeSwapProcessStats,
   getProcessTag,

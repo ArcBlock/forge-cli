@@ -7,7 +7,6 @@ const {
   getForgeReleaseDirectory,
   getForgeSimulatorReleaseDirectory,
   getForgeWebReleaseDirectory,
-  getForgeWorkshopReleaseDirectory,
 } = require('core/forge-fs');
 const { getProcessTag } = require('core/forge-process');
 const { printError } = require('core/util');
@@ -16,7 +15,6 @@ const getAppReleaseDirectory = {
   forge: getForgeReleaseDirectory,
   web: getForgeWebReleaseDirectory,
   simulator: getForgeSimulatorReleaseDirectory,
-  workshop: getForgeWorkshopReleaseDirectory,
 };
 
 async function main({

@@ -2,11 +2,7 @@ const chalk = require('chalk');
 const os = require('os');
 const shell = require('shelljs');
 
-const {
-  runNativeWebCommand,
-  runNativeSimulatorCommand,
-  runNativeWorkshopCommand,
-} = require('core/env');
+const { runNativeWebCommand, runNativeSimulatorCommand } = require('core/env');
 const debug = require('core/debug')('version');
 const { print } = require('core/util');
 const { getConsensusEnginBinPath, getGlobalForgeVersion } = require('core/forge-fs');
@@ -56,7 +52,6 @@ const printVersion = async chainName => {
   // components
   const forgeWebVersion = getVersion(runNativeWebCommand);
   const simulatorVersion = getVersion(runNativeSimulatorCommand);
-  const workshopVersion = getVersion(runNativeWorkshopCommand);
   const consensusVersion = getConsenseVersion(currentVersion);
 
   const versions = [
@@ -64,7 +59,6 @@ const printVersion = async chainName => {
     consensusVersion,
     forgeWebVersion,
     simulatorVersion,
-    workshopVersion,
   ].filter(Boolean);
 
   print(`Forge components of ${chainName} chain:`);

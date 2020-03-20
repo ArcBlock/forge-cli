@@ -1,123 +1,79 @@
 /* eslint no-case-declarations:"off" */
-const chalk = require('chalk');
+const detectPort = require('detect-port');
 const shell = require('shelljs');
-const GraphQLClient = require('@arcblock/graphql-client');
+const pm2 = require('pm2');
 
-const debug = require('core/debug')('web');
-const { symbols, getSpinner } = require('core/ui');
-const { print, printError, printInfo, printSuccess, printWarning } = require('core/util');
-const { sleep } = require('core/util');
-const { runNativeWebCommand, webUrl } = require('core/env');
-const { getForgeWebProcess } = require('core/forge-process');
+const { printError, printInfo } = require('core/util');
+const { getAllProcesses } = require('core/forge-process');
 
-const startWebUI = runNativeWebCommand('daemon', { silent: true });
+const { DEFAULT_CHAIN_NODE_PORT } = require('../../../constant');
 
-function processOutput(output, action) {
-  if (/:error/.test(output)) {
-    if (/:already_started/.test(output)) {
-      printWarning('Forge Web already started');
-    } else {
-      printError(`Forge Web ${action} failed: ${output.trim()}`);
-    }
-  } else {
-    printSuccess(`Forge Web ${action} success!`);
-  }
-}
-
-async function checkGraphQLServerStarted(client, maxRetry = 6) {
-  return new Promise(resolve => {
-    let counter = 0;
-
-    // eslint-disable-next-line
-    const intervalId = setInterval(async () => {
-      if (counter++ >= maxRetry) {
-        clearInterval(intervalId);
-        return resolve(false);
-      }
-
-      try {
-        const { code } = await client.getChainInfo();
-        if (code === 'OK') {
-          clearInterval(intervalId);
-          return resolve(true);
-        }
-
-        debug('check.graphql response:', code);
-      } catch (error) {
-        debug('check.graphql error', error.message);
-      }
-    }, 1000);
-  });
-}
-
-async function startForgeWeb(timeout = 10000) {
-  const { stderr } = startWebUI();
-
-  if (stderr) {
-    debug(`${symbols.error} forge web start failed: ${stderr}!`);
-    processOutput(stderr);
-    return false;
-  }
-
-  const client = new GraphQLClient(`${webUrl()}/api`);
-  if (!(await checkGraphQLServerStarted(client, Math.ceil(timeout / 1000)))) {
-    debug(`${symbols.error} graphql service failed to start!`);
-    return false;
-  }
-
-  return true;
-}
-
-async function main({ args: [action = 'none'], opts }) {
-  const { pid } = await getForgeWebProcess();
-
-  debug(`forge web pid: ${pid}`);
-
+async function main({
+  args: [action = 'none'],
+  opts: { chainName = process.env.FORGE_CURRENT_CHAIN } = {},
+}) {
   /* eslint-disable indent */
   switch (action) {
     case 'none':
       shell.exec('forge web -h --color always');
       break;
-    case 'start':
-      if (pid) {
-        printInfo('Forge Web already started');
-        process.exit(0);
-        return;
-      }
-
-      const spinner = getSpinner('Waiting for Forge Web to start...');
-      spinner.start();
-      const succeed = await startForgeWeb(20000);
-      if (!succeed) {
-        spinner.fail(`Forge web start failed, please retry with ${chalk.cyan('Forge Web start')}`);
-        break;
-      }
-
-      spinner.succeed('Forge Web successfully started');
-      printInfo(`Forge Web running at:     ${webUrl()}`);
-      printInfo(`GraphQL endpoint at:      ${webUrl()}/api`);
-      break;
-    case 'stop':
-      if (!pid) {
-        printInfo('Forge Web not started yet');
-        process.exit(0);
-        return;
-      }
-
-      printInfo('Stopping Forge Web...');
-      shell.exec(`kill ${pid}`);
-      printSuccess('Forge Web stopped');
-      break;
     case 'open':
-      if (!pid) {
-        printInfo('Forge Web not started yet');
-        await main({ args: ['start'] });
-        await sleep(2000);
+      const pm2Id = 'arc-forge-web';
+      let cName = chainName;
+
+      // get first runing chain
+      if (!cName) {
+        const runingChains = await getAllProcesses();
+        if (runingChains && runingChains.length > 0) {
+          cName = runingChains[0].name;
+        }
       }
 
-      const url = opts.graphql ? `${webUrl()}/api/playground` : webUrl();
-      print(`Opening ${url}...`);
-      shell.exec(`open ${url}`);
+      const openBrowser = (network, port) => {
+        let url = `http://localhost:${port}`;
+        if (network) {
+          url += `?network=${network}`;
+        }
+        printInfo(`Opening ${url}`);
+        shell.exec(`open ${url}`);
+      };
+
+      pm2.describe(pm2Id, async (describeError, [info]) => {
+        if (describeError) {
+          throw describeError;
+        }
+
+        if (info && info.pm2_env && info.pm2_env.status === 'online') {
+          pm2.disconnect();
+          openBrowser(cName, info.pm2_env.env.FORGE_WEB_PROT);
+          return;
+        }
+
+        const detectedProt = await detectPort(DEFAULT_CHAIN_NODE_PORT);
+        pm2.start(
+          {
+            name: pm2Id,
+            script: './server.js',
+            max_memory_restart: '100M',
+            cwd: __dirname,
+            env: {
+              FORGE_WEB_PROT: detectedProt,
+            },
+          },
+          err => {
+            pm2.disconnect();
+
+            if (err) {
+              printError('Forge Web exited error', err);
+              return;
+            }
+
+            printInfo(`Forge Web is listening on port ${detectedProt}`);
+            openBrowser(cName, detectedProt);
+          }
+        );
+      });
+
       break;
     default:
       break;

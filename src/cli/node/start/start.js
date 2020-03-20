@@ -13,7 +13,7 @@ const { isForgeStarted, getProcessTag, getAllRunningProcesses } = require('core/
 
 const { printAllProcesses } = require('../ps/ps');
 const { stop } = require('../stop/stop');
-const { start: startWeb } = require('../../tools/web/web');
+const { start: startWeb } = require('./forge-web');
 
 function getForgeReleaseEnv() {
   if (process.env.FORGE_RELEASE && fs.existsSync(process.env.FORGE_RELEASE)) {
@@ -103,7 +103,7 @@ async function start(chainName, dryRun = false, allowMultiChain) {
 
     spinner.succeed(`Chain ${chalk.yellow(chainName)} successfully started`);
     if (config.get('forge.web.enabled')) {
-      await startWeb();
+      await startWeb(chainName);
     }
 
     await printAllProcesses();

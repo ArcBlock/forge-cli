@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 const assert = require('assert');
 const pidUsage = require('pidusage');
 const prettyBytes = require('pretty-bytes');
@@ -93,11 +92,14 @@ async function findForgeEpmdDeamon() {
 
 async function isForgeStarted(chainName = process.env.FORGE_CURRENT_CHAIN) {
   const coreProcesses = await getCoreProcess(chainName);
+
   return coreProcesses.every(({ pid }) => !!pid);
 }
 
 async function isForgeStopped(chainName = process.env.FORGE_CURRENT_CHAIN) {
-  return !isForgeStarted(chainName);
+  const coreProcesses = await getCoreProcess(chainName);
+
+  return coreProcesses.every(({ pid }) => !pid);
 }
 
 async function getForgeProcessByTag(processName, chainName = process.env.FORGE_CURRENT_CHAIN) {

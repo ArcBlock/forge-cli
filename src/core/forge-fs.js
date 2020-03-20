@@ -20,6 +20,7 @@ const {
 } = require('core/util');
 
 const {
+  ABT_NETWORKS_PATH,
   CHAIN_DATA_PATH_NAME,
   CONFIG_FILE_NAME,
   CLI_BASE_DIRECTORY,
@@ -496,7 +497,53 @@ function isChainExists(chainName) {
   return fs.existsSync(getChainDirectory(chainName));
 }
 
+const addChainHostToNetworkList = ({ name, endpoint }) => {
+  let networks = [];
+  if (fs.existsSync(ABT_NETWORKS_PATH)) {
+    networks = JSON.parse(
+      fs
+        .readFileSync(ABT_NETWORKS_PATH)
+        .toString()
+        .trim() || '[]'
+    );
+  }
+
+  if (networks.find(x => x.name === name)) {
+    return;
+  }
+
+  networks.push({
+    name,
+    endpoint,
+    abbr: name.substring(0, 2),
+    description: 'Local chain node',
+    group: 'local',
+  });
+
+  fs.writeFileSync(ABT_NETWORKS_PATH, JSON.stringify(networks));
+};
+
+/**
+ * Remove offline chains hosts from network list
+ * @param {*} names running chain names
+ */
+const cleanChainHostsFromNetworkList = (names = []) => {
+  if (!fs.existsSync(ABT_NETWORKS_PATH)) {
+    return;
+  }
+
+  const networks = JSON.parse(
+    fs
+      .readFileSync(ABT_NETWORKS_PATH)
+      .toString()
+      .trim() || '[]'
+  ).filter(x => names.includes(x.name));
+
+  fs.writeFileSync(ABT_NETWORKS_PATH, JSON.stringify(networks));
+};
+
 module.exports = {
+  addChainHostToNetworkList,
   clearDataDirectories,
   checkStartError,
   createNewChain,
@@ -542,6 +589,7 @@ module.exports = {
   isFile,
   readChainConfig,
   readChainConfigFromEnv,
+  cleanChainHostsFromNetworkList,
   updateReleaseYaml,
   updateChainConfig,
 };

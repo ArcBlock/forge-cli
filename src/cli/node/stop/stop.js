@@ -7,21 +7,32 @@ const { symbols, getSpinner } = require('core/ui');
 const debug = require('core/debug')('stop');
 
 const {
-  isForgeStarted,
+  isForgeStopped,
   getRunningProcesses,
   getAllProcesses,
   stopForgeProcesses,
   stopAllForgeProcesses,
 } = require('core/forge-process');
 
+const { cleanChainHostsFromNetworkList } = require('core/forge-fs');
+
+const cleanChainHosts = async () => {
+  try {
+    const processes = await getAllProcesses();
+    cleanChainHostsFromNetworkList(processes.map(({ name }) => name));
+  } catch (error) {
+    printWarning('remove chain hosts from networks list failed', error.message);
+  }
+};
+
 function waitUntilStopped(chainName) {
   return new Promise(async resolve => {
-    if (!(await isForgeStarted(chainName))) {
+    if (await isForgeStopped(chainName)) {
       return resolve();
     }
 
     const timer = setInterval(async () => {
-      if (!(await isForgeStarted(chainName))) {
+      if (await isForgeStopped(chainName)) {
         clearInterval(timer);
         return resolve();
       }
@@ -87,6 +98,9 @@ async function main({ opts: { force, all }, args: [chainName = process.env.FORGE
   }
 
   const tmp = await stop(chainName, force || all);
+
+  await cleanChainHosts();
+
   process.exit(tmp ? 0 : 1);
 }
 

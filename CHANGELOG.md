@@ -1,7 +1,12 @@
+## 1.0.1 (March 20, 2020)
+
+- retire dapp workshop
+- retire forge swap
+- bump version
+
 ## 1.1.0 (March 18, 2020)
 
 - [one-webapp] serve static webapp via pm2 && serve-static
-- bump version
 
 ## 1.0.15 (March 09, 2020)
 

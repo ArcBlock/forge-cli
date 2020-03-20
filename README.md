@@ -26,7 +26,7 @@
 - Create wallets and accounts on blockchain
 - Read/subscribe accounts/blocks/transactions/assets on blockchain
 - Send transactions to the blockchain
-- Use forge components such as forge-web and dapps-workshop
+- Use forge components such as forge-web
 - Compile and deploy transaction protocol
 - Do stake to node/user/asset
 - Bootstrap dApps with starters from [here](https://github.com/ArcBlock/forge-dapp-starters)
@@ -112,7 +112,6 @@ Commands:
   start [options] [<chainName>]       Start the forge and forge web deamon
   status [type]                       List info of the running chain/node
   stop [options] [<chainName>]        Stop the forge daemon and all related services
-  swap [action] [version]             Start Forge Swap service
   tx [hash]                           Get a tx detail and display
   tx:ls                               List latest transactions
   upgrade [<chainName>]               Upgrade chain node to new version without reset
@@ -120,7 +119,6 @@ Commands:
   version [<chainName>]               Output version for all forge components
   wallet:create                       Create a local wallet and dump its public/private key
   web [action]                        Open the web interface of running forge chain/node
-  workshop [action]                   Start/stop the dApps workshop
 
 Examples:
 

@@ -182,10 +182,6 @@ function getAllChainNames() {
   return chainNames;
 }
 
-function getForgeSwapConfigFile() {
-  return path.join(CLI_BASE_DIRECTORY, 'atomic_config.toml');
-}
-
 function getCurrentWorkingDirectory() {
   return process.env.CURRENT_WORKING_CHAIN;
 }
@@ -219,20 +215,12 @@ function getForgeWebReleaseDirectory(version) {
   return getReleaseDirectory('forge_web', version);
 }
 
-function getForgeWorkshopReleaseDirectory(version) {
-  return getReleaseDirectory('forge_workshop', version);
-}
-
 function getForgeSimulatorReleaseDirectory(version) {
   return getReleaseDirectory('simulator', version);
 }
 
 function getGlobalConfigFilePath() {
   return path.join(os.homedir(), '.forgerc.yml');
-}
-
-function getForgeSwapReleaseDirectory(version) {
-  return getReleaseDirectory('forge_swap', version);
 }
 
 function getOriginForgeConfigPath(version) {
@@ -346,10 +334,6 @@ function getChainWebConfigPath(chainName = process.env.FORGE_CURRENT_CHAIN) {
 
 function readChainKeyFilePath(chainName = process.env.FORGE_CURRENT_CHAIN) {
   return readChainConfig(chainName, 'tendermint.keypath');
-}
-
-function getChainWorkshopDirectory(chainName = process.env.FORGE_CURRENT_CHAIN) {
-  return path.join(getChainDirectory(chainName), 'workshop');
 }
 
 function createNewChain(chainName = process.env.FORGE_CURRENT_CHAIN) {
@@ -550,8 +534,6 @@ module.exports = {
   ensureChainDirectory,
   getAllAppDirectories,
   getAllChainNames,
-  getForgeSwapConfigFile,
-  getForgeSwapReleaseDirectory,
   getChainNameFromForgeConfig,
   getConsensusEnginBinPath,
   getCurrentForgeConfigPath,
@@ -563,12 +545,10 @@ module.exports = {
   getChainConfig,
   getForgeSimulatorReleaseDirectory,
   getForgeWebReleaseDirectory,
-  getForgeWorkshopReleaseDirectory,
   getGlobalConfigFilePath,
   getGlobalForgeVersion,
   getChainReleaseFilePath,
   getChainWebConfigPath,
-  getChainWorkshopDirectory,
   getLocalReleases,
   getReleaseDir,
   getReleaseAssets,

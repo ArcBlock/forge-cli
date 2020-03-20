@@ -14,19 +14,11 @@ module.exports = {
   DEFAULT_CHAIN_NAME_RETURN: { NO_CHAINS: 1, NO_RUNNING_CHAINS: 2 },
   DEFAULT_CHAIN_NODE_PORT: 8000,
   DEFAULT_FORGE_WEB_PORT: 8210,
-  DEFAULT_WORKSHOP_PORT: 8807,
   DEFAULT_FORGE_GRPC_PORT: 28210,
   DEFAULT_MIRROR: 'https://releases.arcblock.io',
   DOCUMENT_URL: 'https://docs.arcblock.io/en/docs/instruction/configuration',
   REMOTE_BLOCKLET_URL: 'https://blocklets.netlify.com/blocklets.json',
-  RELEASE_ASSETS: [
-    'forge',
-    'simulator',
-    'forge_web',
-    'forge_starter',
-    'forge_workshop',
-    'forge_swap',
-  ],
+  RELEASE_ASSETS: ['forge', 'simulator', 'forge_web', 'forge_starter'],
   SHIFT_WIDTH: ' '.repeat(4),
   MIRRORS: ['https://releases.arcblock.io', 'https://releases.arcblockio.cn'],
   ASSETS_PATH: {
@@ -40,8 +32,6 @@ module.exports = {
     logs: path.join(CLI_BASE_DIRECTORY, 'logs'),
     release: path.join(CLI_BASE_DIRECTORY, 'release'),
   },
-  // semver regex from: https://github.com/semver/semver/issues/232#issue-48635632
-  SEMVER_REGEX: /forge_swap\/((0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?)/, // eslint-disable-line
   RESERVED_CHAIN_NAMES: ['forge'],
   BLOCKLET_GROUPS: ['dApp', 'starter', 'contract'],
   BLOCKLET_COLORS: ['primary', 'secondary', 'error'],

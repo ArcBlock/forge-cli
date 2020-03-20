@@ -501,7 +501,6 @@ module.exports = {
   ensureRpcClient,
   makeNativeCommandRunner,
   runNativeWebCommand: makeNativeCommandRunner('webBinPath', 'web'),
-  runNativeWorkshopCommand: makeNativeCommandRunner('workshopBinPath', 'workshop'),
   runNativeSimulatorCommand: makeNativeCommandRunner('simulatorBinPath', 'simulator'),
   createRpcClient,
   isDirectory,

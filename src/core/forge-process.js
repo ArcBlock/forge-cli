@@ -133,24 +133,12 @@ async function getForgeWebProcess(chainName) {
   return getForgeProcessByTag('web', chainName);
 }
 
-async function getForgeWorkshopProcess(chainName) {
-  return getForgeProcessByTag('workshop', chainName);
-}
-
 async function getSimulatorProcess(chainName) {
   return getForgeProcessByTag('simulator', chainName);
 }
 
 async function getStarterProcess(chainName) {
   return getForgeProcessByTag('starter', chainName);
-}
-
-async function getForgeSwapProcess() {
-  const processes = await findProcess('name', 'forge_swap');
-
-  const swapProcess = processes.find(({ cmd }) => cmd.includes('/bin/beam.smp'));
-
-  return { name: 'forge_swap', pid: swapProcess ? swapProcess.pid : 0 };
 }
 
 /**
@@ -242,7 +230,6 @@ async function getRunningProcesses(chainName) {
   const processes = await Promise.all([
     getForgeWebProcess(chainName),
     getSimulatorProcess(chainName),
-    getForgeWorkshopProcess(chainName),
   ]);
 
   const coreProcesses = await getCoreProcess(chainName);
@@ -279,21 +266,6 @@ async function getRunningProcessesStats(chainName = process.env.FORGE_CURRENT_CH
   return processesStats;
 }
 
-async function getForgeSwapProcessStats() {
-  const { pid } = await getForgeSwapProcess();
-  if (pid === 0) {
-    return null;
-  }
-
-  const usage = await pidUsage(pid);
-  return {
-    pid,
-    uptime: prettyTime(usage.elapsed, { compact: true }),
-    memory: prettyBytes(usage.memory),
-    cpu: `${usage.cpu.toFixed(2)} %`,
-  };
-}
-
 async function getRunningProcessEndpoints(chainName) {
   const processes = await getRunningProcesses(chainName);
   const cfg = readChainConfig(chainName);
@@ -304,8 +276,6 @@ async function getRunningProcessEndpoints(chainName) {
     } else if (strEqual(name, 'forge')) {
       const grpcUri = get(cfg, 'forge.sock_grpc', '');
       result[name] = `${grpcUri}`;
-    } else if (strEqual(name, 'workshop')) {
-      result[name] = `http://127.0.0.1:${get(cfg, 'workshop.port')}`;
     }
   });
 
@@ -420,11 +390,8 @@ module.exports = {
   getAllRunningProcessStats,
   getRunningProcesses,
   getForgeProcess,
-  getForgeSwapProcess,
   getForgeWebProcess,
-  getForgeWorkshopProcess,
   getRunningProcessEndpoints,
-  getForgeSwapProcessStats,
   getProcessTag,
   getSimulatorProcess,
   getTopRunningChains,

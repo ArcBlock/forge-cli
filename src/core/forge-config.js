@@ -4,14 +4,12 @@ const semver = require('semver');
 const path = require('path');
 const { get, set } = require('lodash');
 const TOML = require('@iarna/toml');
-const internalIp = require('internal-ip');
 
 const { getModerator } = require('core/moderator');
 
 const {
   DEFAULT_CHAIN_NAME,
   DEFAULT_FORGE_WEB_PORT,
-  DEFAULT_WORKSHOP_PORT,
   DEFAULT_FORGE_GRPC_PORT,
   REQUIRED_DIRS,
 } = require('../constant');
@@ -21,7 +19,6 @@ const {
   getRootConfigDirectory,
   getForgeVersionFromYaml,
   getChainConfigPath,
-  getChainWorkshopDirectory,
   getChainDirectory,
   getChainReleaseFilePath,
 } = require('./forge-fs');
@@ -54,7 +51,6 @@ async function getUsedPortsByForge() {
     tendermintRpcPort: 0,
     tendermintGrpcPort: 0,
     tendermintP2pPort: 0,
-    workshopPort: 0,
   };
 
   configDirectories.forEach(tmp => {
@@ -67,7 +63,6 @@ async function getUsedPortsByForge() {
     const cfg = TOML.parse(fs.readFileSync(forgeReleasePath).toString());
 
     const forgeWebPort = Number(get(cfg, 'forge.web.port'));
-    const workshopPort = Number(get(cfg, 'workshop.port'));
     const forgeGrpcPort = getPortFromUri(get(cfg, 'forge.sock_grpc'));
     const tendermintRpcPort = getPortFromUri(get(cfg, 'tendermint.sock_rpc'));
     const tendermintGrpcPort = getPortFromUri(get(cfg, 'tendermint.sock_grpc'));
@@ -75,10 +70,6 @@ async function getUsedPortsByForge() {
 
     if (forgeWebPort > maxPortPerField.forgeWebPort) {
       maxPortPerField.forgeWebPort = forgeWebPort;
-    }
-
-    if (workshopPort > maxPortPerField.workshopPort) {
-      maxPortPerField.workshopPort = workshopPort;
     }
 
     if (forgeGrpcPort > maxPortPerField.forgeGrpcPort) {
@@ -107,7 +98,6 @@ async function getAvailablePort() {
     tendermintRpcPort,
     tendermintGrpcPort,
     tendermintP2pPort,
-    workshopPort,
   } = await getUsedPortsByForge();
 
   const res = {
@@ -126,9 +116,6 @@ async function getAvailablePort() {
     forgeGrpcPort: forgeGrpcPort
       ? forgeGrpcPort + 1
       : await getPort({ port: getPort.makeRange(28210, 28300) }),
-    workshopPort: workshopPort
-      ? workshopPort + 1
-      : await getPort({ port: getPort.makeRange(8807, 8900) }),
   };
 
   return res;
@@ -143,32 +130,17 @@ async function setConfig(
     tendermintRpcPort,
     tendermintGrpcPort,
     tendermintP2pPort,
-    workshopPort,
     currentVersion,
   }
 ) {
   const moderator = getModerator();
   let content = JSON.parse(JSON.stringify(configs));
-  const internalIpV4 = (await internalIp.v4()) || '127.0.0.1';
 
   set(content, 'forge.web.port', forgeWebPort);
   set(content, 'forge.sock_grpc', `tcp://127.0.0.1:${forgeGrpcPort}`);
   set(content, 'tendermint.sock_rpc', `tcp://127.0.0.1:${tendermintRpcPort}`);
   set(content, 'tendermint.sock_grpc', `tcp://127.0.0.1:${tendermintGrpcPort}`);
   set(content, 'tendermint.sock_p2p', `tcp://0.0.0.0:${tendermintP2pPort}`);
-
-  const workshopConfig = {
-    host: internalIpV4,
-    schema: 'http',
-    port: workshopPort,
-    local_forge: `tcp://127.0.0.1:${forgeGrpcPort}`,
-    hyjal: {
-      chain: {
-        host: `http://${internalIpV4}:${forgeWebPort}/api/`,
-      },
-    },
-  };
-  set(content, 'workshop', workshopConfig);
 
   if (moderator) {
     const tmp = Object.assign({}, moderator);
@@ -197,9 +169,6 @@ function setFilePathOfConfig(configs, chainName) {
 
   set(content, 'cache.path', path.join(releaseDirectory, 'cache', 'mnesia_data_dir'));
 
-  set(content, 'workshop.path', getChainWorkshopDirectory(chainName));
-  set(content, 'workshop.db', 'sqlite://workshop.sqlite3');
-
   return content;
 }
 
@@ -210,7 +179,6 @@ async function setConfigToChain(configs, chainName, currentVersion) {
     tendermintRpcPort,
     tendermintGrpcPort,
     tendermintP2pPort,
-    workshopPort,
   } = await getAvailablePort();
 
   const tmpConfigs = await setConfig(configs, chainName, {
@@ -219,7 +187,6 @@ async function setConfigToChain(configs, chainName, currentVersion) {
     tendermintRpcPort,
     tendermintGrpcPort,
     tendermintP2pPort,
-    workshopPort,
     currentVersion,
   });
 
@@ -240,11 +207,7 @@ async function getDefaultChainConfigs(configs, currentVersion) {
     makeRange(DEFAULT_FORGE_GRPC_PORT, DEFAULT_FORGE_GRPC_PORT + 30)
   );
 
-  const workshopPort = await getFreePort(
-    makeRange(DEFAULT_WORKSHOP_PORT, DEFAULT_WORKSHOP_PORT + 30)
-  );
-
-  if (forgeWebPort < 0 || forgeGrpcPort < 0 || workshopPort < 0) {
+  if (forgeWebPort < 0 || forgeGrpcPort < 0) {
     throw new Error('Can not find free port');
   }
 
@@ -258,7 +221,6 @@ async function getDefaultChainConfigs(configs, currentVersion) {
     tendermintRpcPort,
     tendermintGrpcPort,
     tendermintP2pPort,
-    workshopPort,
     currentVersion,
   });
 
@@ -360,18 +322,6 @@ async function ensureForgeRelease({
     if (fs.existsSync(webBinPath) && fs.statSync(webBinPath).isFile()) {
       debug(`${symbols.success} Using forge_web executable: ${webBinPath}`);
       cliConfig.webBinPath = webBinPath;
-    }
-
-    // forge_workshop
-    const workshopBinPath = path.join(
-      cliReleaseDir,
-      'forge_workshop',
-      currentVersion,
-      './bin/forge_workshop'
-    );
-    if (fs.existsSync(workshopBinPath) && fs.statSync(workshopBinPath).isFile()) {
-      debug(`${symbols.success} Using forge_web executable: ${workshopBinPath}`);
-      cliConfig.workshopBinPath = workshopBinPath;
     }
 
     // forge_kernel

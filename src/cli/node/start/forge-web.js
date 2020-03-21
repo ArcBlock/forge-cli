@@ -83,9 +83,7 @@ const start = async chainName => {
     return;
   }
 
-  spinner.succeed('Forge Web successfully started');
-  printInfo(`Forge Web running at:     ${webUrl()}`);
-  printInfo(`GraphQL endpoint at:      ${webUrl()}/api`);
+  spinner.succeed(`Forge Web GraphQL server successfully started at ${webUrl()}/api`);
 };
 
 module.exports = {

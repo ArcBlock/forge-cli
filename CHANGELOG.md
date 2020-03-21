@@ -1,3 +1,7 @@
+## 1.1.2 (March 21, 2020)
+
+- modify descriptions after chain started
+
 ## 1.0.1 (March 20, 2020)
 
 - retire dapp workshop

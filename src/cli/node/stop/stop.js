@@ -21,7 +21,7 @@ const cleanChainHosts = async () => {
     const processes = await getAllProcesses();
     cleanChainHostsFromNetworkList(processes.map(({ name }) => name));
   } catch (error) {
-    printWarning('remove chain hosts from networks list failed', error.message);
+    printWarning('remove chain hosts from network list failed', error.message);
   }
 };
 

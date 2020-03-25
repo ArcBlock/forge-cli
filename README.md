@@ -82,7 +82,7 @@ Commands:
   account <address>                   Get an account info by address
   asset <address>                     Get asset info by address
   block [options] [height]            Get the block info from the running node
-  blocklet:init                       Init a blocklet project
+  blocklet:init [options]             Init a blocklet project
   blocklet:use [options]              Download and install a blocklet
   chain:config [options] [action]     Read/write chain/node config
   chain:create [chainName]            Create a new chain instance

@@ -1,3 +1,8 @@
+## 1.1.3 (March 25, 2020)
+
+- 添加跳过 npm 包校验命令行参数: `--no-verify`
+- 设置 blocklet registry 为配置项
+
 ## 1.1.2 (March 21, 2020)
 
 - modify descriptions after chain started

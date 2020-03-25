@@ -500,8 +500,8 @@ const addChainHostToNetworkList = ({ name, endpoint }) => {
     name,
     endpoint,
     abbr: name.substring(0, 2),
-    description: 'Local chain node',
-    group: 'local',
+    description: 'Development chain node',
+    group: 'development',
   });
 
   fs.writeFileSync(ABT_NETWORKS_PATH, JSON.stringify(networks));

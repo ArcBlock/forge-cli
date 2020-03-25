@@ -7,6 +7,7 @@ const yaml = require('yaml');
 
 const { getGlobalConfigFilePath } = require('core/forge-fs');
 const debug = require('core/debug')('global-config');
+const { REMOTE_BLOCKLET_URL } = require('../../constant');
 
 const DEFAULT_CONFIGS = {
   allowMultiChain: {
@@ -19,6 +20,7 @@ const DEFAULT_CONFIGS = {
   moderatorSecretKey: { type: String, defaultValue: undefined },
   releaseDir: { type: String, defaultValue: undefined },
   npmRegistry: { type: String, defaultValue: registryUrl() },
+  blockletRegistry: { type: String, REMOTE_BLOCKLET_URL },
 };
 
 const CONFIG_ITEMS = Object.keys(DEFAULT_CONFIGS);

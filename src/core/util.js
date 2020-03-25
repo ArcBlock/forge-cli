@@ -262,13 +262,17 @@ const verifyNpmPackageIntegrity = (content, packageName) => {
   if (ssri.checkData(content, expectedIntegrity) === false) {
     printInfo('expected integrity', expectedIntegrity);
     printInfo('actual integrity', ssri.fromData(content));
+    print();
+    printInfo(`You can skip the verification with ${chalk.cyan('--no-verify')}`);
+    print();
     throw new Error(`${packageName} verify integrity failed`);
   }
 
+  printSuccess(`${packageName} verification passed`);
   return true;
 };
 
-const downloadPackageFromNPM = async (name, dest, registry = '') => {
+const downloadPackageFromNPM = async ({ name, dest, registry = '', verify = true }) => {
   printInfo('Downloading package...');
   debug('starter directory:', dest);
 
@@ -293,7 +297,9 @@ const downloadPackageFromNPM = async (name, dest, registry = '') => {
     throw new Error(`download ${packageName} failed`);
   }
 
-  verifyNpmPackageIntegrity(fs.readFileSync(tarballPath), name);
+  if (verify) {
+    verifyNpmPackageIntegrity(fs.readFileSync(tarballPath), name);
+  }
 
   fs.mkdirSync(dest, { recursive: true });
   await tar.x({ file: tarballPath, C: dest, strip: 1 });

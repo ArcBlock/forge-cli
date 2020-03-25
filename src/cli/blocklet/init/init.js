@@ -165,7 +165,7 @@ async function execute({ blockletJSONPath, packageJSONPath, configs }) {
 }
 
 // Run the cli interactively
-async function run({ opts: { defaults, yes } }) {
+async function run({ opts: { defaults, yes, blockletRegistry } }) {
   const blockletJSONPath = path.join(process.cwd(), 'blocklet.json');
   const packageJSONPath = path.join(process.cwd(), 'package.json');
   let blockletJSON = {};
@@ -214,7 +214,7 @@ async function run({ opts: { defaults, yes } }) {
   );
 
   let answers = {};
-  const onlineBlocklets = await getBlocklets();
+  const onlineBlocklets = await getBlocklets(blockletRegistry);
   const questions = getPromptQuestions(mergedConfigs, onlineBlocklets);
   if (defaults || yes) {
     answers = questions.reduce((acc, item) => {

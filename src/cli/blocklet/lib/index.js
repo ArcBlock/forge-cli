@@ -23,7 +23,7 @@ const getBlocklets = async registry => {
     print();
     printInfo('You can try with the following blocklet registries:');
     printInfo(`China: ${chalk.cyan(`${REMOTE_BLOCKLET_URL}`)}`);
-    printInfo(`Other: ${chalk.cyan(`${REMOTE_BLOCKLET_URL_NETLIFY}`)}`);
+    printInfo(`Global: ${chalk.cyan(`${REMOTE_BLOCKLET_URL_NETLIFY}`)}`);
     print();
 
     logError(error);

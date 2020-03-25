@@ -198,13 +198,12 @@ function execute(data) {
 }
 
 // Run the cli interactively
-async function run({ args: [blockletName = ''], opts: { localBlocklet, target } }) {
+async function run({
+  args: [blockletName = ''],
+  opts: { localBlocklet, target, blockletRegistry },
+}) {
   try {
-    const blocklets = await getBlocklets();
-
-    if (!Array.isArray(blocklets) || blocklets.length === 0) {
-      throw new Error('load blocklets configs failed');
-    }
+    const blocklets = await getBlocklets(blockletRegistry);
 
     const blockletDir = await loadBlocklet({
       name: blockletName,

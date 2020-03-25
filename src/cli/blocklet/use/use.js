@@ -130,7 +130,7 @@ async function checkBlockletUpdate(starterName, localVersion, remoteVersion) {
   return false;
 }
 
-const fetchRemoteBlocklet = async (name, blocklets, registry) => {
+const fetchRemoteBlocklet = async ({ name, blocklets, registry, verify }) => {
   const blockletsMap = blocklets.reduce((acc, item) => {
     acc[item.name] = item;
     return acc;
@@ -144,10 +144,20 @@ const fetchRemoteBlocklet = async (name, blocklets, registry) => {
     const { version } = packageConfig;
     if (await checkBlockletUpdate(blockname, version, blockletsMap[blockname].version)) {
       fsExtra.removeSync(blockletDir);
-      await downloadPackageFromNPM(blockname, blockletDir, registry);
+      await downloadPackageFromNPM({
+        name: blockname,
+        dest: blockletDir,
+        registry,
+        verify: false,
+      });
     }
   } else {
-    await downloadPackageFromNPM(blockname, blockletDir, registry);
+    await downloadPackageFromNPM({
+      name: blockname,
+      dest: blockletDir,
+      registry,
+      verify,
+    });
   }
 
   return blockletDir;
@@ -176,13 +186,13 @@ const getHandlerByBlockletGroup = group => {
  * @param {string} options.localBlockletDir - If localblockDir is not empty, will load from local blocklet
  * @returns {Object} info.blockletDir - blocklet directory
  */
-async function loadBlocklet({ name = '', localBlockletDir, blocklets, registry }) {
+async function loadBlocklet({ name = '', localBlockletDir, blocklets, registry, verify }) {
   let blockletDir = '';
 
   if (localBlockletDir) {
     blockletDir = path.resolve(localBlockletDir);
   } else {
-    blockletDir = await fetchRemoteBlocklet(name, blocklets, registry);
+    blockletDir = await fetchRemoteBlocklet({ name, blocklets, registry, verify });
   }
 
   if (!fs.existsSync(blockletDir)) {
@@ -200,7 +210,7 @@ function execute(data) {
 // Run the cli interactively
 async function run({
   args: [blockletName = ''],
-  opts: { localBlocklet, target, blockletRegistry },
+  opts: { localBlocklet, target, blockletRegistry, verify },
 }) {
   try {
     const blocklets = await getBlocklets(blockletRegistry);
@@ -209,6 +219,7 @@ async function run({
       name: blockletName,
       localBlockletDir: localBlocklet,
       blocklets,
+      verify,
     });
 
     const blockletConfig = JSON.parse(

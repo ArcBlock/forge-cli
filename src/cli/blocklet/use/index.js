@@ -18,6 +18,7 @@ cli('blocklet:use', 'Download and install a blocklet', input => action(execute, 
     ['--target <target>', 'Target directory, default is current directory'],
     ['--local-blocklet <localBlocklet>', 'Local blocklet directory'],
     ['-b --blocklet-registry <blockletRegistry>', 'Blocklet registry'],
+    ['--no-verify', 'Skip npm integrity verification'],
   ],
   handlers: {
     '--help': () => {

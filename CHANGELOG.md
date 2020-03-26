@@ -1,3 +1,7 @@
+## 1.2.0 (March 26, 2020)
+
+- chore: cleanup transaction protocol related code
+
 ## 1.1.3 (March 25, 2020)
 
 - 添加跳过 npm 包校验命令行参数: `--no-verify`

@@ -1,22 +1,42 @@
 /* eslint-disable no-console */
+const axios = require('axios');
 const path = require('path');
 const fs = require('fs');
 const http = require('http');
 const serveStatic = require('serve-static');
 const { URL } = require('url');
 
-const { ABT_NETWORKS_PATH } = require('../../../constant');
+const { ABT_NETWORKS_PATH, ABT_NETWORKS_URL } = require('../../../constant');
+
+const getRemoteNetworks = async () => {
+  const networks = [];
+  try {
+    const { data } = await axios.get(ABT_NETWORKS_URL, { timeout: 10 * 1000 });
+    if (Array.isArray(data)) {
+      networks.push(...data);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+
+  return networks;
+};
 
 const responseNetworks = res => {
   try {
-    res.setHeader('content-type', 'text/javascript');
-    res.write(
-      `window.ARCBLOCK_NETWORKS=${fs
-        .readFileSync(ABT_NETWORKS_PATH)
-        .toString()
-        .trim() || JSON.stringify([])}`
-    );
-    res.end();
+    const tmp = fs
+      .readFileSync(ABT_NETWORKS_PATH)
+      .toString()
+      .trim();
+
+    const networks = tmp ? JSON.parse(tmp) : [];
+    getRemoteNetworks().then(remoteNetworks => {
+      networks.push(...remoteNetworks);
+
+      res.setHeader('content-type', 'text/javascript');
+      res.write(`window.ARCBLOCK_NETWORKS=${JSON.stringify(networks)}`);
+      res.end();
+    });
   } catch (error) {
     console.log('response networks.js failed', error);
     res.end();

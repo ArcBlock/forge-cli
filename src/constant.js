@@ -5,6 +5,7 @@ const CLI_BASE_DIRECTORY = path.join(os.homedir(), '.forge_cli');
 const BLOCKLET_DIR = path.join(os.homedir(), '.blocklets');
 
 module.exports = {
+  ABT_NETWORKS_URL: 'https://releases.arcblockio.cn/networks.json',
   BLOCKLET_DIR,
   CONFIG_FILE_NAME: '.forge_chains',
   CHAIN_DATA_PATH_NAME: 'forge_release',

@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 const path = require('path');
 const fs = require('fs');
-const finalhandler = require('finalhandler');
 const http = require('http');
 const serveStatic = require('serve-static');
 const { URL } = require('url');
@@ -24,7 +23,8 @@ const responseNetworks = res => {
   }
 };
 
-const serve = serveStatic(path.join(__dirname, '../../../../node_modules/@arcblock/forge-web'), {
+const filesPath = path.join(__dirname, '../../../../node_modules/@arcblock/forge-web');
+const serve = serveStatic(filesPath, {
   index: ['index.html', 'index.htm'],
 });
 
@@ -42,7 +42,10 @@ const server = http.createServer((req, res) => {
     console.error(error);
   }
 
-  return serve(req, res, finalhandler(req, res));
+  return serve(req, res, () => {
+    res.write(fs.readFileSync(path.join(filesPath, 'index.html')).toString());
+    res.end();
+  });
 });
 
 server.listen(process.env.FORGE_WEB_PROT);

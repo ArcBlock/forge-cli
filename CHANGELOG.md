@@ -1,3 +1,9 @@
+## 1.2.1 (March 26, 2020)
+
+- use npm package's shasum to check
+- fix forge web router bug
+- add public network list
+
 ## 1.2.0 (March 26, 2020)
 
 - chore: cleanup transaction protocol related code

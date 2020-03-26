@@ -15,7 +15,6 @@ const getPort = require('get-port');
 const prettyMilliseconds = require('pretty-ms');
 const moment = require('moment');
 const rc = require('rc');
-const ssri = require('ssri');
 const util = require('util');
 const toLower = require('lodash/toLower');
 
@@ -248,8 +247,8 @@ function getPackageConfig(filePath) {
 }
 
 const verifyNpmPackageIntegrity = (content, packageName) => {
-  const { code, stdout: expectedIntegrity, stderr } = shell.exec(
-    `npm view ${packageName} dist.integrity`,
+  const { code, stdout: expectedShasum, stderr } = shell.exec(
+    `npm view ${packageName} dist.shasum`,
     {
       silent: true,
     }
@@ -259,9 +258,11 @@ const verifyNpmPackageIntegrity = (content, packageName) => {
     throw new Error(stderr);
   }
 
-  if (ssri.checkData(content, expectedIntegrity) === false) {
-    printInfo('expected integrity', expectedIntegrity);
-    printInfo('actual integrity', ssri.fromData(content));
+  const actualShasum = crypto
+    .createHash('sha1')
+    .update(content)
+    .digest('hex');
+  if (expectedShasum.trim() !== actualShasum) {
     print();
     printInfo(`You can skip the verification with ${chalk.cyan('--no-verify')}`);
     print();

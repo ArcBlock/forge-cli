@@ -67,58 +67,52 @@ Run `forge` and get available options and subcommands.
 Usage: forge [options] [command]
 
 Options:
-  -V, --version                       output the version number
-  -v, --verbose                       Output runtime info when execute subcommand, useful for debug
-  -c, --chain-name <chainName>        Execute command use specific chain
-  -i, --config-path <path>            Forge config used when starting forge node and initializing gRPC clients
-  -r, --npm-registry <registry>       Specify a custom npm registry
-  -y, --yes                           Assume that the answer to any confirmation question is yes
-  -d, --defaults                      Run command using default values for all questions
-  -m, --mirror <url>                  Mirror host used to download forge release
-  -g, --socket-grpc <endpoint>        Socket gRPC endpoint to connect, with this you can use forge-cli with a remote node
-  -h, --help                          output usage information
+  -V, --version                    output the version number
+  -v, --verbose                    Output runtime info when execute subcommand, useful for debug
+  -c, --chain-name <chainName>     Execute command use specific chain
+  -i, --config-path <path>         Forge config used when starting forge node and initializing gRPC clients
+  -r, --npm-registry <registry>    Specify a custom npm registry
+  -y, --yes                        Assume that the answer to any confirmation question is yes
+  -d, --defaults                   Run command using default values for all questions
+  -m, --mirror <url>               Mirror host used to download forge release
+  -g, --socket-grpc <endpoint>     Socket gRPC endpoint to connect, with this you can use forge-cli with a remote node
+  -h, --help                       output usage information
 
 Commands:
-  account <address>                   Get an account info by address
-  asset <address>                     Get asset info by address
-  block [options] [height]            Get the block info from the running node
-  blocklet:init [options]             Init a blocklet project
-  blocklet:use [options]              Download and install a blocklet
-  chain:config [options] [action]     Read/write chain/node config
-  chain:create [chainName]            Create a new chain instance
-  chain:ls                            List all chains
-  chain:remove <chainName>            Remove chain state and config
-  chain:reset <chainName>             Reset chain state, but keeps the config
-  chain:validator [options]           Update(add, remove, change) or list validators
-  config [options] [key] [value]      Config forge cli configs
-  contract:activate [name|address]    Activate a contract by name or address
-  contract:compile [sourceDir]        Compile a forge contract
-  contract:create [options]           Create contract files
-  contract:deactivate [name|address]  Deactivate a contract
-  contract:deploy [itxPath]           Deploy a compiled contract to ABT Node
-  contract:ls                         List contracts
-  declare:node [options]              Declare the current node to be a validator candidate
-  deploy:prepare [options]            Prepare node for deploying a multi-node chain
-  download [options] [version]        Download a forge release without activate it
-  help [subcommand]                   Show help of a sub command
-  install [options] [version]         Download and setup forge release on this machine
-  join <endpoint>                     Join a network by providing a valid forge web graphql endpoint
-  logs [type]                         Show logs for various forge components
-  ls                                  List forge releases installed locally
-  ls:remote                           List remote forge releases available for install
-  ps                                  List running forge component processes
-  remote [shellName]                  Connects to the running system via a remote shell
-  simulator [action]                  Start/stop simulator and generate random traffic
-  start [options] [<chainName>]       Start the forge and forge web deamon
-  status [type]                       List info of the running chain/node
-  stop [options] [<chainName>]        Stop the forge daemon and all related services
-  tx [hash]                           Get a tx detail and display
-  tx:ls                               List latest transactions
-  upgrade [<chainName>]               Upgrade chain node to new version without reset
-  use [version]                       Activate an already downloaded forge release
-  version [<chainName>]               Output version for all forge components
-  wallet:create                       Create a local wallet and dump its public/private key
-  web [action]                        Open the web interface of running forge chain/node
+  account <address>                Get an account info by address
+  asset <address>                  Get asset info by address
+  block [options] [height]         Get the block info from the running node
+  blocklet:init [options]          Init a blocklet project
+  blocklet:use [options]           Download and install a blocklet
+  chain:config [options] [action]  Read/write chain/node config
+  chain:create [chainName]         Create a new chain instance
+  chain:ls                         List all chains
+  chain:remove <chainName>         Remove chain state and config
+  chain:reset <chainName>          Reset chain state, but keeps the config
+  chain:validator [options]        Update(add, remove, change) or list validators
+  config [options] [key] [value]   Config forge cli configs
+  declare:node [options]           Declare the current node to be a validator candidate
+  deploy:prepare [options]         Prepare node for deploying a multi-node chain
+  download [options] [version]     Download a forge release without activate it
+  help [subcommand]                Show help of a sub command
+  install [options] [version]      Download and setup forge release on this machine
+  join <endpoint>                  Join a network by providing a valid forge web graphql endpoint
+  logs [type]                      Show logs for various forge components
+  ls                               List forge releases installed locally
+  ls:remote                        List remote forge releases available for install
+  ps                               List running forge component processes
+  remote [shellName]               Connects to the running system via a remote shell
+  simulator [action]               Start/stop simulator and generate random traffic
+  start [options] [<chainName>]    Start the forge and forge web deamon
+  status [type]                    List info of the running chain/node
+  stop [options] [<chainName>]     Stop the forge daemon and all related services
+  tx [hash]                        Get a tx detail and display
+  tx:ls                            List latest transactions
+  upgrade [<chainName>]            Upgrade chain node to new version without reset
+  use [version]                    Activate an already downloaded forge release
+  version [<chainName>]            Output version for all forge components
+  wallet:create                    Create a local wallet and dump its public/private key
+  web [action]                     Open the web interface of running forge chain/node
 
 Examples:
 

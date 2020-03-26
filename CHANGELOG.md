@@ -1,7 +1,6 @@
 ## 1.2.1 (March 26, 2020)
 
 - use npm package's shasum to check
-- revert forge web start/stop
 - fix forge web router bug
 - add public network list
 

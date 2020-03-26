@@ -20,7 +20,9 @@ cli(
       '--help': () => {
         shell.echo(`
 Examples:
-  - ${chalk.cyan('forge web open')}           open admin panel in default browser
+  - ${chalk.cyan(
+    'forge web open'
+  )}           start web server and open admin panel in default browser
   - ${chalk.cyan(
     'forge web open -c <chain name>'
   )}           open specified chain admin panel in default browser

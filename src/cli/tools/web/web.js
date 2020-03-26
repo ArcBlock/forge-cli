@@ -3,10 +3,12 @@ const detectPort = require('detect-port');
 const shell = require('shelljs');
 const pm2 = require('pm2');
 
-const { printError, printInfo } = require('core/util');
+const { printError, printInfo, printWarning } = require('core/util');
 const { getAllProcesses } = require('core/forge-process');
 
 const { DEFAULT_CHAIN_NODE_PORT } = require('../../../constant');
+
+const PM2_ID = 'arc-forge-web';
 
 async function main({
   args: [action = 'none'],
@@ -18,7 +20,6 @@ async function main({
       shell.exec('forge web -h --color always');
       break;
     case 'open':
-      const pm2Id = 'arc-forge-web';
       let cName = chainName;
 
       // get first runing chain
@@ -38,21 +39,27 @@ async function main({
         shell.exec(`open ${url}`);
       };
 
-      pm2.describe(pm2Id, async (describeError, [info]) => {
+      pm2.describe(PM2_ID, async (describeError, [info]) => {
         if (describeError) {
           throw describeError;
         }
 
         if (info && info.pm2_env && info.pm2_env.status === 'online') {
-          pm2.disconnect();
-          openBrowser(cName, info.pm2_env.env.FORGE_WEB_PROT);
+          pm2.reload(PM2_ID, err => {
+            if (err) {
+              printWarning(err);
+            }
+
+            pm2.disconnect();
+            openBrowser(cName, info.pm2_env.env.FORGE_WEB_PROT);
+          });
           return;
         }
 
         const detectedProt = await detectPort(DEFAULT_CHAIN_NODE_PORT);
         pm2.start(
           {
-            name: pm2Id,
+            name: PM2_ID,
             script: './server.js',
             max_memory_restart: '100M',
             cwd: __dirname,

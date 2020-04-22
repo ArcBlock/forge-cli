@@ -1,3 +1,8 @@
+## 1.2.2 (April 22, 2020)
+
+- chore: only consume starter blocklets from forge-cli
+- chore: bump forge sdk
+
 ## 1.2.1 (March 26, 2020)
 
 - use npm package's shasum to check

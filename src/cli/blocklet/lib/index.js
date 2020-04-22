@@ -17,7 +17,7 @@ const getBlocklets = async registry => {
       throw new Error('load blocklets configs failed');
     }
     spinner.succeed('Fetching blocklets information succeed');
-    return data;
+    return data.filter(x => ['starter'].includes(x.group));
   } catch (error) {
     spinner.fail('Fetching blocklets information failed');
     print();

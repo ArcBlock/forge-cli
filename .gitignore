@@ -14,3 +14,4 @@ yarn-error.log
 *.dump
 .package-lock.json
 src/cli/misc/create/
+.vscode

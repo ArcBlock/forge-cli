@@ -1,3 +1,7 @@
+## 1.3.0 (June 19, 2020)
+
+- chore: bump forge sdk version
+
 ## 1.2.2 (April 22, 2020)
 
 - chore: only consume starter blocklets from forge-cli
